@@ -1,0 +1,199 @@
+# FirstMarket Deployment and DevOps
+
+Version: 1.0
+
+## 1. Environment Strategy
+
+Use three environments:
+
+| Environment | Branch | Domain Example | Purpose |
+| --- | --- | --- | --- |
+| Local | feature branches | localhost | Development |
+| Staging | `develop` | `staging.firstmarket.ng` | QA and client review |
+| Production | `main` | `firstmarket.ng`, `app.firstmarket.ng` | Live users |
+
+Recommended domains:
+
+- `firstmarket.ng` for public website
+- `app.firstmarket.ng` for customer app
+- `vendor.firstmarket.ng` or `/vendor` for vendor portal
+- `admin.firstmarket.ng` or `/admin` for admin dashboard
+
+For the first release, path-based routing is simpler: `/app`, `/vendor`, `/admin`.
+
+## 2. Server Stack
+
+| Layer | Recommendation |
+| --- | --- |
+| OS | Ubuntu 24.04 LTS |
+| Web server | Nginx |
+| Runtime | PHP-FPM |
+| App | Laravel |
+| Frontend build | Vite |
+| Database | Managed PostgreSQL preferred |
+| Cache/queue | Redis |
+| Process manager | Supervisor |
+| SSL | Cloudflare or Let's Encrypt |
+| CI/CD | GitHub Actions |
+| Monitoring | Laravel Pulse, Sentry, UptimeRobot |
+
+## 3. Server Directory Layout
+
+```text
+/var/www/
+  firstmarket_production/
+    app/
+    bootstrap/
+    config/
+    database/
+    deployment/
+    public/
+    resources/
+    routes/
+    storage/
+    vendor/
+    .env
+  firstmarket_staging/
+  shared/
+    backups/
+    uploads/
+```
+
+## 4. Required Services
+
+- PHP-FPM pool per environment
+- Nginx site config per environment
+- Supervisor queue worker per environment
+- Laravel scheduler through cron
+- Redis for cache, sessions, queues, and rate limits
+- PostgreSQL backup jobs
+- Object storage for uploaded product images and identity documents
+
+## 5. Deployment Flow
+
+Production deployment should:
+
+1. Run CI checks.
+2. Put Laravel in maintenance mode.
+3. Backup database.
+4. Pull latest code.
+5. Run `composer install --no-dev --optimize-autoloader`.
+6. Run `npm ci` and `npm run build`.
+7. Run `php artisan migrate --force`.
+8. Clear and rebuild Laravel caches.
+9. Restart queue workers.
+10. Bring app out of maintenance mode.
+11. Run health check.
+
+## 6. CI Checks
+
+Every PR should run:
+
+- Composer validation
+- Laravel Pint
+- Larastan/PHPStan
+- Pest unit and feature tests
+- TypeScript check
+- Vitest
+- Vite production build
+- Playwright smoke tests for critical paths
+
+Critical smoke paths:
+
+- Customer registration page loads
+- Vendor registration page loads
+- Admin login page loads
+- Paystack webhook endpoint rejects invalid signature
+- Product catalog excludes unapproved products
+- Open Savings and Product Target Plan pages load
+- Support, logistics, and finance role dashboards load
+- Public website loads in Phase 4 only
+
+## 7. Secrets
+
+Never commit real secrets.
+
+Production secrets:
+
+- `APP_KEY`
+- `DB_*`
+- `REDIS_*`
+- `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_PUBLIC_KEY`
+- `PAYSTACK_WEBHOOK_SECRET`
+- `BVN_PROVIDER_*`
+- `NIN_PROVIDER_*`
+- `SMS_PROVIDER_*`
+- `MAIL_*`
+- `OPENAI_API_KEY` or AI provider key
+- `ADDRESS_LOOKUP_*`
+- `PUSH_NOTIFICATION_*`
+- `FILESYSTEM_DISK` credentials
+- `SENTRY_LARAVEL_DSN`
+
+## 8. External Integration Matrix
+
+| Service | Provider Options | Deployment Notes |
+| --- | --- | --- |
+| Payments | Paystack | Webhook endpoint must be public over HTTPS and idempotent |
+| BVN | Paystack Identity Verification | Store only required verification metadata |
+| NIN | Youverify, Smile Identity, Prembly | Keep provider payloads encrypted or minimized |
+| SMS/OTP | Termii, Africa's Talking | Configure rate limits and sender ID |
+| Email | SendGrid, Postmark | Use production domain authentication |
+| Storage | Cloudinary or S3-compatible bucket | CAC and identity documents must be private |
+| Address lookup | Google Maps Places API | Restrict keys by domain/IP where possible |
+| AI | OpenAI or Anthropic | Use queue jobs, cost limits, and audit logs |
+| Browser push | Web Push API or OneSignal | Used until native apps introduce mobile push |
+
+## 9. Backup Strategy
+
+| Asset | Frequency | Retention |
+| --- | --- | --- |
+| PostgreSQL database | Daily | 30 days |
+| Pre-deploy database backup | Every production deploy | Last 10 |
+| Uploaded files | Daily | 30 days |
+| Weekly archive | Weekly | 90 days |
+
+Recovery goals:
+
+- Bad deployment: under 15 minutes
+- Database restore: under 45 minutes
+- Full server rebuild: under 4 hours
+
+## 10. Monitoring
+
+Implement `/api/health`:
+
+```json
+{
+  "status": "ok",
+  "environment": "production",
+  "checks": {
+    "database": "ok",
+    "redis": "ok",
+    "queue": "ok",
+    "storage": "ok"
+  }
+}
+```
+
+Monitor:
+
+- Queue failures
+- Paystack webhook failures
+- Ledger mismatch alerts
+- 5xx error rate
+- Disk usage
+- Database connection saturation
+- Slow queries
+- Failed identity verification provider calls
+- SMS/OTP delivery failures
+- AI listing review failures
+- Automatic debit failures
+- Vendor posting fee payment failures
+
+## 11. Rollback
+
+Rollback code by resetting to the previous deployed commit and rebuilding assets.
+
+Only rollback the database in emergencies. A database rollback can lose deposits, order updates, and support records created after deployment. Prefer forward-fix migrations for schema issues.
