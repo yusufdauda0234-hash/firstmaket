@@ -17,4 +17,18 @@ Thumbs.db
 /bootstrap/cache/*.php
 /public/build/
 /public/hot
+/storage/*.key
+/storage/pail
+auth.json
+.phpunit.result.cache
+.phpunit.cache
+Homestead.json
+Homestead.yaml
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+npm-debug.log
+yarn-error.log
 

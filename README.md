@@ -120,4 +120,45 @@ app/
 
 ## Current Status
 
-This repository currently contains the planning documentation for the FirstMarket build. The Laravel application scaffold should be created after these documents are reviewed and approved.
+Sprint 1 foundation is scaffolded: Laravel 12 + Inertia + React + TypeScript + Tailwind, the `app/Modules`/`app/Shared` architecture, RBAC (Spatie Permission) with the seven core roles, audit logging, login-event tracking, feature flags (Pennant), the `/api/v1` reservation, and the admin-subdomain isolation with mandatory 2FA for Administrator/Super Administrator/Finance Officer. Everything past Sprint 1 (identity/OTP, catalog, wallet, savings, orders, etc.) is not built yet.
+
+The dependency installers (`composer`, `npm`) need outbound network access this environment doesn't have, so `vendor/` and `node_modules/` were not generated here â€” run the steps below on a machine with internet access.
+
+### Local Setup
+
+1. Install PHP 8.2+, Composer, Node 20+, and PostgreSQL. Redis is required too (cache/session/queue default to it); install it locally or point `REDIS_*`/`SESSION_DRIVER`/`CACHE_STORE`/`QUEUE_CONNECTION` at `sync`/`file`/`array` for a quick start without it.
+2. Add two local hostnames pointing at `127.0.0.1` (e.g. in `/etc/hosts` or Windows' `C:\Windows\System32\drivers\etc\hosts`), matching the admin-subdomain isolation rule:
+   ```
+   127.0.0.1 firstmarket.localhost
+   127.0.0.1 admin.firstmarket.localhost
+   ```
+3. Install dependencies:
+   ```
+   composer install
+   npm install
+   ```
+4. Copy the environment file and generate the app key:
+   ```
+   cp .env.example .env
+   php artisan key:generate
+   ```
+5. Create the database, then set `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD` in `.env` (used once by the seeder to create the first Super Administrator):
+   ```
+   createdb firstmarket
+   php artisan migrate --seed
+   ```
+6. Run the app:
+   ```
+   php artisan serve --host=firstmarket.localhost --port=8000
+   npm run dev
+   ```
+   Customer/vendor app: `http://firstmarket.localhost:8000`. Admin/Support/Logistics/Finance: `http://admin.firstmarket.localhost:8000` (log in with the `SUPER_ADMIN_*` credentials, then complete the mandatory 2FA setup screen).
+7. Run checks before committing:
+   ```
+   vendor/bin/pint
+   vendor/bin/phpstan analyse
+   vendor/bin/pest
+   npm run typecheck
+   ```
+
+For automated testing, create a separate `firstmarket_testing` database (`createdb firstmarket_testing`) â€” `phpunit.xml` points Pest at it by default.
