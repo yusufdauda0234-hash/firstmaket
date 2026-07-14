@@ -1,11 +1,11 @@
 # FirstMarket PRD Laravel
 
 Version: 1.0  
-Product type: Goal-based commerce and savings marketplace
+Product type: Goal-based commerce, direct purchase, and savings marketplace
 
 ## 1. Product Summary
 
-FirstMarket lets customers save toward products and collect only after payment is complete. It is not a loan, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate funds to Open Savings or Product Target Plans, and receive products after the full target price is paid.
+FirstMarket lets customers either save toward products over time or pay the full product price at once. It is not a loan, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate funds to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the full target price is paid.
 
 ## 2. Core Promise
 
@@ -13,7 +13,7 @@ Pay small small, collect with peace of mind.
 
 The platform should make product ownership feel planned, transparent, and safe:
 
-- Customers know exactly what they are saving toward.
+- Customers know exactly what they are buying, whether they pay at once or save gradually.
 - Vendors list products and set prices.
 - FirstMarket controls approval, customer relationship, payment tracking, and delivery.
 - Vendors never receive customer identity or delivery details.
@@ -105,10 +105,17 @@ Product Target Plan:
 - Pay-at-once mode.
 - Status: active, completed, ready for delivery.
 
+Pay At Once / direct full purchase:
+
+- Customer selects an approved product.
+- Customer pays the full locked product price in one transaction.
+- System may represent this internally as a Pay At Once Product Target Plan or a direct order checkout, but the user experience should feel like a normal full purchase.
+- Once Paystack confirms full payment, the item moves to Ready for Delivery / order creation.
+
 Requirements:
 
 - A customer has exactly one Open Savings balance and can have multiple Product Target Plans.
-- A Product Target Plan moves to Ready for Delivery when saved amount reaches 100% of target price.
+- A Product Target Plan or Pay At Once purchase moves to Ready for Delivery when paid amount reaches 100% of target price.
 - Expected completion date recalculates after each contribution using the customer's actual average contribution rate over the last three cycles.
 
 ### Wallet and Paystack
@@ -119,6 +126,7 @@ Requirements:
 - Receipt number per successful transaction.
 - Transaction history, receipt download, receipt email, and PDF export.
 - Allocate a deposit to Open Savings or a Product Target Plan.
+- Pay full product price at once through Pay At Once checkout.
 - Store reusable Paystack authorization for Phase 2 scheduled automatic debit.
 - No withdrawal feature.
 
@@ -235,6 +243,7 @@ AI rules:
 - Wishlist with side-by-side product comparison and price-drop notifications
 - Rewards and badge tiers: Bronze, Silver, Gold, Platinum Saver
 - Single-level referral program, never multi-level
+- Basic affiliate tracking: protected links, click tracking, signup attribution, delivered-order conversion tracking
 - Multi-language interface: English, Hausa, French, Arabic
 - Dark mode
 - Scheduled automatic debit
@@ -251,6 +260,15 @@ Referral rule:
 
 - Referral reward is credited only when the referred customer's first Product Target Plan reaches Completed status, never at signup.
 
+Affiliate baseline rule:
+
+- Affiliate tracking may begin in Phase 2, but affiliate commission should not be paid for clicks or signup alone.
+- Customer affiliate commission qualifies only after a referred customer's Pay At Once order is delivered or a referred customer's completed Product Target Plan order is delivered.
+- Vendor affiliate commission qualifies only after a referred vendor is approved and has at least one approved product.
+- Affiliate commission is a controlled partner payout, not a customer wallet withdrawal.
+- Finance must review and approve affiliate payouts.
+- Affiliate links must use protected random codes or signed tracking tokens, never database IDs, email addresses, or sensitive data.
+
 Pause/resume rule:
 
 - Pausing stops reminders and automatic debit only; it does not change locked target price, saved amount, or no-withdrawal policy.
@@ -258,7 +276,7 @@ Pause/resume rule:
 ## 7. Phase 3 Scale
 
 - Agent network
-- Affiliate program
+- Advanced affiliate program
 - Group purchase
 - Family savings
 - Cooperative savings
@@ -268,7 +286,7 @@ Pause/resume rule:
 Phase 3 requirements:
 
 - Agent network supports in-person signup and deposit collection with agent codes and commission tracking.
-- Affiliate program supports tracked links, conversions, and tiered commission configured by Super Administrator.
+- Affiliate program supports protected tracked links, conversions, tiered commission, monthly payout review, fraud checks, and finance-approved partner payouts configured by Super Administrator.
 - Group purchase allows multiple customers to contribute toward one shared product target.
 - Family savings gives a household dashboard without pooling underlying wallets.
 - Cooperative savings supports structured rotating-contribution models.
@@ -307,6 +325,8 @@ Security:
 - Enforce RBAC on backend.
 - Verify Paystack webhooks.
 - Audit all money and status changes.
+- Protect affiliate links from enumeration, tampering, open redirects, and self-referral abuse.
+- Keep affiliate payouts separate from the customer wallet no-withdrawal policy.
 
 Performance:
 
@@ -333,7 +353,7 @@ Customer web application:
 - Dashboard
 - Product Catalog and Search
 - Product Details
-- Start a Plan
+- Start a Plan or Pay At Once
 - Wallet
 - Transactions
 - Receipts
@@ -375,6 +395,25 @@ Specialized staff views:
 - Support Agent: Hotline and Chat Ticket Queue, read-only Customer Order and Plan Lookup
 - Logistics Personnel: Delivery Status Update screen only
 - Finance Officer: Paystack Settlement Reconciliation
+- Finance Officer: Affiliate Commission Payout Review
+
+Affiliate dashboard:
+
+- Affiliate code and protected links
+- Clicks, signups, verified customers, first deposits, Pay At Once purchases, completed plans, delivered orders
+- Pending, approved, rejected, and paid commission
+- Payout history
+
+Affiliate admin dashboard:
+
+- Affiliate applications
+- Affiliate approval/suspension
+- Protected link/campaign management
+- Conversion review
+- Commission settings
+- Monthly payout queue
+- Fraud flags
+- Top affiliates and revenue generated
 
 ## 11. Competitive Positioning
 

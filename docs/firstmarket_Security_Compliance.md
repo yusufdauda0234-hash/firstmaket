@@ -85,6 +85,8 @@ No-withdrawal rule:
 - No withdrawal route.
 - No cash refund workflow.
 - Redirection to another product plan is the only allowed movement out of Open Savings or a plan.
+- Affiliate payout is not customer wallet withdrawal. It is a separate partner payout controlled by Finance.
+- Affiliate commissions must never be credited into, paid from, or mixed with customer wallet balances.
 
 ## 7. Ledger Integrity
 
@@ -109,6 +111,8 @@ Use transactions and row locks for:
 - Open Savings redirection
 - Plan-to-plan redirection
 - Admin adjustment, if ever allowed
+- Affiliate commission approval
+- Affiliate payout batch finalization
 
 ## 8. Audit Logging
 
@@ -126,6 +130,9 @@ Audit:
 - Delivery assignments
 - User suspension/ban
 - Permission changes
+- Affiliate approval/suspension
+- Affiliate conversion approval/rejection
+- Affiliate payout approval/payment
 
 Audit records should include:
 
@@ -161,7 +168,35 @@ AI and risk outputs are advisory only. A human Administrator must make the final
 
 Risk flags should not automatically punish users. They should route to admin review.
 
-## 10. Security Headers
+## 10. Affiliate Security Controls
+
+Affiliate payout rules:
+
+- Use the terms Affiliate Commission or Partner Payout, not customer cashout.
+- Customer wallet must not have a cashout or withdrawal path because of affiliate features.
+- Store affiliate commissions in a separate commission ledger.
+- Require Finance review before any affiliate commission becomes payable.
+- Pay affiliates through controlled scheduled payout batches, preferably monthly.
+- Enforce minimum payout threshold before payout batching.
+- Require verified affiliate bank account details before payout.
+- Use explicit statuses: pending, approved, payable, rejected, paid.
+- Suspended affiliates cannot create links, receive new attribution, or receive payout.
+
+Affiliate link protection:
+
+- Use random non-sequential codes or signed/HMAC tracking tokens.
+- Never place database IDs, email, phone, BVN, NIN, wallet references, or personal data in affiliate URLs.
+- Validate every affiliate link server-side before attribution.
+- Stop tracking immediately for suspended or expired links.
+- Rate-limit clicks and signup attempts from the same IP, device, or user agent pattern.
+- Detect suspicious bot traffic and repeated self-clicking.
+- Prevent open redirects by allowing only approved internal landing paths.
+- Store attribution cookies as HttpOnly, Secure, SameSite=Lax, with a clear expiry such as 30 days.
+- A click must never grant permissions, wallet balance, product access, or commission by itself.
+- Allow only one valid affiliate attribution per customer unless an administrator explicitly resolves a dispute.
+- Block self-referral and flag repeated phone, email, BVN, NIN, or device reuse across related accounts.
+
+## 11. Security Headers
 
 Set:
 
@@ -172,7 +207,7 @@ Set:
 - `Content-Security-Policy`
 - Secure, HTTP-only, SameSite cookies
 
-## 11. Backup And Disaster Recovery
+## 12. Backup And Disaster Recovery
 
 Backups must be encrypted.
 
@@ -184,7 +219,7 @@ Required:
 - Restore test at least monthly.
 - Access to backups limited to Super Administrator and infrastructure lead.
 
-## 12. Production Checklist
+## 13. Production Checklist
 
 - `APP_DEBUG=false`
 - HTTPS enforced
@@ -202,3 +237,6 @@ Required:
 - Vendor customer-data isolation test passes
 - Sensitive identity values do not appear in logs
 - OTP rate limit test passes
+- Affiliate links do not expose IDs or sensitive data
+- Affiliate self-referral test passes
+- Affiliate payout cannot use customer wallet balance

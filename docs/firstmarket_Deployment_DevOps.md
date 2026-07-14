@@ -107,6 +107,8 @@ Critical smoke paths:
 - Product catalog excludes unapproved products
 - Open Savings and Product Target Plan pages load
 - Support, logistics, and finance role dashboards load
+- Affiliate protected link rejects tampered token or invalid code
+- Affiliate payout queue is visible only to authorized Finance users
 - Public website loads in Phase 4 only
 
 ## 7. Secrets
@@ -121,6 +123,7 @@ Production secrets:
 - `PAYSTACK_SECRET_KEY`
 - `PAYSTACK_PUBLIC_KEY`
 - `PAYSTACK_WEBHOOK_SECRET`
+- `AFFILIATE_TRACKING_SIGNING_KEY`
 - `BVN_PROVIDER_*`
 - `NIN_PROVIDER_*`
 - `SMS_PROVIDER_*`
@@ -191,6 +194,8 @@ Monitor:
 - AI listing review failures
 - Automatic debit failures
 - Vendor posting fee payment failures
+- Affiliate link tampering or high suspicious-click rate
+- Affiliate payout batch approval/payment failures
 
 ## 11. Rollback
 

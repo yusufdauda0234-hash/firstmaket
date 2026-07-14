@@ -33,18 +33,18 @@ Recommended stack:
 | 2 | Onboarding | Customer/vendor registration, OTP, email verification, BVN/NIN provider hooks, vendor approval |
 | 3 | Marketplace catalog | Categories, vendor products, product approval, vendor pricing, posting fees |
 | 4 | Wallet and payments | Paystack initialization, webhook-only wallet crediting, receipts, transaction history, finance reconciliation |
-| 5 | Savings | Open Savings, Product Target Plans, contribution logic, target price locking, tracker, redirection |
+| 5 | Purchase and savings | Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target price locking, tracker, redirection |
 | 6 | Orders and delivery | Ready-for-delivery order creation, delivery address, admin confirmation, vendor preparation, logistics tracking |
 | 7 | Support and communication | Notifications, support tickets, hotline logs, IVR routing, support-agent lookup |
 | 8 | AI and operations | Listing Review Assistant, reports, vendor/user suspension, operational controls |
 | 9 | MVP launch | Security hardening, no-withdrawal tests, ledger tests, E2E tests, pilot vendor launch |
-| 10 | Growth | Wishlist, rewards, referral, automatic debit, pause/resume, live chat, AI assistant, risk dashboards |
-| 11 | Scale | Agents, affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
+| 10 | Growth | Wishlist, rewards, referral, basic affiliate tracking, automatic debit, pause/resume, live chat, AI assistant, risk dashboards |
+| 11 | Scale | Agents, advanced affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
 | 12 | Public website | Public marketing website, SEO, real screenshots/workflows, vendor CTA, final brand launch |
 
 ### Phase 1: MVP Transaction Platform
 
-Goal: Web-based marketplace with customer savings, vendor listing, admin approval, Paystack wallet funding, and delivery operations.
+Goal: Web-based marketplace with customer savings, full Pay At Once purchase, vendor listing, admin approval, Paystack wallet funding, and delivery operations.
 
 #### Sprint 1: Project Foundation
 
@@ -250,17 +250,19 @@ Exit criteria:
 - Ledger is immutable and webhook-verified.
 - Finance can reconcile deposits.
 
-#### Sprint 5: Savings Engine
+#### Sprint 5: Purchase and Savings Engine
 
-Scope: Open Savings, Product Target Plans, contribution logic, target locking, progress tracking, and redirection.
+Scope: Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target locking, progress tracking, and redirection.
 
 Backend:
 
 - Build one Open Savings balance per customer.
 - Build Product Target Plan creation.
+- Build Pay At Once checkout for customers who want to pay the full approved product price immediately.
 - Lock product target price at plan creation.
 - Support schedule mode: daily, weekly, monthly.
 - Support Pay At Once mode.
+- On full Pay At Once payment, move the product purchase directly to Ready for Delivery/order creation after verified Paystack webhook.
 - Apply contributions from wallet/Open Savings to plans.
 - Recalculate amount saved, remaining balance, progress percentage, and expected completion date.
 - Calculate expected completion date using the customer's actual average contribution rate over the last three cycles.
@@ -274,6 +276,7 @@ Frontend:
 - Customer savings dashboard.
 - Open Savings page.
 - Start a Plan flow from product detail page.
+- Pay At Once checkout flow from product detail page.
 - Plan setup page for schedule mode and Pay At Once mode.
 - Product Tracker with progress bar, amount saved, balance remaining, and expected completion date.
 - Contribution allocation UI.
@@ -283,6 +286,7 @@ Frontend:
 Database:
 
 - Add open savings, product target plans, plan contributions, plan redirections, and plan status events.
+- Add direct checkout/order linkage fields if Pay At Once is modeled separately from Product Target Plans.
 - Add fields for cadence, suggested contribution, progress percentage, expected completion date, paused state, and completion dates.
 
 QA and security:
@@ -290,6 +294,7 @@ QA and security:
 - Test one customer has exactly one Open Savings balance.
 - Test target price remains locked after vendor price changes.
 - Test contribution math for daily, weekly, monthly, and Pay At Once modes.
+- Test Pay At Once immediately reaches Ready for Delivery after verified full payment.
 - Test progress reaches 100% and moves plan to Ready for Delivery.
 - Test redirection carries full balance and updates target math.
 - Test no cash refund/withdrawal path exists through redirection.
@@ -301,7 +306,7 @@ DevOps and docs:
 
 Exit criteria:
 
-- Customers can save openly or toward products.
+- Customers can pay fully at once, save openly, or save gradually toward products.
 - Plan progress and readiness are accurate and auditable.
 
 #### Sprint 6: Orders and Logistics
@@ -492,13 +497,13 @@ DevOps and docs:
 Exit criteria:
 
 - MVP can safely launch with pilot vendors and real customers.
-- Payment, savings, vendor, order, support, and admin workflows are tested end to end.
+- Payment, Pay At Once purchase, savings, vendor, order, support, and admin workflows are tested end to end.
 
 ### Phase 2: Growth
 
 Goal: improve retention, convenience, personalization, and operational intelligence after the core transaction loop is stable.
 
-#### Phase 2A: Wishlist, Rewards, and Referrals
+#### Phase 2A: Wishlist, Rewards, Referrals, and Basic Affiliates
 
 Backend:
 
@@ -509,6 +514,13 @@ Backend:
 - Calculate reward tiers from cumulative completed savings, not current wallet balance.
 - Build single-level referral attribution.
 - Credit referral reward only when referred customer's first Product Target Plan reaches Completed status.
+- Build basic affiliate application and approval workflow.
+- Generate protected affiliate codes and links using random non-sequential codes or signed tracking tokens.
+- Track affiliate clicks with rate limiting and suspicious-repeat controls.
+- Store attribution in secure cookies and attach it to registration when valid.
+- Track customer and vendor conversions without paying commission for clicks or signup alone.
+- Mark commission eligibility only after a delivered Pay At Once order, delivered completed-plan order, or referred vendor approval plus first approved product.
+- Keep affiliate payout records separate from customer wallet and savings ledgers.
 
 Frontend:
 
@@ -518,11 +530,14 @@ Frontend:
 - Rewards and badge page.
 - Referral code/link sharing page.
 - Referral status page showing pending and earned rewards.
+- Affiliate application page.
+- Affiliate dashboard showing protected link, clicks, signups, verified users, delivered conversions, and commission status.
+- Admin affiliate approval queue.
 
 Database:
 
-- Add `wishlists`, `wishlist_price_alerts`, `reward_tiers`, `user_rewards`, and `referrals`.
-- Add indexes for customer, product, referral code, and reward status.
+- Add `wishlists`, `wishlist_price_alerts`, `reward_tiers`, `user_rewards`, `referrals`, `affiliates`, `affiliate_links`, `affiliate_clicks`, `affiliate_attributions`, `affiliate_conversions`, and `affiliate_commissions`.
+- Add indexes for customer, product, referral code, affiliate code, attribution token, conversion status, and reward status.
 
 QA and security:
 
@@ -530,10 +545,17 @@ QA and security:
 - Test referral reward is not credited at signup.
 - Test referral program is single-level only.
 - Test reward tier recalculates only after plan completion.
+- Test affiliate links use protected random codes and expose no database IDs or personal data.
+- Test affiliate click tracking grants no application permission.
+- Test suspended affiliate links stop tracking.
+- Test self-referral is blocked.
+- Test duplicate phone, email, BVN, NIN, or suspicious device patterns are blocked or flagged.
+- Test affiliate commission is not payable until a qualified delivered order or qualified vendor conversion occurs.
+- Test affiliate payout cannot touch the customer wallet ledger.
 
 Exit criteria:
 
-- Customers can save products, compare options, earn badges, and refer other users without opening fraud-prone reward paths.
+- Customers can save products, compare options, earn badges, refer other users, and approved affiliates can track qualified acquisition without opening fraud-prone reward or cashout paths.
 
 #### Phase 2B: Convenience and Personalization
 
@@ -682,14 +704,18 @@ Exit criteria:
 
 - FirstMarket can support offline/community-assisted acquisition and deposits without weakening ledger controls.
 
-#### Phase 3B: Affiliate Program
+#### Phase 3B: Advanced Affiliate Program
 
 Backend:
 
-- Build affiliate registration and approval.
-- Generate trackable links and attribution windows.
-- Track signups, conversions, and commission.
-- Add tiered commission settings controlled by Super Administrator.
+- Expand affiliate registration into a full partner program.
+- Generate protected campaign links with random codes and optional HMAC/signed tokens.
+- Enforce attribution windows, one valid attribution per user, and self-referral blocking.
+- Track clicks, signups, verified users, first deposits, Pay At Once delivered orders, completed-plan delivered orders, and vendor recruitment conversions.
+- Add commission rules for flat, percentage, tiered, and vendor-recruitment payouts.
+- Add monthly payout batches with minimum threshold, Finance approval, rejection reasons, and paid status.
+- Keep affiliate payouts separate from customer wallets and no-withdrawal savings ledgers.
+- Add affiliate bank account verification before payout.
 
 Frontend:
 
@@ -697,20 +723,27 @@ Frontend:
 - Affiliate link and campaign management page.
 - Admin affiliate management page.
 - Finance affiliate payout/reconciliation view.
+- Conversion review and fraud-flag screens.
+- Affiliate payout history with pending, approved, rejected, and paid states.
 
 Database:
 
-- Add affiliates, affiliate links, affiliate conversions, affiliate commission tiers, and affiliate payouts.
+- Add affiliate commission tiers, affiliate payout batches, affiliate payout items, affiliate bank accounts, and affiliate fraud flags.
 
 QA and security:
 
 - Test attribution cannot be overwritten after valid first attribution.
 - Test commissions are calculated only on qualified conversion events.
 - Test affiliate links cannot expose customer personal data.
+- Test open redirects are blocked.
+- Test signed tracking tokens cannot be tampered with.
+- Test payout requires minimum threshold and Finance approval.
+- Test rejected conversions cannot be paid.
+- Test suspended affiliates cannot create new attribution or receive payout.
 
 Exit criteria:
 
-- External partners can drive signups with measurable, auditable commission rules.
+- External partners can drive signups and delivered conversions through protected links, auditable conversion rules, fraud controls, and finance-approved partner payouts.
 
 #### Phase 3C: Group, Family, and Cooperative Savings
 
@@ -840,7 +873,7 @@ Frontend:
 Content and brand:
 
 - Use real product screenshots and completed workflows.
-- Explain Open Savings and Product Target Plans clearly.
+- Explain Pay At Once, Open Savings, and Product Target Plans clearly.
 - State that FirstMarket is not a loan app, bank, BNPL product, or withdrawal wallet.
 - Highlight trust pillars: Paystack payments, verified vendors, FirstMarket-controlled delivery, support hotline, and no vendor access to customer identity.
 
@@ -861,7 +894,7 @@ DevOps and launch:
 Exit criteria:
 
 - Website is live on production domain.
-- Core copy explains that FirstMarket is savings-based, not loans or BNPL.
+- Core copy explains that FirstMarket supports Pay At Once and savings-based purchases, but is not loans or BNPL.
 - Marketing content reflects the completed application, not planned features.
 - Contact form, hotline, and vendor interest form are working.
 
@@ -981,6 +1014,8 @@ tests/
 - Vendors never see customer identity or delivery address.
 - Admin roles must be permission-based, not hard-coded role checks.
 - All ledger-affecting writes must run inside database transactions.
+- Affiliate commission is a separate partner payout record, never a customer wallet withdrawal or savings ledger movement.
+- Affiliate links must use random non-sequential codes or signed tokens, never database IDs or personal data.
 - All sensitive identity fields must be encrypted at application level.
 - OTP requests must be rate-limited by phone number.
 - AI recommendations that affect money, product approval, fraud, or account access are advisory only; human admins make final decisions.

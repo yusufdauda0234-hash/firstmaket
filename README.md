@@ -2,7 +2,7 @@
 
 Pay small small, collect with peace of mind.
 
-FirstMarket is a goal-based commerce platform for customers who want to save toward products and collect only after payment is complete. It is not a loan app, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate money to Open Savings or Product Target Plans, and receive products after the target price is fully paid.
+FirstMarket is a commerce platform for customers who want either to save gradually toward products or pay the full product price at once. It is not a loan app, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate money to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the target price is fully paid.
 
 ## Product Surfaces
 
@@ -44,13 +44,13 @@ The public website is intentionally last so marketing content can reflect the re
 | 2 | Identity and onboarding | Customer/vendor registration, OTP, email verification, BVN/NIN hooks, vendor approval |
 | 3 | Catalog and vendor listing | Categories, vendor products, pricing, approval queue, posting fees, AI review logs |
 | 4 | Wallet and Paystack | Deposit-only wallet, webhook-confirmed credits, receipts, transaction history, finance reconciliation |
-| 5 | Savings engine | Open Savings, Product Target Plans, contribution logic, target locking, progress tracking, redirection |
+| 5 | Purchase and savings engine | Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target locking, progress tracking, redirection |
 | 6 | Orders and logistics | Ready-for-delivery orders, address capture, admin confirmation, vendor preparation, delivery tracking |
 | 7 | Support and notifications | Preferences, email/SMS/browser notifications, support tickets, hotline logs, IVR routing |
 | 8 | AI/reporting/controls | Listing review assistant, reports, vendor suspension, user suspension, operational dashboards |
 | 9 | MVP hardening and pilot launch | Security review, ledger tests, Paystack replay tests, E2E flows, production rehearsal |
-| 10 | Growth | Wishlist, rewards, referrals, automatic debit, pause/resume, live chat, AI assistance, risk dashboards |
-| 11 | Scale | Agent network, affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
+| 10 | Growth | Wishlist, rewards, referrals, basic affiliate tracking, automatic debit, pause/resume, live chat, AI assistance, risk dashboards |
+| 11 | Scale | Agent network, advanced affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
 | 12 | Public website | Marketing website using the completed product, real workflows, vendor CTA, SEO, public launch |
 
 ## Core Rules
@@ -58,6 +58,8 @@ The public website is intentionally last so marketing content can reflect the re
 - No withdrawal endpoint exists anywhere in the backend.
 - Wallet balance is credited only after a verified Paystack webhook.
 - Every ledger-affecting write uses a database transaction.
+- Customer wallet has no cashout or withdrawal path.
+- Affiliate commissions are separate partner payouts, not customer wallet withdrawals.
 - Product target price is locked when a plan is created.
 - Vendors never see customer identity or delivery details.
 - Admin access is permission-based, not hard-coded by role name.
@@ -112,3 +114,9 @@ app/
 ## Current Status
 
 This repository currently contains the planning documentation for the FirstMarket build. The Laravel application scaffold should be created after these documents are reviewed and approved.
+
+
+I also added an optional direct_checkouts table to the database schema. We can decide during development whether Pay At Once should be:
+modeled as product_target_plans.payment_mode = pay_at_once, simpler; or
+modeled separately as direct_checkouts, cleaner for normal full purchase UX.
+My recommendation: use direct checkout UX for the customer, but internally we can still reuse the same payment/order logic.

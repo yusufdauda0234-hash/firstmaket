@@ -8,7 +8,7 @@ Version: 1.0
 
 Recommendation: PostgreSQL.
 
-FirstMarket is a wallet, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, not page rendering. PostgreSQL gives stronger tools for constraints, financial ledgers, reporting, and complex transactional workflows.
+FirstMarket is a wallet, direct purchase, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, not page rendering. PostgreSQL gives stronger tools for constraints, financial ledgers, reporting, and complex transactional workflows.
 
 Use MySQL only if team familiarity and hosting constraints are more important than PostgreSQL's richer constraint and reporting features.
 
@@ -35,9 +35,12 @@ Final recommendation: Laravel + Inertia + React + TypeScript + PostgreSQL + Redi
 - Every ledger-affecting action runs inside a database transaction.
 - Never use floating-point money calculations.
 - Product target price is locked when a plan is created.
+- Pay At Once checkout price is locked when checkout starts.
 - Vendor identity and customer identity are separated by policy and query design.
 - Vendors never see customer names, phone numbers, addresses, or plan history.
 - Admin abilities are permission-based, not role-name checks.
+- Affiliate commission is a separate partner payout, never a customer wallet withdrawal.
+- Affiliate links must use protected random codes or signed tokens and must not grant permission by themselves.
 - Sensitive identity values are encrypted at rest.
 - All state changes on plans, listings, orders, and vendor accounts are audited.
 
@@ -94,6 +97,7 @@ Recommended modules:
 - Risk
 - Rewards
 - Referrals
+- Affiliates
 
 ## 4. Model Standards
 
@@ -189,6 +193,9 @@ Core permission groups:
 - `delivery.update`
 - `support.manage`
 - `finance.reconcile`
+- `affiliates.manage`
+- `affiliate_conversions.review`
+- `affiliate_payouts.approve`
 - `vendor_fees.manage`
 - `ai_settings.manage`
 - `settings.manage`
@@ -201,6 +208,7 @@ Never infer authorization from the frontend alone.
 Backend:
 
 - Unit tests for savings calculations.
+- Unit tests for Pay At Once checkout and order conversion.
 - Feature tests for Paystack webhook verification.
 - Feature tests proving no withdrawal route exists.
 - Policy tests for vendor/customer/admin data access.
@@ -217,12 +225,20 @@ Critical architecture tests:
 - Unapproved products never appear in customer catalog.
 - Payment cannot credit wallet without valid webhook.
 - Plan target price does not change after vendor price edit.
+- Pay At Once checkout locked price does not change after vendor price edit.
 - Vendor price edit after approval returns listing to Pending Approval.
 - Vendor suspension unlists all approved products.
 - User suspension revokes active sessions.
 - Product Target Plan cannot activate without required BVN/NIN verification.
+- Pay At Once purchase follows the configured identity verification policy before delivery.
 - Pausing a plan stops reminders and automatic debit without changing target price or saved amount.
 - Referral reward is credited only after the referred customer's first plan is completed.
+- Affiliate commission is not payable for click or signup alone.
+- Affiliate commission is payable only after delivered Pay At Once order, delivered completed-plan order, or qualified vendor conversion.
+- Affiliate payout cannot touch customer wallet balance.
+- Affiliate links cannot expose database IDs or personal data.
+- Affiliate self-referral is blocked.
+- Suspended affiliate links stop tracking and attribution.
 
 ## 10. Role Page Map
 
@@ -232,7 +248,7 @@ Customer:
 - Dashboard
 - Product Catalog and Search
 - Product Details
-- Start a Plan
+- Start a Plan or Pay At Once
 - Wallet
 - Transactions and Receipts
 - Product Tracker
@@ -267,7 +283,7 @@ Specialized roles:
 
 - Support Agent: Hotline and Chat Ticket Queue, Customer Order and Plan Lookup.
 - Logistics Personnel: Delivery Status Update screen only.
-- Finance Officer: Paystack Settlement Reconciliation.
+- Finance Officer: Paystack Settlement Reconciliation, Affiliate Payout Review.
 - Super Administrator: Role and Permission Management, Platform-Wide Settings.
 
 ## 11. Git Workflow

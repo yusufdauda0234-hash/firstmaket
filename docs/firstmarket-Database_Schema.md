@@ -47,11 +47,11 @@ This is the expected full schema surface from MVP through Phase 4. MVP tables sh
 | Vendor fees | `vendor_fee_settings`, `product_posting_fees` |
 | AI/moderation | `ai_listing_reviews`, `ai_settings`, `ai_recommendations`, `ai_conversations`, `ai_messages`, `ai_cost_logs` |
 | Wallet/payments | `wallets`, `wallet_transactions`, `paystack_transactions`, `payment_authorizations`, `receipts`, `paystack_webhook_events`, `settlement_imports`, `settlement_reconciliation_items` |
-| Savings | `open_savings`, `product_target_plans`, `plan_contributions`, `plan_redirections`, `automatic_debits`, `plan_status_events` |
+| Purchase/savings | `open_savings`, `product_target_plans`, `direct_checkouts`, `plan_contributions`, `plan_redirections`, `automatic_debits`, `plan_status_events` |
 | Orders/logistics | `orders`, `order_status_events`, `delivery_assignments`, `vendor_preparation_events` |
 | Notifications/support | `notifications`, `notification_preferences`, `notification_deliveries`, `support_tickets`, `support_ticket_messages`, `hotline_call_logs`, `faqs` |
-| Growth | `wishlists`, `wishlist_price_alerts`, `reward_tiers`, `user_rewards`, `referrals`, `risk_flags`, `vendor_ratings`, `demand_forecasts` |
-| Scale | `agents`, `agent_deposits`, `agent_commissions`, `affiliates`, `affiliate_links`, `affiliate_conversions`, `affiliate_commissions`, `group_purchase_plans`, `group_purchase_members`, `group_purchase_contributions`, `family_groups`, `family_group_members`, `cooperative_groups`, `cooperative_members`, `cooperative_cycles`, `cooperative_contributions` |
+| Growth | `wishlists`, `wishlist_price_alerts`, `reward_tiers`, `user_rewards`, `referrals`, `affiliates`, `affiliate_links`, `affiliate_clicks`, `affiliate_attributions`, `affiliate_conversions`, `affiliate_commissions`, `risk_flags`, `vendor_ratings`, `demand_forecasts` |
+| Scale | `agents`, `agent_deposits`, `agent_commissions`, `affiliate_commission_tiers`, `affiliate_bank_accounts`, `affiliate_payout_batches`, `affiliate_payout_items`, `affiliate_fraud_flags`, `group_purchase_plans`, `group_purchase_members`, `group_purchase_contributions`, `family_groups`, `family_group_members`, `cooperative_groups`, `cooperative_members`, `cooperative_cycles`, `cooperative_contributions` |
 | Public website | `contact_messages`, `public_pages` if content-managed |
 
 ## 4. Core Tables
@@ -518,6 +518,30 @@ Required constraints:
 - `progress_percentage` must be between 0 and 100.
 - Redirection is blocked once status is Ready for Delivery.
 
+### direct_checkouts
+
+Optional table if Pay At Once is modeled separately from Product Target Plans. If the team chooses to model Pay At Once as `product_target_plans.payment_mode = pay_at_once`, this table is not required.
+
+- `id`
+- `uuid`
+- `user_id`
+- `product_id`
+- `vendor_id`
+- `locked_price`
+- `wallet_transaction_id`
+- `paystack_transaction_id`
+- `status` (`pending_payment`, `paid`, `ready_for_delivery`, `converted_to_order`, `cancelled`)
+- `paid_at`
+- `order_id`
+- `created_at`
+- `updated_at`
+
+Required constraints:
+
+- `locked_price` is copied from product price at checkout start.
+- Checkout becomes paid only after verified Paystack webhook or verified wallet allocation.
+- A paid checkout must create or link to one order.
+
 ### plan_contributions
 
 - `id`
@@ -751,6 +775,102 @@ Use Laravel notifications table plus custom notification preferences.
 - `reward_credited_at`
 - `created_at`
 
+### affiliates
+
+Approved partner or customer-affiliate profile. Affiliate payout is separate from customer wallet withdrawal.
+
+- `id`
+- `uuid`
+- `user_id`
+- `display_name`
+- `status` (`pending`, `approved`, `suspended`, `banned`)
+- `approved_by`
+- `approved_at`
+- `suspended_at`
+- `minimum_payout_amount`
+- `created_at`
+- `updated_at`
+
+### affiliate_links
+
+Protected tracking links. Do not expose database IDs, email addresses, phone numbers, BVN, NIN, or other sensitive values.
+
+- `id`
+- `affiliate_id`
+- `code`
+- `signed_token_hash`
+- `landing_url`
+- `campaign_name`
+- `status`
+- `expires_at`
+- `created_at`
+
+### affiliate_clicks
+
+Click tracking is for attribution and fraud review only. It must not grant access or commission by itself.
+
+- `id`
+- `affiliate_link_id`
+- `affiliate_id`
+- `ip_hash`
+- `user_agent_hash`
+- `device_fingerprint_hash`
+- `landing_url`
+- `referrer_url`
+- `is_suspicious`
+- `created_at`
+
+### affiliate_attributions
+
+Stores the first valid affiliate relationship for a user within the attribution window.
+
+- `id`
+- `affiliate_id`
+- `affiliate_link_id`
+- `user_id`
+- `attribution_token_hash`
+- `attributed_at`
+- `expires_at`
+- `source_ip_hash`
+- `source_device_hash`
+- `created_at`
+
+### affiliate_conversions
+
+Tracks events that may become commissionable. Clicks and signups alone are not payable.
+
+- `id`
+- `affiliate_id`
+- `affiliate_link_id`
+- `referred_user_id`
+- `conversion_type` (`signup`, `verified_customer`, `first_deposit`, `pay_at_once_delivered`, `plan_order_delivered`, `vendor_approved_first_product`)
+- `qualified`
+- `qualified_at`
+- `source_order_id`
+- `source_vendor_id`
+- `status` (`tracked`, `pending_review`, `approved`, `rejected`)
+- `reviewed_by`
+- `reviewed_at`
+- `rejection_reason`
+- `created_at`
+
+### affiliate_commissions
+
+Partner commission records. These records must never be stored in, paid from, or mixed with customer wallet balances.
+
+- `id`
+- `affiliate_id`
+- `affiliate_conversion_id`
+- `amount`
+- `commission_type` (`flat`, `percentage`, `tiered`, `vendor_recruitment`)
+- `status` (`pending`, `approved`, `payable`, `rejected`, `paid`)
+- `approved_by`
+- `approved_at`
+- `rejected_by`
+- `rejected_at`
+- `paid_at`
+- `created_at`
+
 ### risk_flags
 
 - `id`
@@ -830,43 +950,66 @@ Use Laravel notifications table plus custom notification preferences.
 - `status`
 - `paid_at`
 
-### affiliates
+### affiliate_commission_tiers
 
 - `id`
-- `uuid`
-- `user_id`
 - `name`
-- `status`
-- `approved_by`
-- `approved_at`
-
-### affiliate_links
-
-- `id`
-- `affiliate_id`
-- `code`
-- `landing_url`
+- `conversion_type`
+- `commission_type`
+- `commission_value`
+- `minimum_qualified_conversions`
 - `status`
 - `created_at`
 
-### affiliate_conversions
+### affiliate_bank_accounts
+
+- `id`
+- `affiliate_id`
+- `bank_name`
+- `account_number_encrypted`
+- `account_name`
+- `verification_reference`
+- `verified_at`
+- `status`
+- `created_at`
+
+### affiliate_payout_batches
+
+- `id`
+- `batch_reference`
+- `period_start`
+- `period_end`
+- `total_amount`
+- `status` (`draft`, `pending_approval`, `approved`, `paid`, `cancelled`)
+- `approved_by`
+- `approved_at`
+- `paid_at`
+- `created_at`
+
+### affiliate_payout_items
+
+- `id`
+- `affiliate_payout_batch_id`
+- `affiliate_id`
+- `affiliate_commission_id`
+- `amount`
+- `status`
+- `paid_at`
+- `created_at`
+
+### affiliate_fraud_flags
 
 - `id`
 - `affiliate_id`
 - `affiliate_link_id`
-- `referred_user_id`
-- `conversion_type`
-- `status`
-- `converted_at`
-
-### affiliate_commissions
-
-- `id`
-- `affiliate_id`
 - `affiliate_conversion_id`
-- `amount`
+- `flag_type`
+- `severity`
+- `description`
 - `status`
-- `paid_at`
+- `reviewed_by`
+- `reviewed_at`
+- `created_at`
 
 ### group_purchase_plans
 
@@ -993,6 +1136,10 @@ Only needed if public pages are content-managed instead of static Inertia pages.
 - Unique `receipts.receipt_number`.
 - Unique `agents.agent_code`.
 - Unique `affiliate_links.code`.
+- Unique `affiliate_attributions.user_id`.
+- Index `affiliate_clicks(affiliate_id, created_at)`.
+- Index `affiliate_conversions(affiliate_id, status, conversion_type)`.
+- Index `affiliate_commissions(affiliate_id, status)`.
 - Index `products(status, category_id, price)`.
 - Index `product_target_plans(user_id, status)`.
 - Index `orders(status, vendor_id)`.
