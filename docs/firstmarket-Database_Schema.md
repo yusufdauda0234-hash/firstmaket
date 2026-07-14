@@ -34,6 +34,10 @@ Final decision: PostgreSQL for production, unless team operations strongly favor
 
 Recommended money convention: store money as integer kobo in the database, display as Naira in the UI. This avoids decimal rounding mistakes and keeps ledger math exact.
 
+Reporting/reconciliation queries (Finance dashboards, Admin reports) should run against a dedicated `reporting` database connection, pointed at a read replica once one is provisioned, so heavy report queries never contend with live wallet/order writes on the primary. Define this connection in `config/database.php` from Sprint 1 even before a physical replica exists, so reporting code is written against the right connection from the start.
+
+Define a retention window per sensitive/short-lived table (`otp_codes`, `login_events`, `identity_verifications` provider payloads, `uploaded_documents` for rejected/expired verifications) and a scheduled job that purges or anonymizes rows past that window, excluding anything required for financial audit trail (`wallet_transactions`, `audit_logs`, `receipts` are retained, not purged). This supports the NDPA data-minimization and erasure requirements described in the Security and Compliance document.
+
 ## 3. Full Table Inventory
 
 This is the expected full schema surface from MVP through Phase 4. MVP tables should be implemented first; growth/scale tables can be added when those phases start.

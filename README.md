@@ -26,6 +26,8 @@ FirstMarket is a commerce platform for customers who want either to save gradual
 | Payments | Paystack |
 | Auth | Laravel Sanctum |
 | Testing | Pest, Vitest, Playwright |
+| Feature flags | Laravel Pennant |
+| Secrets management | AWS Secrets Manager, Vault, or hosting-provider equivalent (production) |
 
 ## Delivery Phases
 
@@ -65,6 +67,11 @@ The public website is intentionally last so marketing content can reflect the re
 - Admin access is permission-based, not hard-coded by role name.
 - Sensitive identity fields are encrypted at rest.
 - All money, plan, listing, vendor, and order state changes are audited.
+- Modules communicate through domain events or shared contracts, never by querying another module's models directly.
+- Admin, Support, Logistics, and Finance dashboards are served from an isolated subdomain with their own cookie scope, separate from the customer app.
+- 2FA is mandatory (not optional) for Admin, Finance Officer, and Super Administrator accounts.
+- Production secrets are sourced from a secrets manager, not a plain `.env` file.
+- Unfinished or phased modules ship behind feature flags (Laravel Pennant), not partial deploys.
 
 ## Documentation
 
@@ -114,9 +121,3 @@ app/
 ## Current Status
 
 This repository currently contains the planning documentation for the FirstMarket build. The Laravel application scaffold should be created after these documents are reviewed and approved.
-
-
-I also added an optional direct_checkouts table to the database schema. We can decide during development whether Pay At Once should be:
-modeled as product_target_plans.payment_mode = pay_at_once, simpler; or
-modeled separately as direct_checkouts, cleaner for normal full purchase UX.
-My recommendation: use direct checkout UX for the customer, but internally we can still reuse the same payment/order logic.

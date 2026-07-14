@@ -22,6 +22,26 @@ Recommended stack:
 | Storage | S3-compatible bucket or Cloudinary for products and documents |
 | Testing | Pest, Vitest, Playwright |
 | Monitoring | Laravel Pulse, Sentry, uptime checks |
+| Feature flags | Laravel Pennant |
+| Secrets management | AWS Secrets Manager, Vault, or hosting-provider equivalent for production |
+
+### 1.1 Cross-Module Communication
+
+The modular monolith only stays modular if modules do not reach directly into each other's tables. Modules communicate through:
+
+- **Domain events** for anything another module needs to react to: `PlanCompleted`, `OrderDelivered`, `VendorApproved`, `PaystackDepositConfirmed`, `AffiliateConversionQualified`, etc. Each module dispatches events for its own state changes; interested modules attach listeners. This is how Referrals, Rewards, and Affiliates react to Orders/Savings state without those modules knowing Referrals/Rewards/Affiliates exist.
+- **Contracts** (interfaces in `app/Shared/Contracts`) when one module needs to call another synchronously (for example, Orders needing the locked target price from Savings) — depend on the interface, not the other module's model or service class directly.
+- Never query another module's Eloquent models directly from outside that module; expose what's needed through the module's own service/action layer.
+
+Decide and document this pattern in Sprint 1, before more than one module exists, since retrofitting event-based decoupling into modules that already call each other directly is expensive.
+
+### 1.2 Feature Flags
+
+Use Laravel Pennant from Sprint 1 so Phase 2/3 modules (rewards, affiliates, automatic debit, agent network, cooperative savings) can be built and deployed dark, then enabled per environment or per cohort without a deploy. This also gives an operational kill-switch for any module if a problem is found post-launch.
+
+### 1.3 API Versioning
+
+Reserve `/api/v1` for any JSON API surface from the start, even though Phase 1 is Inertia-only. Phase 3E (native mobile apps) will consume this API; adding versioning after a mobile client already depends on unversioned routes is more disruptive than reserving the prefix now.
 
 ## 2. Delivery Phases
 
@@ -59,6 +79,11 @@ Backend:
 - Define initial roles: Customer, Vendor, Super Administrator, Administrator, Support Agent, Logistics Personnel, Finance Officer.
 - Add audit logging foundation for sensitive and operational actions.
 - Create base API/Inertia response conventions and shared exception handling.
+- Install Laravel Pennant and define the feature-flag convention for gating unfinished/dark modules.
+- Establish the domain event bus convention (event classes, listener registration per module) before a second module is built.
+- Reserve `/api/v1` route prefix for any JSON API surface.
+- Route Admin, Support, Logistics, and Finance dashboards under an isolated subdomain (`admin.firstmarket.ng`) with a separate session cookie scope from the customer app.
+- Enforce mandatory 2FA enrollment at first login for Admin, Finance Officer, and Super Administrator accounts.
 
 Frontend:
 
@@ -462,6 +487,11 @@ Backend:
 - Add idempotency protections to money and webhook flows.
 - Add database constraints and indexes discovered during testing.
 - Add production-safe logging that excludes sensitive identity values.
+- Commission and remediate findings from a third-party security review/penetration test before pilot launch.
+- Run `composer audit` and `npm audit` (or Dependabot) to a clean state, or document accepted exceptions.
+- Confirm production secrets are sourced from the secrets manager, not a committed or shared `.env`.
+- Test the data export/deletion workflow and confirm the retention/purge job runs on schedule.
+- Confirm wallet ledger sum reconciles against the actual settled fund balance (fund safeguarding check).
 
 Frontend:
 
@@ -1017,8 +1047,12 @@ tests/
 - Affiliate commission is a separate partner payout record, never a customer wallet withdrawal or savings ledger movement.
 - Affiliate links must use random non-sequential codes or signed tokens, never database IDs or personal data.
 - All sensitive identity fields must be encrypted at application level.
-- OTP requests must be rate-limited by phone number.
+- OTP requests must be rate-limited by phone number, IP, and device fingerprint.
 - AI recommendations that affect money, product approval, fraud, or account access are advisory only; human admins make final decisions.
+- Modules communicate through domain events or shared contracts, never by querying another module's models directly.
+- Admin, Support, Logistics, and Finance surfaces are served from an isolated subdomain with a separate cookie scope from the customer app.
+- Admin, Finance Officer, and Super Administrator accounts require 2FA; it is not optional.
+- Production secrets are sourced from a secrets manager, not a plain `.env` file.
 
 ## 5. External Integrations
 

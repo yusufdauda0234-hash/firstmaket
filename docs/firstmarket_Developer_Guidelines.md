@@ -43,6 +43,11 @@ Final recommendation: Laravel + Inertia + React + TypeScript + PostgreSQL + Redi
 - Affiliate links must use protected random codes or signed tokens and must not grant permission by themselves.
 - Sensitive identity values are encrypted at rest.
 - All state changes on plans, listings, orders, and vendor accounts are audited.
+- Cross-module communication happens through domain events or `Shared/Contracts` interfaces, never by one module querying another module's Eloquent models directly.
+- Feature flags (Laravel Pennant) gate any module not yet ready for general availability; ship dark, enable per environment/cohort.
+- Any JSON API surface lives under `/api/v1` from day one.
+- Admin/Support/Logistics/Finance dashboards are served from an isolated subdomain with their own session cookie scope, never the same origin/path as the customer app.
+- 2FA is mandatory for Admin, Finance Officer, and Super Administrator — enforced at first login, not optional.
 
 ## 3. Backend Structure
 
@@ -143,6 +148,8 @@ Use action classes for business workflows:
 
 Action classes should be easy to test and should own transaction boundaries when they mutate multiple tables.
 
+Action classes that other modules need to react to should dispatch a domain event after their transaction commits (for example, `RedirectPlanBalance` dispatches `PlanCompleted` when redirection completes a plan). Listeners in other modules subscribe to the event instead of the acting module calling into them directly.
+
 ## 7. Frontend Structure
 
 ```text
@@ -221,6 +228,9 @@ Frontend:
 
 Critical architecture tests:
 
+- No module queries another module's Eloquent models directly; cross-module effects happen only through dispatched events or declared contracts.
+- Admin/Support/Logistics/Finance routes are unreachable from the customer-app origin/cookie scope.
+- Admin, Finance Officer, and Super Administrator accounts cannot bypass 2FA enrollment.
 - Vendors cannot query customer data.
 - Unapproved products never appear in customer catalog.
 - Payment cannot credit wallet without valid webhook.
@@ -306,3 +316,5 @@ PR requirements:
 - Migration is reversible or explicitly documented.
 - Money/state changes include tests.
 - Security-sensitive changes receive review.
+- New dependencies pass `composer audit`/`npm audit` with no unaddressed high/critical advisories.
+- Changes to Wallet, Payments, Identity, or Admin modules require sign-off from a second reviewer, not just an automated check.

@@ -17,9 +17,9 @@ Recommended domains:
 - `firstmarket.ng` for public website
 - `app.firstmarket.ng` for customer app
 - `vendor.firstmarket.ng` or `/vendor` for vendor portal
-- `admin.firstmarket.ng` or `/admin` for admin dashboard
+- `admin.firstmarket.ng` for the Admin, Support, Logistics, and Finance dashboards
 
-For the first release, path-based routing is simpler: `/app`, `/vendor`, `/admin`.
+For the first release, path-based routing is acceptable for the public/customer/vendor split (`/app`, `/vendor`), but the admin surface must be on its own subdomain (`admin.firstmarket.ng`) with its own session cookie scope from Sprint 1 onward. Sharing origin/cookies between the highest-traffic customer app and the highest-privilege admin surface is the one shortcut not worth taking, since retrofitting subdomain isolation after launch requires a coordinated cookie/session migration.
 
 ## 2. Server Stack
 
@@ -30,12 +30,15 @@ For the first release, path-based routing is simpler: `/app`, `/vendor`, `/admin
 | Runtime | PHP-FPM |
 | App | Laravel |
 | Frontend build | Vite |
-| Database | Managed PostgreSQL preferred |
+| Database | Managed PostgreSQL preferred, with a read replica for reporting/reconciliation queries once Finance/Admin reporting load grows |
 | Cache/queue | Redis |
 | Process manager | Supervisor |
 | SSL | Cloudflare or Let's Encrypt |
 | CI/CD | GitHub Actions |
 | Monitoring | Laravel Pulse, Sentry, UptimeRobot |
+| Secrets | AWS Secrets Manager, Vault, or hosting-provider equivalent for production; `.env` only for local/staging |
+
+A managed PostgreSQL read replica (or PgBouncer with routed read queries) keeps heavy Finance reconciliation and Admin reporting queries from competing with live wallet/order writes on the primary. Plan the connection-routing convention (e.g., a `reporting` DB connection in `config/database.php`) in Sprint 1 even if the replica itself is provisioned later, so reporting code is written against the right connection from the start.
 
 ## 3. Server Directory Layout
 
@@ -97,6 +100,9 @@ Every PR should run:
 - Vitest
 - Vite production build
 - Playwright smoke tests for critical paths
+- `composer audit` for known PHP dependency vulnerabilities
+- `npm audit` (or Dependabot alerts) for known JS dependency vulnerabilities
+- Architecture test confirming no module queries another module's models directly (see Developer Guidelines)
 
 Critical smoke paths:
 
@@ -114,6 +120,8 @@ Critical smoke paths:
 ## 7. Secrets
 
 Never commit real secrets.
+
+Production secrets are stored in a secrets manager (AWS Secrets Manager, Vault, or hosting-provider equivalent) and injected at deploy/runtime, not kept in a server-side `.env` file long-term. Rotate `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET`, `AFFILIATE_TRACKING_SIGNING_KEY`, identity-provider keys, and SMS/mail keys at least annually, immediately on suspected compromise, and on staff offboarding. `APP_KEY` rotation requires a re-encryption plan for existing encrypted columns before it is rotated. Staging and local environments never share production secrets.
 
 Production secrets:
 
@@ -196,6 +204,8 @@ Monitor:
 - Vendor posting fee payment failures
 - Affiliate link tampering or high suspicious-click rate
 - Affiliate payout batch approval/payment failures
+- SMS/OTP and AI provider spend approaching configured daily/monthly budget
+- Wallet ledger sum vs. settled fund balance drift (fund safeguarding reconciliation)
 
 ## 11. Rollback
 
