@@ -1,26 +1,25 @@
 # FirstMarket Database Schema
 
 Version: 1.0  
-Database recommendation: PostgreSQL
+Database recommendation: MySQL
 
 ## 1. Database Recommendation
 
-Use PostgreSQL for FirstMarket.
+Use MySQL for FirstMarket (decision revised 2026-07-17: MySQL 8 in production, MariaDB 10.4+ for local development via XAMPP — same SQL family, both supported by Laravel's mysql/mariadb drivers).
 
-Why PostgreSQL fits this project better than MySQL:
+What matters for money integrity is fully preserved on MySQL/InnoDB:
 
-- The product is ledger-heavy: wallet deposits, plan allocations, redirections, receipts, settlements, and delivery events need strong relational consistency.
-- PostgreSQL has excellent constraints, transactional behavior, partial indexes, JSONB support, generated columns, and check constraints.
-- It is a strong fit for reporting and reconciliation queries.
-- It handles complex state-machine data cleanly, which matters for plans, product approval, order delivery, and Paystack settlement matching.
+- The product is ledger-heavy: wallet deposits, plan allocations, redirections, receipts, settlements, and delivery events need strong relational consistency — InnoDB provides real transactions, row-level locking, foreign keys, and unique constraints.
+- CHECK constraints are enforced from MySQL 8.0.16 / MariaDB 10.2, JSON columns cover the flags/metadata fields, and utf8mb4 collations give case-insensitive search without ILIKE.
+- Complex state-machine data (plans, product approval, order delivery, Paystack settlement matching) is engine-agnostic — it lives in application enums, status-event tables, and transactions, all of which this schema already uses.
 
-When MySQL is still acceptable:
+Why MySQL:
 
-- If the team is significantly more comfortable with MySQL/MariaDB.
-- If hosting already provides managed MySQL but not PostgreSQL.
-- If the first target is a very simple Laravel deployment and operational familiarity matters more than advanced database features.
+- Team familiarity and hosting/operations favor MySQL.
+- Local development runs XAMPP's MariaDB with zero extra setup.
+- Nothing in this schema depends on engine-specific features beyond standard InnoDB.
 
-Final decision: PostgreSQL for production, unless team operations strongly favor MySQL. Do not mix engines across environments.
+Final decision: MySQL family everywhere (MySQL 8 production, MariaDB locally). Do not mix database engines across environments. LIKE is case-insensitive under utf8mb4_*_ci collations; keep money in integer kobo columns.
 
 ## 2. Global Conventions
 
@@ -44,7 +43,7 @@ This is the expected full schema surface from MVP through Phase 4. MVP tables sh
 
 | Area | Tables |
 | --- | --- |
-| Core auth/RBAC | `users`, `password_reset_tokens`, `sessions`, `personal_access_tokens`, `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` |
+| Core auth/RBAC | `users`, `social_accounts`, `password_reset_tokens`, `sessions`, `personal_access_tokens`, `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` |
 | Security/audit | `login_events`, `otp_codes`, `audit_logs`, `activity_log`, `security_events` |
 | Profiles/identity | `customer_profiles`, `vendor_profiles`, `identity_verifications`, `uploaded_documents`, `addresses` |
 | Catalog | `categories`, `products`, `product_images`, `product_price_history`, `product_status_events` |
@@ -53,6 +52,7 @@ This is the expected full schema surface from MVP through Phase 4. MVP tables sh
 | Wallet/payments | `wallets`, `wallet_transactions`, `paystack_transactions`, `payment_authorizations`, `receipts`, `paystack_webhook_events`, `settlement_imports`, `settlement_reconciliation_items` |
 | Purchase/savings | `open_savings`, `product_target_plans`, `direct_checkouts`, `plan_contributions`, `plan_redirections`, `automatic_debits`, `plan_status_events` |
 | Orders/logistics | `orders`, `order_status_events`, `delivery_assignments`, `vendor_preparation_events` |
+| Vendor settlement | `category_commission_rates`, `vendor_earnings`, `vendor_bank_accounts`, `vendor_payout_batches`, `vendor_payout_items` |
 | Notifications/support | `notifications`, `notification_preferences`, `notification_deliveries`, `support_tickets`, `support_ticket_messages`, `hotline_call_logs`, `faqs` |
 | Growth | `wishlists`, `wishlist_price_alerts`, `reward_tiers`, `user_rewards`, `referrals`, `affiliates`, `affiliate_links`, `affiliate_clicks`, `affiliate_attributions`, `affiliate_conversions`, `affiliate_commissions`, `risk_flags`, `vendor_ratings`, `demand_forecasts` |
 | Scale | `agents`, `agent_deposits`, `agent_commissions`, `affiliate_commission_tiers`, `affiliate_bank_accounts`, `affiliate_payout_batches`, `affiliate_payout_items`, `affiliate_fraud_flags`, `group_purchase_plans`, `group_purchase_members`, `group_purchase_contributions`, `family_groups`, `family_group_members`, `cooperative_groups`, `cooperative_members`, `cooperative_cycles`, `cooperative_contributions` |
@@ -83,9 +83,32 @@ Key columns:
 Required constraints:
 
 - Unique `uuid`.
-- Unique `email`.
-- Unique `phone`.
+- Unique `email` where not null.
+- Unique `phone` where not null.
+- At least one of `email` or `phone` is present (check constraint) — registration accepts either identifier.
+- `password` is nullable for social-only accounts until the user sets one.
 - Check `status` in allowed user status enum.
+
+### social_accounts
+
+Linked OAuth identities (Google, Facebook) for social login.
+
+- `id`
+- `user_id`
+- `provider` (`google`, `facebook`)
+- `provider_user_id`
+- `provider_email`
+- `avatar_url`
+- `access_token` encrypted, nullable
+- `refresh_token` encrypted, nullable
+- `linked_at`
+- `created_at`
+- `updated_at`
+
+Required constraints:
+
+- Unique (`provider`, `provider_user_id`).
+- One row per provider per user: unique (`user_id`, `provider`).
 
 ### login_events
 
@@ -103,7 +126,8 @@ Required constraints:
 
 - `id`
 - `user_id` nullable for pre-registration OTP
-- `phone`
+- `channel` (`sms`, `email`)
+- `destination` (phone number or email address the code was sent to)
 - `purpose` (`registration`, `login`, `password_reset`, `identity_verification`)
 - `code_hash`
 - `expires_at`
@@ -377,7 +401,7 @@ Immutable ledger of money movements.
 - `uuid`
 - `wallet_id`
 - `user_id`
-- `type` (`deposit`, `plan_contribution`, `redirection`, `refund_to_plan_only`, `adjustment`)
+- `type` (`deposit`, `plan_contribution`, `open_savings_allocation`, `redirection`, `refund_to_plan_only`, `adjustment`)
 - `direction` (`credit`, `debit`)
 - `amount`
 - `balance_before`
@@ -526,6 +550,8 @@ Required constraints:
 
 Optional table if Pay At Once is modeled separately from Product Target Plans. If the team chooses to model Pay At Once as `product_target_plans.payment_mode = pay_at_once`, this table is not required.
 
+> Implementation note (Sprint 5): Pay At Once is modeled as `product_target_plans.payment_mode = 'pay_at_once'`, funded by one full wallet contribution, so this table was not created.
+
 - `id`
 - `uuid`
 - `user_id`
@@ -621,14 +647,23 @@ Phase 2.
 - `state`
 - `lga`
 - `status`
+- `locked_price` price paid by customer, snapshot
+- `commission_rate` per-category rate snapshot at order creation
+- `commission_amount`
+- `vendor_earning_amount` (`locked_price - commission_amount`)
+- `vendor_notified_at` when the "item sold" notification was sent
+- `prepare_due_at` vendor packing SLA deadline (default 48h after confirmation)
 - `confirmed_by`
 - `confirmed_at`
 - `delivered_at`
+- `delivery_confirmed_at` customer confirm or auto-confirm timestamp
+- `earnings_credited_at`
 
 Required constraints:
 
 - Order is created only from a Ready for Delivery plan.
 - Vendor-facing order views must not expose customer identity or delivery address unless business policy changes.
+- Commission fields are snapshots frozen at order creation; later rate changes never alter existing orders.
 
 ### order_status_events
 
@@ -654,9 +689,97 @@ Required constraints:
 - `id`
 - `order_id`
 - `vendor_id`
-- `status`
+- `status` (`notified`, `stock_confirmed`, `ready_for_pickup`, `rejected`, `sla_breached`)
+- `note` rejection reason when status is `rejected`
+- `created_at`
+
+### category_commission_rates
+
+Admin-managed commission percentage per category (e.g. 5–15%).
+
+- `id`
+- `category_id`
+- `rate_percent` `DECIMAL(5,2)`
+- `effective_from`
+- `set_by`
+- `created_at`
+
+Required constraints:
+
+- Rate history is append-only; the active rate is the latest `effective_from` in the past.
+
+### vendor_earnings
+
+Immutable vendor earnings ledger — fully separate from customer wallets and savings.
+
+- `id`
+- `uuid`
+- `vendor_id`
+- `order_id`
+- `type` (`earning`, `adjustment`, `payout`)
+- `amount` positive for earnings, negative for payouts/adjustments
+- `balance_before`
+- `balance_after`
+- `payout_item_id` nullable, set for `payout` rows
 - `note`
 - `created_at`
+
+Required constraints:
+
+- Unique (`order_id`, `type`) for `earning` rows — earnings credit exactly once per delivered order.
+- Rows are never updated or deleted; corrections are new `adjustment` rows.
+- Earning rows are created only after `orders.delivery_confirmed_at` is set.
+
+### vendor_bank_accounts
+
+- `id`
+- `vendor_id`
+- `bank_code`
+- `account_number` encrypted
+- `account_name` resolved via Paystack
+- `paystack_recipient_code`
+- `verified_at`
+- `is_active`
+- `created_at`
+- `updated_at`
+
+Required constraints:
+
+- Payouts only to accounts with `verified_at` set.
+- One active account per vendor.
+
+### vendor_payout_batches
+
+Weekly batch of cleared vendor earnings, reviewed by Finance.
+
+- `id`
+- `uuid`
+- `period_start`
+- `period_end`
+- `status` (`draft`, `pending_approval`, `approved`, `processing`, `completed`, `failed`)
+- `total_amount`
+- `generated_by` nullable, null when scheduler-generated
+- `approved_by`
+- `approved_at`
+- `created_at`
+
+### vendor_payout_items
+
+- `id`
+- `batch_id`
+- `vendor_id`
+- `bank_account_id`
+- `amount`
+- `status` (`pending`, `approved`, `rejected`, `paid`, `failed`)
+- `paystack_transfer_reference`
+- `failure_reason`
+- `paid_at`
+- `created_at`
+
+Required constraints:
+
+- Item amount must equal the vendor's cleared earnings balance at batch generation.
+- A failed transfer keeps the ledger intact; retry creates a new transfer attempt against the same item, never a duplicate ledger debit.
 
 ## 10. Support And Notifications
 
@@ -1160,5 +1283,5 @@ Only needed if public pages are content-managed instead of static Inertia pages.
 - Start migrations in Phase 1 only for MVP tables.
 - Keep Phase 2/3/4 migrations in later branches so the first build stays focused.
 - Use `Schema::hasColumn()` guards only for late hotfix migrations, not normal create-table migrations.
-- Add database-level constraints for ledger uniqueness, references, and status safety wherever PostgreSQL supports it.
+- Add database-level constraints for ledger uniqueness, references, and status safety wherever MySQL/InnoDB supports it (unique keys, foreign keys; CHECK constraints are enforced from MySQL 8.0.16 / MariaDB 10.2).
 - Never expose integer IDs in URLs; use `uuid` or route model binding by UUID.

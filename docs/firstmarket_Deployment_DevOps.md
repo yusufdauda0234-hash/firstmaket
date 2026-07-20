@@ -30,15 +30,15 @@ For the first release, path-based routing is acceptable for the public/customer/
 | Runtime | PHP-FPM |
 | App | Laravel |
 | Frontend build | Vite |
-| Database | Managed PostgreSQL preferred, with a read replica for reporting/reconciliation queries once Finance/Admin reporting load grows |
-| Cache/queue | Redis |
+| Database | Managed MySQL 8 preferred, with a read replica for reporting/reconciliation queries once Finance/Admin reporting load grows |
+| Cache/queue | Laravel database driver (jobs/cache/sessions tables); Redis only if scale later demands it |
 | Process manager | Supervisor |
 | SSL | Cloudflare or Let's Encrypt |
 | CI/CD | GitHub Actions |
 | Monitoring | Laravel Pulse, Sentry, UptimeRobot |
 | Secrets | AWS Secrets Manager, Vault, or hosting-provider equivalent for production; `.env` only for local/staging |
 
-A managed PostgreSQL read replica (or PgBouncer with routed read queries) keeps heavy Finance reconciliation and Admin reporting queries from competing with live wallet/order writes on the primary. Plan the connection-routing convention (e.g., a `reporting` DB connection in `config/database.php`) in Sprint 1 even if the replica itself is provisioned later, so reporting code is written against the right connection from the start.
+A managed MySQL read replica (or ProxySQL with routed read queries) keeps heavy Finance reconciliation and Admin reporting queries from competing with live wallet/order writes on the primary. Plan the connection-routing convention (e.g., a `reporting` DB connection in `config/database.php`) in Sprint 1 even if the replica itself is provisioned later, so reporting code is written against the right connection from the start.
 
 ## 3. Server Directory Layout
 
@@ -68,8 +68,8 @@ A managed PostgreSQL read replica (or PgBouncer with routed read queries) keeps 
 - Nginx site config per environment
 - Supervisor queue worker per environment
 - Laravel scheduler through cron
-- Redis for cache, sessions, queues, and rate limits
-- PostgreSQL backup jobs
+- Database-driver cache, sessions, queues, and rate limits (no Redis at MVP)
+- MySQL backup jobs
 - Object storage for uploaded product images and identity documents
 
 ## 5. Deployment Flow
@@ -160,7 +160,7 @@ Production secrets:
 
 | Asset | Frequency | Retention |
 | --- | --- | --- |
-| PostgreSQL database | Daily | 30 days |
+| MySQL database | Daily | 30 days |
 | Pre-deploy database backup | Every production deploy | Last 10 |
 | Uploaded files | Daily | 30 days |
 | Weekly archive | Weekly | 90 days |
@@ -181,7 +181,6 @@ Implement `/api/health`:
   "environment": "production",
   "checks": {
     "database": "ok",
-    "redis": "ok",
     "queue": "ok",
     "storage": "ok"
   }

@@ -5,6 +5,11 @@ namespace App\Modules\Auth\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * Final registration step (Sprint 2 Addendum): the email-or-phone identifier
+ * was already proven by OTP (AuthFlowController::verifyCode stored it in the
+ * session), so the browser only submits the remaining profile fields.
+ */
 class RegisterUserRequest extends FormRequest
 {
     public function authorize(): bool
@@ -16,8 +21,6 @@ class RegisterUserRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }

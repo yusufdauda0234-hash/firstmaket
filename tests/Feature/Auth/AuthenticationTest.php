@@ -15,7 +15,8 @@ it('lets a customer log in with the correct credentials', function () {
     ]);
 
     $this->assertAuthenticatedAs($user);
-    $response->assertRedirect(route('dashboard'));
+    // Customers land back on the marketplace (home is their dashboard).
+    $response->assertRedirect(route('home'));
 });
 
 it('rejects an incorrect password', function () {

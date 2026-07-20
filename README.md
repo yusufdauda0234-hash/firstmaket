@@ -21,8 +21,8 @@ FirstMarket is a commerce platform for customers who want either to save gradual
 | Backend | Laravel 12/13 |
 | Frontend | Inertia.js + React + TypeScript |
 | Styling | Tailwind CSS |
-| Database | PostgreSQL |
-| Queue/cache | Redis |
+| Database | MySQL 8 (MariaDB 10.4+ locally via XAMPP) |
+| Queue/cache | Laravel database driver (no Redis needed at MVP) |
 | Payments | Paystack |
 | Auth | Laravel Sanctum |
 | Testing | Pest, Vitest, Playwright |
@@ -78,7 +78,7 @@ The public website is intentionally last so marketing content can reflect the re
 | Document | Purpose |
 | --- | --- |
 | [Implementation Plan](docs/firstmarket_Implementation_Plan.md) | Build phases, architecture, module layout, and success metrics |
-| [Database Schema](docs/firstmarket-Database_Schema.md) | Recommended PostgreSQL schema and table conventions |
+| [Database Schema](docs/firstmarket-Database_Schema.md) | Recommended MySQL schema and table conventions |
 | [Deployment and DevOps](docs/firstmarket_Deployment_DevOps.md) | Environments, deployment flow, CI, backups, monitoring |
 | [Developer Guidelines](docs/firstmarket_Developer_Guidelines.md) | Stack decisions, coding rules, folder conventions, testing standards |
 | [PRD Laravel](docs/firstmarket_PRD_Laravel.md) | Product requirements and module definitions |
@@ -120,19 +120,80 @@ app/
 
 ## Current Status
 
-Sprint 1 foundation is scaffolded: Laravel 12 + Inertia + React + TypeScript + Tailwind, the `app/Modules`/`app/Shared` architecture, RBAC (Spatie Permission) with the seven core roles, audit logging, login-event tracking, feature flags (Pennant), the `/api/v1` reservation, and the admin-subdomain isolation with mandatory 2FA for Administrator/Super Administrator/Finance Officer. Everything past Sprint 1 (identity/OTP, catalog, wallet, savings, orders, etc.) is not built yet.
+Sprint 1 foundation is complete: Laravel 12 + Inertia + React + TypeScript + Tailwind, the `app/Modules`/`app/Shared` architecture, RBAC (Spatie Permission) with the seven core roles, audit logging, login-event tracking, core settings table, feature flags (Pennant), the `/api/v1` reservation, and the admin-subdomain isolation with mandatory 2FA for Administrator/Super Administrator/Finance Officer.
 
-The dependency installers (`composer`, `npm`) need outbound network access this environment doesn't have, so `vendor/` and `node_modules/` were not generated here â€” run the steps below on a machine with internet access.
+Sprint 2 (identity and account onboarding) is complete: customer registration with phone OTP (hashed codes, expiry, retry limits, SMS provider abstraction), email verification with new-device login alerts, vendor registration with private CAC upload, the admin vendor approval/rejection queue, BVN (Paystack) and NIN (Youverify) verification interfaces with the encrypted-identity profile tables, and immediate session revocation on suspension/ban.
+
+Sprint 0 (public home page, added after the marketplace survey) is complete: marketplace-style landing page at `/` owned by the Catalog module â€” top utility bar, search-first header, six-category navigation, hero carousel with promo tiles, category grid, how-it-works and trust strips, SEO footer, and the brand palette in Tailwind (`docs/firstmarket_Brand_Assets.md`).
+
+The Sprint 2 Addendum is complete: registration/login with **email or phone** (OTP through the matching channel â€” SMS or email), an AliExpress-style combined sign-in/register **modal** on the public pages plus matching split-layout `/login` and `/register` pages, passwordless OTP login, code-verified password reset, and **Continue with Google/Facebook** via Socialite (`social_accounts` table; set `GOOGLE_*`/`FACEBOOK_*` env keys). Staff accounts are invisible to the public auth flow.
+
+Sprint 3 (catalog and vendor listing) is complete: categories (seeded via `CategorySeeder`), vendor product CRUD with kobo pricing and image upload, the product state machine (Draft â†’ Pending Approval â†’ Approved/Rejected â†’ Delisted) with status events, price history, posting-fee records and AI-review table structure, the admin approval queue on the admin subdomain (`products.approve` permission), the public catalog with search/category/price filters and sorting, public product detail pages, and home page product sections fed from the approved catalog (cached).
+
+The Sprint 1â€“3 closeout (2026-07-18) filled every remaining checklist gap: vendor **suspend/reinstate** admin actions (`vendors.suspend`) where suspension delists all approved products via the `VendorSuspended` domain event; the admin **vendor fee settings** page (`vendor_fees.manage`, `/settings/fees` on the admin subdomain) managing Free/Paid posting mode and per-tier fees; **posting tier selection** on the vendor listing form (fee recorded as `pending` â€” wallet payment lands with Sprint 4); the **AI listing review + posting fee panels** on the admin product review page (advisory placeholders until Sprint 8); and the customer **account settings** page (`/settings/account`) for adding/verifying the secondary email-or-phone identifier by OTP, setting/changing passwords (including social-only accounts), and unlinking social logins without self-lockout. Sprint 4 (Wallet and Paystack) is next.
+
+The **Vendor Center** (2026-07-18) moved vendor tooling onto its own isolated subdomain (`VENDOR_DOMAIN`, default `vendors.firstmarket.localhost`), mirroring the admin portal: scoped `_vendor` session cookie, vendor-only sign-in at `/login` on that origin (LoginRequest portal guard + EnsureCorrectPortal both ways), customer routes 404 there, and `/dashboard` + `/products` management served only on the portal. The main-site `/dashboard` redirects vendor accounts across. Vendor registration stays on the main site (`/vendor/register`) because the phone/email verification flows live there.
+
+Sprint 4 (Wallet and Paystack) is complete: a **deposit-only wallet** with an immutable, row-locked ledger (`wallets`, `wallet_transactions` with balance-before/after and a unique `reference`), Paystack deposit initialization for card/bank-transfer/USSD, a **signature-verified, idempotent webhook** as the *only* path that credits a wallet, receipts issued in the same transaction as the credit, transaction history with filters, and a Finance Officer **settlement reconciliation** dashboard (`wallet.reconcile`) that flags matched / amount-mismatch / missing lines. A verified phone is required before any funding. There is no withdrawal route, controller, or column anywhere. Customer wallet pages live at `/wallet`, `/wallet/add-money`, `/wallet/transactions`, and receipts; the webhook is `POST /webhooks/paystack` (CSRF-exempt). Reusable card authorizations are captured (not charged) for Phase 2 automatic debit.
+
+Sprint 5 (Purchase and Savings Engine) is complete: **one Open Savings pot per customer** funded from the wallet by a ledger debit (`open_savings_allocation`), **Product Target Plans** that lock the product price at creation (vendor price edits never touch a running plan) with daily/weekly/monthly cadences, contributions from the wallet or Open Savings, progress + remaining-balance recalculation on every contribution, and expected-completion projection from the average of the last three contributions. **Pay At Once** is a `pay_at_once` plan paid in one full wallet contribution that reaches **Ready for Delivery** immediately (fires the `PlanReadyForDelivery` domain event Sprint 6 orders will consume). **Redirection** moves the full Open Savings balance into a plan (surplus stays in the pot) or switches an active plan to a different product carrying its full balance at a freshly locked price â€” always recorded in `plan_redirections`, audit-logged, blocked once Ready for Delivery, and never refundable as cash. Plans can be paused/resumed without unlocking money. Schedule plans require verified BVN/NIN; Pay At Once behaves like a normal purchase. Customer pages: `/savings` dashboard, plan tracker at `/savings/plans/{uuid}`, plan setup at `/product/{slug}/start-plan`, and checkout at `/checkout/{slug}`. **Sprint 6 (Orders, Logistics, and Vendor Settlement) is next.**
+
+Sprint 6 (Orders, Logistics, and Vendor Settlement) is complete â€” the full Jumia-style fulfillment chain: a fully funded plan + delivery address (captured only after 100% funding) creates an **order** with the price and per-category **commission snapshotted** at creation (`OrderPaid` fires; the vendor gets an "item sold" email with product and order number, **never customer identity**). Admin confirmation starts the vendor **packing SLA** (48h default, `orders.prepaREDACTED_RESEND_KEY`); an hourly scheduler flags breaches. Vendors confirm stock / mark **Ready for Pickup** / reject with a reason from the Vendor Center; a rejected order is resolved by admin as **refund-to-Open-Savings** (never cash). Admin assigns a Logistics Personnel user who walks the order Packed â†’ Shipped â†’ Out for Delivery â†’ Delivered, with the customer emailed on **every** transition and a live tracking timeline at `/orders/{uuid}`. The customer confirms receipt (or `orders:auto-confirm` does after `orders.auto_confirm_days`, default 3), which fires `OrderDeliveryConfirmed` â€” the Vendor module credits the **append-only vendor earnings ledger exactly once per order** (unique order+type index). Vendors register a payout bank account (name resolved + transfer recipient via Paystack, number encrypted); Finance generates weekly **payout batches** of cleared balances, approves them (`vendor_payouts.approve`), and records transfers â€” the negative ledger row is written only on *paid*, so failed transfers never lose money, and payouts never touch customer wallets (tested). New admin pages: Orders queue + detail, Deliveries (logistics), Vendor payouts, Commission settings (`commissions.manage`, append-only rate history). **Sprint 7 (Support and Notifications) is next.**
+
+Sprint 7 (Support and Notifications) is complete. **Notification preferences**: a per-user, per-category (orders, savings, security, support, promotions) email/SMS/in-app toggle matrix â€” `NotificationPreferenceService` resolves the live Laravel channel list per send, SMS only fires with a verified phone, and the **security category's email is locked on** server-side no matter what the customer requests. Every customer-facing notification now extends `PreferenceAwareNotification` (adds an in-app inbox payload + optional SMS text) and a `NotificationSent`/`NotificationFailed` listener logs every attempted send to `notification_deliveries` for failure monitoring. Customers get an **inbox** at `/notifications` (unread badge, mark read/mark all read) alongside the channel-preference matrix.
+
+**Support**: customers reach help through a **Support Center** (`/support`) with FAQ accordion, a WhatsApp deep link, a hotline/callback request routed by **IVR reason** (payment/delivery/general â€” payment issues auto-escalate to high priority), and complaint **tickets** with a live reply thread; agent replies notify the customer through their own preference channels. A public **FAQ page** (`/faq`, no login) is linked from the storefront header and footer. Support Agents get a queue (ticket + hotline lists, status filters) on the admin subdomain plus a **read-only customer lookup** â€” order/plan/wallet context only, **never BVN/NIN values or card data** (tested by asserting the raw values never appear in the response payload). New permission: `support.manage` (Support Agent + Administrator). **Sprint 8 (AI, Reporting, and Operational Controls) is next.**
+
+### Paystack Webhook Setup
+
+The wallet is credited only by a verified webhook, so this must be configured for deposits to reflect:
+
+1. Set `PAYSTACK_PUBLIC_KEY` and `PAYSTACK_SECRET_KEY` in `.env` (from the Paystack dashboard â†’ Settings â†’ API Keys & Webhooks). The webhook signature is verified with the **secret key** (HMAC SHA512 over the raw body).
+2. In the Paystack dashboard, set the **Webhook URL** to `https://<your-domain>/webhooks/paystack`.
+3. Local testing: expose your app with a tunnel (`ngrok http 8000`, or Paystack's test webhook sender) and point the dashboard webhook URL at the tunnel. The endpoint is CSRF-exempt and requires no auth â€” it authenticates by signature.
+4. Monitor `paystack_webhook_events` for `signatuREDACTED_RESEND_KEY = false` or `processing_status = failed` rows to catch misconfiguration or replay attempts.
+
+### Social Login Setup (Google / Facebook)
+
+The "Continue with Google/Facebook" buttons need OAuth credentials; until the env keys are set, the buttons show a friendly "not available yet" message instead of redirecting.
+
+**Google** (free, ~5 minutes):
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com), create a project (e.g. "FirstMarket").
+2. **APIs & Services â†’ OAuth consent screen**: choose External, fill in the app name and your email, add yourself as a test user while in testing mode.
+3. **APIs & Services â†’ Credentials â†’ Create Credentials â†’ OAuth client ID**: type **Web application**.
+   - Authorized JavaScript origins: `http://firstmarket.localhost:8000`
+   - Authorized redirect URIs: `http://firstmarket.localhost:8000/auth/google/callback`
+4. Copy the Client ID and Client Secret into `.env` as `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, then run `php artisan config:clear`.
+
+**Facebook**: create an app at [developers.facebook.com](https://developers.facebook.com) (type Consumer, add the "Facebook Login" product), set the Valid OAuth Redirect URI to `http://firstmarket.localhost:8000/auth/facebook/callback`, and copy the App ID/App Secret into `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET`.
+
+For production, add the real domain equivalents (e.g. `https://firstmarket.ng/auth/google/callback`) to the same credentials and update the `*_REDIRECT_URI` env values.
+
+### Identity/SMS Provider Sandbox Setup
+
+All external providers are behind swappable contracts (`App\Shared\Contracts`) and disabled-by-default env placeholders, so local development needs no accounts:
+
+- **SMS** â€” `SMS_PROVIDER_DRIVER=log` (default) writes SMS to `storage/logs/laravel.log`; the OTP code appears there. For real sends, create a [Termii](https://termii.com) account, set `SMS_PROVIDER_DRIVER=termii`, `SMS_PROVIDER_KEY`, and a registered `SMS_PROVIDER_SENDER_ID`.
+- **BVN** â€” uses Paystack Identity Verification with your `PAYSTACK_SECRET_KEY`. Test-mode keys (from the [Paystack dashboard](https://dashboard.paystack.com)) accept the documented test BVNs without touching real records.
+- **NIN** â€” create a [Youverify sandbox](https://doc.youverify.co) workspace, set `NIN_PROVIDER_KEY` and `NIN_PROVIDER_BASE_URL` to the sandbox URL; their docs list sandbox NINs that return `found`/`not_found`.
+- In feature tests, bind fakes for `SmsSenderContract`, `BvnVerifierContract`, or `NinVerifierContract` instead of hitting any provider (see `tests/Feature/Identity`).
 
 ### Local Setup
 
-1. Install PHP 8.2+, Composer, Node 20+, and PostgreSQL. Redis is required too (cache/session/queue default to it); install it locally or point `REDIS_*`/`SESSION_DRIVER`/`CACHE_STORE`/`QUEUE_CONNECTION` at `sync`/`file`/`array` for a quick start without it.
+All commands below are run from the project root folder (the folder containing `artisan`, e.g. `C:\Users\<you>\Desktop\FirstMarket`). Open a terminal and move there first:
+
+```
+cd C:\Users\<you>\Desktop\FirstMarket
+```
+
+1. Install PHP 8.2+, Composer, Node 20+, and MySQL/MariaDB (XAMPP works â€” start its MySQL service). No Redis needed: sessions, cache, and queues use the database driver. Create the `firstmarket` and `firstmarket_testing` databases (utf8mb4).
 2. Add two local hostnames pointing at `127.0.0.1` (e.g. in `/etc/hosts` or Windows' `C:\Windows\System32\drivers\etc\hosts`), matching the admin-subdomain isolation rule:
    ```
    127.0.0.1 firstmarket.localhost
    127.0.0.1 admin.firstmarket.localhost
    ```
-3. Install dependencies:
+3. Install dependencies (in the project root):
    ```
    composer install
    npm install
@@ -142,23 +203,98 @@ The dependency installers (`composer`, `npm`) need outbound network access this 
    cp .env.example .env
    php artisan key:generate
    ```
+   (On Windows PowerShell use `copy .env.example .env` instead of `cp`.)
 5. Create the database, then set `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD` in `.env` (used once by the seeder to create the first Super Administrator):
    ```
    createdb firstmarket
    php artisan migrate --seed
    ```
-6. Run the app:
+6. Run the app â€” this needs **two terminals**, both in the project root:
+
+   Terminal 1 (Laravel backend):
    ```
    php artisan serve --host=firstmarket.localhost --port=8000
+   ```
+   Terminal 2 (Vite frontend dev server):
+   ```
    npm run dev
    ```
-   Customer/vendor app: `http://firstmarket.localhost:8000`. Admin/Support/Logistics/Finance: `http://admin.firstmarket.localhost:8000` (log in with the `SUPER_ADMIN_*` credentials, then complete the mandatory 2FA setup screen).
-7. Run checks before committing:
+   Keep both running, then open the browser: customer/vendor app at `http://firstmarket.localhost:8000`, Admin/Support/Logistics/Finance at `http://admin.firstmarket.localhost:8000` (log in with the `SUPER_ADMIN_*` credentials, then complete the mandatory 2FA setup screen).
+7. Run checks before committing (project root):
    ```
    vendor/bin/pint
-   vendor/bin/phpstan analyse
+   vendor/bin/phpstan analyse --memory-limit=512M
    vendor/bin/pest
    npm run typecheck
    ```
 
 For automated testing, create a separate `firstmarket_testing` database (`createdb firstmarket_testing`) â€” `phpunit.xml` points Pest at it by default.
+
+
+google=REDACTED_RESEND_KEY
+
+
+test_PfpP2yHxCf1jnwDfuFalf83WF-krlFhe0lA8OVaBxHg
+
+https://app.provn.ng/workspace/organizations/01KXYHH24KECQ4A9QC6T2JAJFQ
+
+firstmarket
+Organization Details
+
+Details
+Members
+Config
+KYC
+Organization Information
+Name
+
+firstmarket
+
+Slug
+
+firstmarket
+
+Created At
+
+Jul 20, 2026, 12:16:27 AM
+
+Last Modified
+
+Jul 20, 2026, 12:16:27 AM
+
+API Keys
+Manage your organization API keys for test and live environments
+Switch between test and live API keys
+
+Test
+
+Live
+TEST
+Active
+Test key is ready to use
+
+View Key
+Regenerate Test Key
+Required alongside your API key for verification endpoints
+
+01KXYHH24KECQ4A9QC6T2JAJFQ
+
+
+
+firstmarket
+Organization Details
+
+Details
+Members
+Config
+KYC
+Feature Configuration
+Enable or disable specific features for this organization. These changes will affect all members of this organization immediately.
+
+Allow this organization to perform NIN verifications.
+
+Allow this organization to perform BVN verifications.
+
+Allow this organization to perform Phone verifications.
+
+

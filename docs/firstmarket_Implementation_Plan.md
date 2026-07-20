@@ -15,8 +15,8 @@ Recommended stack:
 | Backend | Laravel 12/13, PHP 8.4+ |
 | Frontend | Inertia.js + React + TypeScript |
 | Styling | Tailwind CSS + shadcn-style reusable components |
-| Database | PostgreSQL for production |
-| Queue/cache | Redis |
+| Database | MySQL 8 for production (MariaDB 10.4+ locally, e.g. XAMPP); utf8mb4 throughout |
+| Queue/cache | Laravel `database` driver for cache, sessions, queues, and rate limits — Redis is deliberately not required at MVP scale and can be introduced later as a drop-in driver swap if load demands it |
 | Auth | Laravel Sanctum, session auth for web, token auth ready for mobile |
 | Payments | Paystack webhooks as source of truth |
 | Storage | S3-compatible bucket or Cloudinary for products and documents |
@@ -49,12 +49,13 @@ Reserve `/api/v1` for any JSON API surface from the start, even though Phase 1 i
 
 | Order | Stage | What Gets Completed |
 | --- | --- | --- |
+| 0 | Public home page | Marketplace-style public home page shell (header, search, categories, hero, product sections, footer), brand assets |
 | 1 | Foundation | Laravel/Inertia setup, modules, RBAC, audit logging, database baseline |
 | 2 | Onboarding | Customer/vendor registration, OTP, email verification, BVN/NIN provider hooks, vendor approval |
 | 3 | Marketplace catalog | Categories, vendor products, product approval, vendor pricing, posting fees |
 | 4 | Wallet and payments | Paystack initialization, webhook-only wallet crediting, receipts, transaction history, finance reconciliation |
 | 5 | Purchase and savings | Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target price locking, tracker, redirection |
-| 6 | Orders and delivery | Ready-for-delivery order creation, delivery address, admin confirmation, vendor preparation, logistics tracking |
+| 6 | Orders and delivery | Ready-for-delivery order creation, delivery address, admin confirmation, vendor sold-notification and preparation, logistics tracking, vendor earnings and payouts |
 | 7 | Support and communication | Notifications, support tickets, hotline logs, IVR routing, support-agent lookup |
 | 8 | AI and operations | Listing Review Assistant, reports, vendor/user suspension, operational controls |
 | 9 | MVP launch | Security hardening, no-withdrawal tests, ledger tests, E2E tests, pilot vendor launch |
@@ -65,6 +66,52 @@ Reserve `/api/v1` for any JSON API surface from the start, even though Phase 1 i
 ### Phase 1: MVP Transaction Platform
 
 Goal: Web-based marketplace with customer savings, full Pay At Once purchase, vendor listing, admin approval, Paystack wallet funding, and delivery operations.
+
+#### Sprint 0: Public Home Page and Brand Shell
+
+Scope: build the public-facing home page first, following the layout patterns shared by the major marketplaces surveyed (AliExpress, Amazon, eBay, Etsy, Walmart Marketplace, Temu, Rakuten, Mercado Libre, Shopee, Lazada, Jumia, Konga, Takealot, Kilimall, Bob Shop, Newegg, Bonanza, Wish, Cdiscount, OnBuy). The home page is the storefront and first impression; every surveyed marketplace opens with a search-first, category-driven landing page rather than a marketing brochure. Phase 4 later expands this into the full public website (About, How It Works, legal pages, SEO polish).
+
+Note: Sprints 1 and 2 were built before this sprint was added. Sprint 0 is executed now, before Sprint 3, and its product sections go live progressively as the catalog (Sprint 3) fills with approved products. Until then, sections render from seeded demo/approved data or hide when empty.
+
+Common home page anatomy found in the survey (adopt this structure):
+
+1. **Top utility bar**: delivery location/language, "Sell on FirstMarket" vendor CTA, Help/Support link, app-download placeholder.
+2. **Main header**: logo (left), prominent full-width search bar with category scope (center), account and cart icons (right). Search is the single most dominant element on every surveyed site.
+3. **Category navigation**: sidebar category menu (Jumia/AliExpress style) or horizontal mega-menu, listing the six launch categories: Electronics, Home Appliances, Solar Equipment, Furniture, Fashion, Business Equipment.
+4. **Hero area**: rotating promotional carousel beside the category menu, plus 1–2 static promo tiles (wallet funding, savings plans).
+5. **Flash/featured strip**: horizontally scrolling product row ("Featured", later "Flash Sales" with countdown) — Featured posting-fee tier products surface here.
+6. **Category grid blocks**: image tiles per category linking into the catalog.
+7. **Product feed**: paginated/infinite "For You"/"Top Selling" grid of approved products.
+8. **How-it-works strip** (FirstMarket-specific): three cards — Pay At Once, Save Small Small (Product Target Plans), FirstMarket Delivers — since goal-based savings is the differentiator none of the surveyed sites have.
+9. **Trust strip**: secure Paystack payments, verified vendors, FirstMarket-controlled delivery, support hotline.
+10. **SEO footer**: category links, help/FAQ, About, Become a Vendor, Terms, Privacy, contact channels, social links, payment method logos.
+
+Backend:
+
+- Public route group with no authentication (`/` and public catalog preview endpoints).
+- Home page content endpoint(s) serving approved products only: featured, newest, per-category previews.
+- Category listing endpoint for the navigation menu.
+- Settings-driven hero/promo slides (admin-manageable later; static config acceptable for Sprint 0).
+- Cache the home page data (database cache driver) since it is the highest-traffic anonymous page.
+
+Frontend:
+
+- `Pages/Public/Home.tsx` with the ten sections above, responsive from 360 px up.
+- Public layout (header, category nav, footer) reusable by later public pages (product detail preview, Phase 4 pages).
+- Search bar routing to the catalog search page (works fully once Sprint 3 lands).
+- Skeleton/empty states for sections whose data source is not live yet.
+- Brand assets wired in: logo variants (see `docs/firstmarket_Brand_Assets.md`), favicon, brand colors in Tailwind config.
+
+QA and security:
+
+- Public home page requires no login; authenticated app pages still require login.
+- Home page never exposes unapproved products or vendor/customer personal data.
+- Lighthouse pass for performance and SEO basics (meta tags, semantic landmarks).
+
+Exit criteria:
+
+- Visitors land on a marketplace-style home page with search, categories, and product sections.
+- Layout matches the surveyed marketplace anatomy and reuses the shared public layout.
 
 #### Sprint 1: Project Foundation
 
@@ -111,7 +158,7 @@ DevOps and docs:
 - Add `.env.example` placeholders.
 - Add local setup instructions.
 - Add CI skeleton for backend tests, frontend type checks, and build.
-- Decide local PostgreSQL and Redis setup path.
+- Decide local MySQL/MariaDB setup path (queues/cache/sessions use the database driver; no Redis).
 
 Exit criteria:
 
@@ -170,6 +217,35 @@ Exit criteria:
 - Customers and vendors can register.
 - Vendors cannot list products until approved.
 - Identity verification events are logged and reviewable.
+
+#### Sprint 2 Addendum: Registration and Login Options (post-survey)
+
+Scope: bring registration/login in line with the surveyed marketplaces (Jumia, Temu, Shopee, AliExpress all offer email-or-phone signup plus social login). Sprint 2 shipped email+password registration with phone OTP; this addendum widens the entry paths. Can be scheduled alongside or right after Sprint 3.
+
+Backend:
+
+- Allow registration with **email or phone number** as the primary identifier — exactly one is required at signup; the other can be added later from profile settings.
+- Verification OTP goes through the channel that matches the identifier: email signup → 6-digit code by email; phone signup → 6-digit code by SMS. Reuse the existing OTP service with a `channel` field (`sms`, `email`).
+- Add **passwordless OTP login** option: enter email/phone, receive one-time code, log in — alongside the existing password login, with the same rate limits as registration OTP.
+- Add **social login** with Google and Facebook via Laravel Socialite: create-or-link account by verified provider email, store provider tokens in a `social_accounts` table, never create a duplicate account when the email already exists (link instead, after the user authenticates or confirms via email OTP).
+- Social-only accounts have a nullable password; prompt them to set one (or keep social-only) in settings.
+- Password reset works through both channels: email reset link, or phone OTP + new password form.
+- Phone verification remains mandatory before any money movement (wallet funding), regardless of signup method, since SMS OTP secures transactions.
+
+Frontend:
+
+- Combined register form with an email/phone toggle (single "Email or phone number" input that detects the type is acceptable).
+- "Continue with Google" and "Continue with Facebook" buttons on both login and register screens.
+- OTP entry screen shared by SMS and email flows, showing the masked destination.
+- Password reset flow with channel choice.
+- Account settings: linked social accounts, add/verify secondary identifier, set password for social-only accounts.
+
+QA and security:
+
+- Test OTP rate limits per identifier, IP, and device for both channels.
+- Test social login cannot take over an existing account without ownership proof.
+- Test unverified-phone accounts are blocked from wallet funding.
+- Test a user cannot register twice with the same email/phone through different paths.
 
 #### Sprint 3: Catalog and Vendor Listing
 
@@ -334,52 +410,82 @@ Exit criteria:
 - Customers can pay fully at once, save openly, or save gradually toward products.
 - Plan progress and readiness are accurate and auditable.
 
-#### Sprint 6: Orders and Logistics
+#### Sprint 6: Orders, Logistics, and Vendor Settlement
 
-Scope: conversion from fully funded plan to order, admin confirmation, vendor preparation, FirstMarket-controlled delivery, and customer notifications.
+Scope: conversion from fully funded plan to order, vendor sold-notification, vendor preparation with a packing SLA, FirstMarket-controlled pickup and delivery, customer notifications, and vendor earnings/payout so the fulfillment chain is complete end to end.
+
+The complete fulfillment chain (modeled on Jumia's dropship flow, where the marketplace controls delivery):
+
+1. **Paid** — plan reaches 100% (or Pay At Once webhook confirms). Order is created; `OrderPaid` event fires.
+2. **Vendor notified** — vendor instantly receives an "item sold" notification (dashboard + email/SMS) with product, quantity, and order number — never customer identity or address.
+3. **Admin confirmation** — admin confirms the order (checks payment/ledger match) and moves it to Processing.
+4. **Vendor prepares** — vendor confirms stock and packs within the preparation SLA (48 hours, configurable). Vendor marks the order **Ready for Pickup**. If the vendor cannot fulfil (out of stock), the vendor rejects with a reason and admin triggers the resolution path (redirect plan to another product or admin-managed refund-to-savings — never cash out).
+5. **Handover to logistics** — FirstMarket logistics picks up from the vendor, or the vendor drops off at a FirstMarket hub. Logistics scans/accepts the package: status Packed → Shipped.
+6. **Delivery** — logistics is assigned, status moves Out for Delivery → Delivered. Customer is notified at every step.
+7. **Delivery confirmation window** — customer confirms receipt, or the order auto-confirms after N days (default 3) without a complaint/dispute.
+8. **Vendor earnings credited** — on confirmed delivery, commission (per-category percentage set by admin) is deducted from the locked product price and the remainder is credited to the vendor's **earnings ledger** (separate from customer wallets).
+9. **Vendor payout** — Finance runs a periodic (weekly) payout batch of cleared earnings to the vendor's verified bank account; payout records are auditable and reversible entries are ledger-based, never edits.
 
 Backend:
 
 - Create order from Ready-for-Delivery plan.
 - Capture delivery address, state, and LGA only after plan is fully funded.
+- Dispatch `OrderPaid` domain event; Vendor module listener sends the vendor "item sold" notification without customer identity.
 - Require admin confirmation before Processing.
-- Build order status state machine: Pending, Processing, Packed, Shipped, Out for Delivery, Delivered.
-- Build vendor preparation workflow without exposing customer identity.
-- Build logistics assignment and delivery status update services.
-- Notify customer on every delivery status change.
+- Build order status state machine: Pending, Processing, Ready for Pickup, Packed, Shipped, Out for Delivery, Delivered, plus vendor rejection path.
+- Enforce and track the vendor preparation SLA (48h default, configurable setting); flag overdue preparations to admin.
+- Build vendor preparation workflow (confirm stock, mark ready, reject with reason) without exposing customer identity.
+- Build logistics pickup/drop-off acceptance and delivery status update services.
+- Build delivery confirmation: customer confirm action plus auto-confirm scheduler job after the configurable window.
+- Add per-category commission rate settings (admin-managed, e.g. 5–15%).
+- On confirmed delivery: compute commission, credit vendor earnings ledger inside a database transaction, fire `OrderDelivered`/`VendorEarningsCredited` events.
+- Build vendor bank account capture with verification (Paystack transfer recipient / account name resolution).
+- Build weekly vendor payout batch generation, Finance approval, and paid/failed status tracking.
+- Notify customer on every delivery status change; notify vendor on pickup, delivery, earnings credit, and payout.
 
 Frontend:
 
 - Customer ready-for-delivery address form.
-- Customer orders and delivery tracking pages.
-- Admin order confirmation queue.
-- Admin order detail page.
-- Vendor preparation dashboard with product/order preparation status but no customer identity.
-- Logistics dashboard for assigned deliveries.
-- Delivery status update screen.
+- Customer orders and delivery tracking pages with confirm-receipt action.
+- Admin order confirmation queue and order detail page.
+- Admin commission rate settings page (per category).
+- Vendor "Orders to Prepare" dashboard: new sold items, preparation SLA countdown, mark Ready for Pickup, reject with reason — no customer identity.
+- Vendor earnings page: pending (in delivery), cleared, paid balances, per-order commission breakdown.
+- Vendor payout history and bank account settings.
+- Logistics dashboard for pickups and assigned deliveries; delivery status update screen.
+- Finance vendor payout batch review/approval page.
 
 Database:
 
-- Add orders, order status events, delivery assignments, delivery address fields, and vendor preparation records if needed.
-- Add indexes for order status, vendor, customer, and logistics assignee.
+- Add orders (with price, commission rate/amount, vendor earning amount snapshot columns), order status events, delivery assignments, vendor preparation records.
+- Add vendor earnings ledger, vendor bank accounts, vendor payout batches, and payout items.
+- Add commission rate columns/settings per category.
+- Add indexes for order status, vendor, customer, logistics assignee, and payout status.
 
 QA and security:
 
 - Test address capture only after Ready for Delivery.
+- Test vendor is notified on paid order and sees no customer name, phone, address, or plan history.
 - Test admin confirmation is required before Processing.
-- Test vendor cannot access customer name, phone, address, or plan history.
+- Test preparation SLA breach flags the order to admin.
 - Test logistics role cannot access catalog/pricing management.
 - Test customer receives notification for each status transition.
+- Test commission math per category and that earnings credit happens exactly once per order (idempotent, transaction-wrapped).
+- Test vendor earnings are not payable before delivery confirmation window passes.
+- Test payout batch totals reconcile with the earnings ledger and cannot include another vendor's earnings.
+- Test vendor payout never touches customer wallets or savings ledgers.
 
 DevOps and docs:
 
-- Add delivery status notification templates.
-- Add operational runbook for stuck orders.
+- Add delivery status and vendor notification templates.
+- Add operational runbook for stuck orders, SLA breaches, and failed payouts.
+- Add monitoring for the auto-confirm and payout scheduler jobs.
 
 Exit criteria:
 
-- Fully funded plans become manageable orders.
+- Fully funded plans become manageable orders with a complete chain: paid → vendor notified → packed → picked up → delivered → confirmed → vendor earnings credited → vendor paid.
 - Delivery status is visible to customers and controlled by allowed roles.
+- Vendors see their sales and get paid without ever seeing customer identity.
 
 #### Sprint 7: Support and Notifications
 
@@ -875,7 +981,7 @@ Exit criteria:
 
 ### Phase 4: Public Website
 
-Goal: Launch the public brand presence after the core product is complete enough to demonstrate real workflows, screenshots, vendor onboarding, support, and trust messaging accurately.
+Goal: Expand the Sprint 0 home page into the full public brand presence once the core product can demonstrate real workflows, screenshots, vendor onboarding, support, and trust messaging accurately. The marketplace home page itself ships in Sprint 0; Phase 4 adds the surrounding marketing/informational pages and final SEO polish.
 
 Backend/CMS:
 
@@ -1042,6 +1148,10 @@ tests/
 - Product target price is locked at plan creation.
 - Vendor price edits after approval return the product to pending approval.
 - Vendors never see customer identity or delivery address.
+- Vendor earnings live in a separate vendor ledger; commission is deducted at delivery confirmation, and payouts go only to verified vendor bank accounts through Finance-approved batches.
+- Vendor earnings are credited exactly once per delivered order, inside a database transaction, and never before the delivery confirmation window passes.
+- Registration accepts email or phone; the verification OTP travels through the matching channel, and phone verification is mandatory before wallet funding.
+- Social login (Google/Facebook) links to an existing account only after ownership proof; it never silently merges or duplicates accounts.
 - Admin roles must be permission-based, not hard-coded role checks.
 - All ledger-affecting writes must run inside database transactions.
 - Affiliate commission is a separate partner payout record, never a customer wallet withdrawal or savings ledger movement.
@@ -1062,6 +1172,8 @@ tests/
 | BVN verification | Paystack Identity Verification | Customer and vendor BVN checks |
 | NIN verification | Youverify, Smile Identity, Prembly | NIN checks against Nigerian identity records |
 | SMS/OTP | Termii, Africa's Talking | OTP and reminders |
+| Social login | Google OAuth, Facebook Login (via Laravel Socialite) | Register/login with Google or Facebook |
+| Vendor payouts | Paystack Transfers | Weekly vendor payout batches to verified bank accounts |
 | Email | SendGrid, Postmark | Verification, receipts, notifications |
 | Storage | Cloudinary or S3-compatible bucket | Product images and CAC documents |
 | Address lookup | Google Maps Places API | Delivery address entry and validation |

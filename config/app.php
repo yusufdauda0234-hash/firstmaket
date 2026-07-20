@@ -15,6 +15,11 @@ return [
     // See docs/firstmarket_Security_Compliance.md section 11.1.
     'admin_domain' => env('ADMIN_DOMAIN', 'admin.localhost'),
 
+    // Vendor Center (dashboard + listing management) lives on its own
+    // subdomain with a scoped session cookie, mirroring the admin isolation:
+    // customers never see vendor tooling, vendors sign in at their portal.
+    'vendor_domain' => env('VENDOR_DOMAIN', 'vendors.localhost'),
+
     'timezone' => 'Africa/Lagos',
 
     'locale' => env('APP_LOCALE', 'en'),

@@ -1,6 +1,15 @@
 <?php
 
-// Routes for the Notifications module are registered here and auto-loaded on the
-// customer/vendor-facing domain by App\Providers\ModuleServiceProvider.
-// Keep controllers thin; delegate to Actions/Services (see
-// docs/firstmarket_Developer_Guidelines.md).
+use App\Modules\Notifications\Controllers\NotificationController;
+use Illuminate\Support\Facades\Route;
+
+// Routes for the Notifications module, auto-loaded on the customer-facing
+// domain by App\Providers\ModuleServiceProvider: the in-app inbox and the
+// per-category channel preferences.
+
+Route::middleware('auth')->group(function () {
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::put('notifications/preferences', [NotificationController::class, 'updatePreference'])->name('notifications.preferences.update');
+});

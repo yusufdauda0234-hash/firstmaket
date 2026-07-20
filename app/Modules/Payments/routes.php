@@ -1,6 +1,19 @@
 <?php
 
-// Routes for the Payments module are registered here and auto-loaded on the
-// customer/vendor-facing domain by App\Providers\ModuleServiceProvider.
-// Keep controllers thin; delegate to Actions/Services (see
-// docs/firstmarket_Developer_Guidelines.md).
+use App\Modules\Payments\Controllers\DepositController;
+use App\Modules\Payments\Controllers\PaymentCallbackController;
+use App\Modules\Payments\Controllers\PaystackWebhookController;
+use Illuminate\Support\Facades\Route;
+
+// Routes for the Payments module are auto-loaded on the customer/vendor-facing
+// domain by App\Providers\ModuleServiceProvider.
+
+Route::middleware('auth')->group(function () {
+    Route::get('wallet/add-money', [DepositController::class, 'create'])->name('wallet.add-money');
+    Route::post('wallet/deposit', [DepositController::class, 'store'])->name('wallet.deposit');
+    Route::get('wallet/callback', [PaymentCallbackController::class, 'show'])->name('payment.callback');
+});
+
+// Paystack webhook — public, no auth, CSRF-exempt (see bootstrap/app.php).
+// Signature-verified inside the controller before anything is processed.
+Route::post('webhooks/paystack', [PaystackWebhookController::class, 'handle'])->name('webhooks.paystack');

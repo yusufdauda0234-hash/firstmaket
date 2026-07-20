@@ -7,7 +7,7 @@ export function InputError({ message, className, ...props }: HTMLAttributes<HTML
     }
 
     return (
-        <p className={cn('mt-1 text-sm text-red-600 dark:text-red-400', className)} {...props}>
+        <p className={cn('mt-1 text-sm text-red-600', className)} {...props}>
             {message}
         </p>
     );

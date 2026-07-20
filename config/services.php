@@ -6,6 +6,12 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
+    // Resend transactional email (docs/resend.com). Used for email-channel
+    // OTP and other transactional mail when MAIL_MAILER=resend.
+    'resend' => [
+        'key' => env('RESEND_KEY'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -58,6 +64,25 @@ return [
     'affiliate' => [
         // Signs/verifies affiliate tracking tokens; never reuse APP_KEY for this.
         'tracking_signing_key' => env('AFFILIATE_TRACKING_SIGNING_KEY'),
+    ],
+
+    // Social login (Sprint 2 Addendum): Continue with Google / Facebook.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI', '/auth/facebook/callback'),
+    ],
+
+    // Support Center contact channels (Sprint 7).
+    'support' => [
+        'whatsapp' => env('SUPPORT_WHATSAPP_NUMBER', '+2340000000000'),
+        'hotline' => env('SUPPORT_HOTLINE_NUMBER', '+2340000000000'),
     ],
 
 ];

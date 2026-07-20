@@ -44,20 +44,24 @@ The platform should make product ownership feel planned, transparent, and safe:
 
 ### Authentication and Identity
 
-- Customer registration
+- Customer registration with **email or phone number** (one required; the other can be added later)
 - Vendor registration
-- OTP phone verification
-- Email verification
+- OTP verification through the channel that matches the identifier: SMS OTP for phone signups, email OTP for email signups
+- Social login: **Continue with Google** and **Continue with Facebook** (register or login)
+- Passwordless OTP login option alongside password login
 - BVN check through Paystack Identity Verification
 - NIN check through a dedicated Nigerian identity provider such as Youverify, Smile Identity, or Prembly
 - Login alerts
-- Password reset
+- Password reset by email link or phone OTP, matching the surveyed marketplace pattern (Jumia, Temu, Shopee, AliExpress all offer email/phone alternatives plus social sign-in)
 
 Product Target Plans require successful BVN and NIN verification. Open Savings can begin earlier to reduce signup friction.
 
 Functional requirements:
 
-- OTP codes expire after a configurable window, default 10 minutes.
+- OTP codes expire after a configurable window, default 10 minutes, and are rate-limited per identifier, IP, and device for both SMS and email channels.
+- Social login links to an existing account by verified email only after ownership proof; it never creates a duplicate account for an email that already exists.
+- Social-only accounts may have no password until the user sets one in settings.
+- Phone verification is mandatory before wallet funding, regardless of how the account was created.
 - Every login records device and location metadata.
 - New-device logins notify the customer by email.
 
@@ -148,21 +152,42 @@ Requirements:
 
 ### Orders and Delivery
 
-- Created from ready-for-delivery plan.
+The full fulfillment chain, end to end (modeled on Jumia's dropship flow — vendor packs, marketplace delivers):
+
+1. **Paid** — plan reaches 100% or Pay At Once payment is webhook-confirmed; order is created.
+2. **Vendor notified** — vendor instantly gets an "item sold" notification (dashboard + email/SMS) with product and order number, never customer identity.
+3. **Admin confirms** the order and moves it to Processing.
+4. **Vendor prepares** — confirms stock and packs within a 48-hour SLA (configurable), then marks Ready for Pickup; out-of-stock triggers vendor rejection with reason and an admin-managed resolution (plan redirection or refund-to-savings, never cash).
+5. **Handover** — FirstMarket logistics picks up from the vendor or the vendor drops off at a FirstMarket hub.
+6. **Delivery** — logistics updates status through to Delivered; customer is notified at each step.
+7. **Confirmation** — customer confirms receipt, or the order auto-confirms after 3 days (configurable) with no dispute.
+8. **Vendor earnings** — per-category commission is deducted and the remainder credited to the vendor earnings ledger.
+9. **Payout** — Finance-approved weekly payout batch transfers cleared earnings to the vendor's verified bank account.
+
+Key rules:
+
 - Customer submits delivery address only after fully paid.
-- Administrator confirms order.
-- Vendor prepares item.
-- FirstMarket logistics handles delivery.
-- Customer receives status notifications.
+- Vendor never sees customer identity or delivery address at any step.
+- Vendor preparation SLA breaches are flagged to admin.
 
 Delivery statuses:
 
 - Pending
 - Processing
+- Ready for Pickup
 - Packed
 - Shipped
 - Out for Delivery
 - Delivered
+
+### Vendor Earnings and Payouts
+
+- Commission rate is set per category by admin (e.g. 5–15%), snapshotted onto each order at creation.
+- Vendor earnings ledger is fully separate from customer wallets and savings; entries are immutable and transaction-wrapped.
+- Earnings are credited exactly once per order, only after delivery confirmation (customer confirm or auto-confirm window).
+- Vendor adds a bank account that is verified (account name resolution via Paystack) before any payout.
+- Weekly payout batches are generated automatically, reviewed and approved by Finance, and executed via Paystack Transfers with paid/failed tracking.
+- Vendor dashboard shows pending (in delivery), cleared, and paid balances with per-order commission breakdown.
 
 ### Notifications
 
@@ -170,6 +195,7 @@ Delivery statuses:
 - Plan completion alerts
 - Delivery updates
 - New product alerts
+- Vendor notifications: item sold, pickup done, delivery confirmed, earnings credited, payout paid
 - Email, SMS, and browser notifications
 
 ### Support
@@ -189,7 +215,9 @@ Delivery statuses:
 - Product creation
 - Product status tracking
 - Own listings
-- Earnings summary
+- Sold-item notifications and Orders to Prepare queue with packing SLA countdown
+- Earnings summary: pending, cleared, and paid balances with commission breakdown
+- Bank account settings and payout history
 - Support
 
 Vendor cannot view customer identity.
@@ -292,13 +320,26 @@ Phase 3 requirements:
 - Cooperative savings supports structured rotating-contribution models.
 - Native mobile apps reuse the Laravel API rather than requiring a second backend.
 
-## 8. Phase 4 Public Website
+## 8. Public Website and Home Page
 
-The public website should be completed after the transactional platform, so the marketing content can reflect the real product rather than planned screens.
+The marketplace **home page ships first, in Sprint 0**, because every surveyed marketplace (AliExpress, Amazon, eBay, Etsy, Walmart, Temu, Rakuten, Mercado Libre, Shopee, Lazada, Jumia, Konga, Takealot, Kilimall, Bob Shop, Newegg, Bonanza, Wish, Cdiscount, OnBuy) opens on a search-first, category-driven storefront — the home page is the product's introduction. The rest of the public website is completed in Phase 4, after the transactional platform, so marketing content reflects the real product.
 
-Pages:
+Home page structure (Sprint 0, common anatomy from the survey):
 
-- Home
+- Top utility bar: location/language, Sell on FirstMarket, Help, app links
+- Header: logo, dominant search bar with category scope, account and cart
+- Category navigation menu (six launch categories)
+- Hero promo carousel plus static promo tiles
+- Featured/flash product strip
+- Category grid blocks
+- "For You" / Top Selling product feed (approved products only)
+- How-it-works strip: Pay At Once, Save Small Small, FirstMarket Delivers
+- Trust strip: Paystack payments, verified vendors, FirstMarket delivery, hotline
+- SEO footer
+
+Phase 4 pages:
+
+- Home (expanded from Sprint 0)
 - About Us
 - How It Works
 - Marketplace Preview
@@ -349,7 +390,7 @@ Localization:
 
 Customer web application:
 
-- Registration and Login
+- Registration and Login (email or phone, OTP, Google/Facebook)
 - Dashboard
 - Product Catalog and Search
 - Product Details
@@ -372,7 +413,9 @@ Vendor web portal:
 - Add or Edit Product Listing
 - Listings Pending Approval
 - Approved Listings
-- Earnings
+- Orders to Prepare (sold items, SLA countdown, Ready for Pickup)
+- Earnings and Payout History
+- Bank Account Settings
 - Support
 - Phase 2: Ratings
 
@@ -395,6 +438,7 @@ Specialized staff views:
 - Support Agent: Hotline and Chat Ticket Queue, read-only Customer Order and Plan Lookup
 - Logistics Personnel: Delivery Status Update screen only
 - Finance Officer: Paystack Settlement Reconciliation
+- Finance Officer: Vendor Payout Batch Review and Approval
 - Finance Officer: Affiliate Commission Payout Review
 
 Affiliate dashboard:
@@ -432,8 +476,8 @@ Use:
 - Laravel modular monolith
 - Inertia.js
 - React + TypeScript
-- PostgreSQL
-- Redis
+- MySQL 8 (MariaDB locally)
+- Database-driver cache/sessions/queues (Redis deferred until scale demands it)
 - Spatie Permission
 - Laravel Sanctum
 - Laravel notifications

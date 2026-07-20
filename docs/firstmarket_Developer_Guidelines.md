@@ -4,13 +4,11 @@ Version: 1.0
 
 ## 1. Recommended Stack Decision
 
-### PostgreSQL vs MySQL
+### Database Choice: MySQL
 
-Recommendation: PostgreSQL.
+Decision (revised 2026-07-17): MySQL family — MySQL 8 in production, MariaDB 10.4+ locally (XAMPP).
 
-FirstMarket is a wallet, direct purchase, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, not page rendering. PostgreSQL gives stronger tools for constraints, financial ledgers, reporting, and complex transactional workflows.
-
-Use MySQL only if team familiarity and hosting constraints are more important than PostgreSQL's richer constraint and reporting features.
+FirstMarket is a wallet, direct purchase, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, which InnoDB covers: real transactions, row locking, foreign keys, unique constraints, and (MySQL 8.0.16+) enforced CHECK constraints. Keep every money value in integer kobo columns, wrap ledger writes in transactions, and never rely on engine-specific SQL — stick to Laravel's schema and query builders so both mysql and mariadb drivers work.
 
 ### React vs Vue
 
@@ -26,7 +24,7 @@ Vue is also a good Laravel/Inertia choice and is slightly easier to learn for ma
 
 Note: the original SRS proposed Inertia with Vue 3. After reviewing the IHMS project, the stronger local recommendation is React because the existing IHMS conventions, component structure, and team reference project already use React + Inertia.
 
-Final recommendation: Laravel + Inertia + React + TypeScript + PostgreSQL + Redis.
+Final recommendation: Laravel + Inertia + React + TypeScript + MySQL (MariaDB locally) + database-driver cache/queue (no Redis at MVP).
 
 ## 2. Golden Rules
 

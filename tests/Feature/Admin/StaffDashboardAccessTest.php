@@ -14,15 +14,16 @@ it('redirects guests away from the admin dashboard', function () {
     $this->get(adminUrl())->assertRedirect(adminUrl('login'));
 });
 
-it('denies a Customer role access to the staff dashboard', function () {
+it('logs a Customer out of the staff portal and sends them to the admin login', function () {
     $user = User::factory()->create();
     $user->assignRole('Customer');
 
-    $this->actingAs($user)->get(adminUrl())->assertForbidden();
+    $this->actingAs($user)->get(adminUrl())->assertRedirect(route('admin.login'));
+    $this->assertGuest();
 });
 
 it('requires 2FA enrollment before an Administrator reaches the dashboard', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
     $user->assignRole('Administrator');
 
     $this->actingAs($user)
@@ -31,14 +32,14 @@ it('requires 2FA enrollment before an Administrator reaches the dashboard', func
 });
 
 it('lets a Support Agent reach the staff dashboard without 2FA', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
     $user->assignRole('Support Agent');
 
     $this->actingAs($user)->get(adminUrl())->assertOk();
 });
 
 it('lets an Administrator reach the dashboard once 2FA is confirmed', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
     $user->assignRole('Administrator');
     $user->forceFill(['two_factor_confirmed_at' => now()])->save();
 

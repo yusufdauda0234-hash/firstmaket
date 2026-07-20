@@ -3,11 +3,11 @@
 namespace App\Modules\Auth\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\LoginEvent;
 use App\Modules\Auth\Requests\LoginRequest;
-use App\Shared\Contracts\AuditLoggerContract;
+use App\Modules\Auth\Services\PostAuthRedirect;
+use App\Modules\Auth\Services\SessionAuthenticator;
 use App\Shared\Security\AdminDomain;
-use App\Shared\Security\DeviceFingerprint;
+use App\Shared\Security\VendorDomain;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,52 +16,47 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
-        return Inertia::render(
-            AdminDomain::matches($request) ? 'Admin/Auth/Login' : 'Auth/Login'
-        );
+        return match (true) {
+            AdminDomain::matches($request) => Inertia::render('Admin/Auth/Login'),
+            VendorDomain::matches($request) => Inertia::render('Auth/VendorLogin'),
+            // Customers have no standalone login page — the storefront opens
+            // the sign-in/register modal instead (?auth=login is picked up by
+            // PublicLayout). The intended URL stays in the session, so the
+            // post-login redirect still works.
+            default => redirect()->route('home', ['auth' => 'login']),
+        };
     }
 
-    public function store(LoginRequest $request, AuditLoggerContract $auditLogger): RedirectResponse
+    public function store(LoginRequest $request, SessionAuthenticator $authenticator): RedirectResponse
     {
         $request->authenticate();
         $request->session()->regenerate();
 
-        $user = $request->user();
-        $fingerprint = DeviceFingerprint::fromRequest($request);
+        $authenticator->recordLogin($request->user(), $request, method: 'password');
 
-        $isNewDevice = ! LoginEvent::query()
-            ->where('user_id', $user->id)
-            ->where('device_fingerprint', $fingerprint)
-            ->exists();
-
-        LoginEvent::query()->create([
-            'user_id' => $user->id,
-            'ip_address' => $request->ip(),
-            'user_agent' => (string) $request->userAgent(),
-            'device_fingerprint' => $fingerprint,
-            'is_new_device' => $isNewDevice,
-        ]);
-
-        $user->forceFill(['last_login_at' => now()])->save();
-
-        $auditLogger->log(actor: $user, subject: $user, action: 'auth.login');
-
-        return AdminDomain::matches($request)
-            ? redirect()->intended(route('admin.dashboard'))
-            : redirect()->intended(route('dashboard'));
+        return redirect()->intended(match (true) {
+            AdminDomain::matches($request) => route('admin.dashboard'),
+            VendorDomain::matches($request) => route('vendor.dashboard'),
+            // Customers stay where they were (home is their dashboard).
+            default => PostAuthRedirect::customer($request),
+        });
     }
 
     public function destroy(Request $request): RedirectResponse
     {
-        $isAdmin = AdminDomain::matches($request);
+        $loginRoute = match (true) {
+            AdminDomain::matches($request) => route('admin.login'),
+            VendorDomain::matches($request) => route('vendor.login'),
+            default => route('login'),
+        };
 
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect($isAdmin ? route('admin.login') : route('login'));
+        return redirect($loginRoute);
     }
 }

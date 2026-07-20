@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Vendor\Models\VendorProfile;
+use App\Shared\Enums\ProductStatus;
+use App\Shared\Enums\VendorStatus;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +19,10 @@ class StaffDashboardController extends Controller
         $user = $request->user();
 
         return match (true) {
-            $user->hasAnyRole(['Super Administrator', 'Administrator']) => Inertia::render('Admin/Dashboard'),
+            $user->hasAnyRole(['Super Administrator', 'Administrator']) => Inertia::render('Admin/Dashboard', [
+                'pendingVendors' => VendorProfile::query()->where('status', VendorStatus::Pending)->count(),
+                'pendingProducts' => Product::query()->where('status', ProductStatus::PendingApproval)->count(),
+            ]),
             $user->hasRole('Finance Officer') => Inertia::render('Finance/Dashboard'),
             $user->hasRole('Support Agent') => Inertia::render('Support/Dashboard'),
             $user->hasRole('Logistics Personnel') => Inertia::render('Logistics/Dashboard'),

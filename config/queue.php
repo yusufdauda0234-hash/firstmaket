@@ -31,13 +31,13 @@ return [
     ],
 
     'batching' => [
-        'database' => env('DB_CONNECTION', 'pgsql'),
+        'database' => env('DB_CONNECTION', 'mariadb'),
         'table' => 'job_batches',
     ],
 
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
-        'database' => env('DB_CONNECTION', 'pgsql'),
+        'database' => env('DB_CONNECTION', 'mariadb'),
         'table' => 'failed_jobs',
     ],
 

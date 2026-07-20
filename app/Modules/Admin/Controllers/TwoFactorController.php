@@ -4,6 +4,10 @@ namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Shared\Contracts\AuditLoggerContract;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -31,11 +35,25 @@ class TwoFactorController extends Controller
         }
 
         $secret = Crypt::decryptString($user->two_factor_secret);
+        $otpAuthUrl = $google2fa->getQRCodeUrl(config('app.name'), $user->email, $secret);
 
         return Inertia::render('Admin/Auth/TwoFactorSetup', [
-            'otpAuthUrl' => $google2fa->getQRCodeUrl(config('app.name'), $user->email, $secret),
+            'otpAuthUrl' => $otpAuthUrl,
             'secret' => $secret,
+            'qrCodeSvg' => $this->qrCodeSvg($otpAuthUrl),
         ]);
+    }
+
+    /**
+     * Renders the otpauth:// URI as an inline SVG so the page never leaks
+     * the 2FA secret to a third-party QR image service.
+     */
+    private function qrCodeSvg(string $otpAuthUrl): string
+    {
+        $writer = new Writer(new ImageRenderer(new RendererStyle(220, 1), new SvgImageBackEnd));
+
+        // Drop the XML declaration; the SVG is inlined into the page.
+        return trim(preg_replace('/^<\?xml.*?\?>/', '', $writer->writeString($otpAuthUrl)));
     }
 
     public function confirm(Request $request, Google2FA $google2fa, AuditLoggerContract $auditLogger): RedirectResponse

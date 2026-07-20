@@ -4,6 +4,25 @@
 
 @layer base {
     body {
-        @apply bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
+        @apply bg-gray-50 text-gray-900 antialiased;
+    }
+
+    /* Prevent accidental horizontal overflow from spacious header/content */
+    html, body {
+        overflow-x: hidden;
+    }
+}
+
+@layer utilities {
+    /* Horizontally scrollable strips (category nav, benefits bar, image
+       thumbnails) stay swipeable but never show a scrollbar — Windows
+       renders overflow-x-auto with a permanent bar otherwise. */
+    .scrollbar-none {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-none::-webkit-scrollbar {
+        display: none;
     }
 }

@@ -39,4 +39,13 @@ class UserFactory extends Factory
             'status' => UserStatus::PendingVerification,
         ]);
     }
+
+    /**
+     * Staff accounts (Admin, Support, Logistics, Finance) must carry the
+     * Staff user_type — the portal separation middleware keys off it.
+     */
+    public function staff(): static
+    {
+        return $this->state(fn () => ['user_type' => UserType::Staff]);
+    }
 }

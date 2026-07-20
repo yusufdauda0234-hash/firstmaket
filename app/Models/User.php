@@ -2,16 +2,41 @@
 
 namespace App\Models;
 
+use App\Modules\Auth\Models\SocialAccount;
+use App\Modules\Customer\Models\CustomerProfile;
+use App\Modules\Vendor\Models\VendorProfile;
+use App\Modules\Wallet\Models\Wallet;
 use App\Shared\Enums\UserStatus;
 use App\Shared\Enums\UserType;
 use App\Shared\Traits\HasUuid;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $email
+ * @property string|null $phone
+ * @property UserType $user_type
+ * @property UserStatus $status
+ * @property Carbon|null $email_verified_at
+ * @property Carbon|null $phone_verified_at
+ * @property Carbon|null $last_login_at
+ * @property Carbon|null $two_factor_confirmed_at
+ * @property-read CustomerProfile|null $customerProfile
+ * @property-read VendorProfile|null $vendorProfile
+ * @property-read Wallet|null $wallet
+ * @property-read Collection<int, SocialAccount> $socialAccounts
+ */
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, HasRoles, HasUuid, Notifiable;
 
@@ -42,5 +67,30 @@ class User extends Authenticatable
             'user_type' => UserType::class,
             'status' => UserStatus::class,
         ];
+    }
+
+    public function customerProfile(): HasOne
+    {
+        return $this->hasOne(CustomerProfile::class);
+    }
+
+    public function vendorProfile(): HasOne
+    {
+        return $this->hasOne(VendorProfile::class);
+    }
+
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone_verified_at !== null;
     }
 }
