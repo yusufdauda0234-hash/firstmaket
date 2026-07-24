@@ -12,7 +12,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Finance vendor payout workspace (docs/firstmarket_Implementation_Plan.md
+ * Finance vendor payout workspace (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 step 9): generate the weekly batch of cleared earnings, approve
  * it, and record each transfer as paid or failed. The negative ledger entry
  * is written only on paid — never on failure.

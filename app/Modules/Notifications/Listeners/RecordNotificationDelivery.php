@@ -8,7 +8,7 @@ use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
 
 /**
- * Delivery-failure monitoring (docs/firstmarket_Implementation_Plan.md
+ * Delivery-failure monitoring (docs/FirstMaket_Implementation_Plan.md
  * Sprint 7): one notification_deliveries row per attempted send, mapping
  * Laravel channels to the schema's email | sms | browser vocabulary.
  */

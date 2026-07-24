@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * FAQ entry (docs/firstmarket-Database_Schema.md section 10). Seeded via
+ * FAQ entry (docs/FirstMaket-Database_Schema.md section 10). Seeded via
  * FaqSeeder; published rows render on the public FAQ page and the Support
  * Center.
  *

@@ -21,9 +21,9 @@ use Illuminate\Validation\ValidationException;
  * an email or phone number, proves it with a code through the matching
  * channel, then completes name + password here. The proven identifier is
  * created pre-verified; the other identifier can be added later. Phone
- * verification remains mandatory before wallet funding, and BVN/NIN
- * verification gates Product Target Plans
- * (docs/firstmarket_Implementation_Plan.md Sprint 2 + Addendum).
+ * verification is optional/secondary — it does not gate wallet funding or
+ * Product Target Plans. There is no BVN/NIN identity verification feature
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 2 + Addendum).
  */
 class RegisteredUserController extends Controller
 {
@@ -88,6 +88,6 @@ class RegisteredUserController extends Controller
         // Phone-registered users land on the dashboard directly; email-only
         // accounts are prompted for a phone number before any wallet funding
         // (enforced by the wallet flow, not at signup, to keep friction low).
-        return redirect()->route('dashboard')->with('success', 'Welcome to FirstMarket!');
+        return redirect()->route('dashboard')->with('success', 'Welcome to FirstMaket!');
     }
 }

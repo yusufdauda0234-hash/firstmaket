@@ -43,10 +43,10 @@ export default function VendorLogin() {
                         🏪
                     </span>
 
-                    <a href={mainSiteUrl} aria-label="Back to FirstMarket">
+                    <a href={mainSiteUrl} aria-label="Back to FirstMaket">
                         <img
                             src="/images/brand/logo-light-transparent.png"
-                            alt="FirstMarket"
+                            alt="FirstMaket"
                             className="h-20 w-auto"
                         />
                     </a>
@@ -66,7 +66,7 @@ export default function VendorLogin() {
                             {[
                                 'Zero listing fees — keep more of every sale',
                                 'Instant payouts through Paystack',
-                                'FirstMarket delivers; you focus on selling',
+                                'FirstMarketdelivers; you focus on selling',
                             ].map((item) => (
                                 <li key={item} className="flex items-center gap-2">
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-yellow text-[11px] font-bold text-brand-900">
@@ -79,14 +79,14 @@ export default function VendorLogin() {
                     </div>
 
                     <p className="relative z-[1] text-xs text-brand-200">
-                        Vendor accounts only. Shoppers sign in on the main FirstMarket site.
+                        Vendor accounts only. Shoppers sign in on the main FirstMarketsite.
                     </p>
                 </div>
 
                 {/* Form panel */}
                 <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
-                    <a href={mainSiteUrl} className="lg:hidden" aria-label="Back to FirstMarket">
-                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMarket" className="h-10 w-auto" />
+                    <a href={mainSiteUrl} className="lg:hidden" aria-label="Back to FirstMaket">
+                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
                     </a>
 
                     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-8">

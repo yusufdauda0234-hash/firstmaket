@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('otp_codes', function (Blueprint $table) {
             $table->id();
             // Nullable so pre-registration OTPs can exist before a user row
-            // does (docs/firstmarket-Database_Schema.md).
+            // does (docs/FirstMaket-Database_Schema.md).
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('phone');
             $table->string('purpose');

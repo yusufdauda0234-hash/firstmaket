@@ -1,6 +1,5 @@
 <?php
 
-use App\Modules\Identity\Controllers\IdentityVerificationController;
 use App\Modules\Identity\Controllers\PhoneVerificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,12 +12,4 @@ Route::middleware('auth')->group(function () {
     Route::post('phone/resend', [PhoneVerificationController::class, 'resend'])
         ->middleware('throttle:6,1')
         ->name('phone.resend');
-
-    Route::get('identity', [IdentityVerificationController::class, 'show'])->name('identity.status');
-    Route::post('identity/bvn', [IdentityVerificationController::class, 'storeBvn'])
-        ->middleware('throttle:6,1')
-        ->name('identity.bvn');
-    Route::post('identity/nin', [IdentityVerificationController::class, 'storeNin'])
-        ->middleware('throttle:6,1')
-        ->name('identity.nin');
 });

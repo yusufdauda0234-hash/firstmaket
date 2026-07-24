@@ -15,7 +15,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: firstmarket_testing
+          POSTGRES_DB: FirstMaket_testing
         ports: ['5432:5432']
         options: >-
           --health-cmd pg_isready
@@ -65,7 +65,7 @@ jobs:
         env:
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
-          DB_DATABASE: firstmarket_testing
+          DB_DATABASE: FirstMaket_testing
           DB_USERNAME: postgres
           DB_PASSWORD: postgres
           REDIS_HOST: 127.0.0.1

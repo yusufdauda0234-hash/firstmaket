@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Append-only vendor preparation trail for an order
- * (docs/firstmarket-Database_Schema.md section 9). `note` carries the
+ * (docs/FirstMaket-Database_Schema.md section 9). `note` carries the
  * rejection reason when status is `rejected`.
  *
  * @property int $id

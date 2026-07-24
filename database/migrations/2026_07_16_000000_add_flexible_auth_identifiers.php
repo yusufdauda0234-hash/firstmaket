@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Sprint 2 Addendum: registration/login with email OR phone, OTP through the
  * matching channel, and Google/Facebook social login
- * (docs/firstmarket_Implementation_Plan.md "Sprint 2 Addendum").
+ * (docs/FirstMaket_Implementation_Plan.md "Sprint 2 Addendum").
  */
 return new class extends Migration
 {

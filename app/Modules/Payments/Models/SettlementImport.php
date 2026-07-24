@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A batch of Paystack settlement lines imported for reconciliation
- * (docs/firstmarket-Database_Schema.md section 7).
+ * (docs/FirstMaket-Database_Schema.md section 7).
  *
  * @property int $id
  * @property string $provider

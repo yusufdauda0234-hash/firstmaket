@@ -1,4 +1,4 @@
-# FirstMarket Deployment and DevOps
+# FirstMarketDeployment and DevOps
 
 Version: 1.0
 
@@ -9,17 +9,17 @@ Use three environments:
 | Environment | Branch | Domain Example | Purpose |
 | --- | --- | --- | --- |
 | Local | feature branches | localhost | Development |
-| Staging | `develop` | `staging.firstmarket.ng` | QA and client review |
-| Production | `main` | `firstmarket.ng`, `app.firstmarket.ng` | Live users |
+| Staging | `develop` | `staging.FirstMaket.ng` | QA and client review |
+| Production | `main` | `FirstMaket.ng`, `app.FirstMaket.ng` | Live users |
 
 Recommended domains:
 
-- `firstmarket.ng` for public website
-- `app.firstmarket.ng` for customer app
-- `vendor.firstmarket.ng` or `/vendor` for vendor portal
-- `admin.firstmarket.ng` for the Admin, Support, Logistics, and Finance dashboards
+- `FirstMaket.ng` for public website
+- `app.FirstMaket.ng` for customer app
+- `vendor.FirstMaket.ng` or `/vendor` for vendor portal
+- `admin.FirstMaket.ng` for the Admin, Support, Logistics, and Finance dashboards
 
-For the first release, path-based routing is acceptable for the public/customer/vendor split (`/app`, `/vendor`), but the admin surface must be on its own subdomain (`admin.firstmarket.ng`) with its own session cookie scope from Sprint 1 onward. Sharing origin/cookies between the highest-traffic customer app and the highest-privilege admin surface is the one shortcut not worth taking, since retrofitting subdomain isolation after launch requires a coordinated cookie/session migration.
+For the first release, path-based routing is acceptable for the public/customer/vendor split (`/app`, `/vendor`), but the admin surface must be on its own subdomain (`admin.FirstMaket.ng`) with its own session cookie scope from Sprint 1 onward. Sharing origin/cookies between the highest-traffic customer app and the highest-privilege admin surface is the one shortcut not worth taking, since retrofitting subdomain isolation after launch requires a coordinated cookie/session migration.
 
 ## 2. Server Stack
 
@@ -44,7 +44,7 @@ A managed MySQL read replica (or ProxySQL with routed read queries) keeps heavy 
 
 ```text
 /var/www/
-  firstmarket_production/
+  FirstMaket_production/
     app/
     bootstrap/
     config/
@@ -56,7 +56,7 @@ A managed MySQL read replica (or ProxySQL with routed read queries) keeps heavy 
     storage/
     vendor/
     .env
-  firstmarket_staging/
+  FirstMaket_staging/
   shared/
     backups/
     uploads/
@@ -121,7 +121,7 @@ Critical smoke paths:
 
 Never commit real secrets.
 
-Production secrets are stored in a secrets manager (AWS Secrets Manager, Vault, or hosting-provider equivalent) and injected at deploy/runtime, not kept in a server-side `.env` file long-term. Rotate `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET`, `AFFILIATE_TRACKING_SIGNING_KEY`, identity-provider keys, and SMS/mail keys at least annually, immediately on suspected compromise, and on staff offboarding. `APP_KEY` rotation requires a re-encryption plan for existing encrypted columns before it is rotated. Staging and local environments never share production secrets.
+Production secrets are stored in a secrets manager (AWS Secrets Manager, Vault, or hosting-provider equivalent) and injected at deploy/runtime, not kept in a server-side `.env` file long-term. Rotate `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET`, `AFFILIATE_TRACKING_SIGNING_KEY`, and SMS/mail keys at least annually, immediately on suspected compromise, and on staff offboarding. `APP_KEY` rotation requires a re-encryption plan for existing encrypted columns before it is rotated. Staging and local environments never share production secrets.
 
 Production secrets:
 
@@ -132,8 +132,6 @@ Production secrets:
 - `PAYSTACK_PUBLIC_KEY`
 - `PAYSTACK_WEBHOOK_SECRET`
 - `AFFILIATE_TRACKING_SIGNING_KEY`
-- `BVN_PROVIDER_*`
-- `NIN_PROVIDER_*`
 - `SMS_PROVIDER_*`
 - `MAIL_*`
 - `OPENAI_API_KEY` or AI provider key
@@ -147,8 +145,6 @@ Production secrets:
 | Service | Provider Options | Deployment Notes |
 | --- | --- | --- |
 | Payments | Paystack | Webhook endpoint must be public over HTTPS and idempotent |
-| BVN | Paystack Identity Verification | Store only required verification metadata |
-| NIN | Youverify, Smile Identity, Prembly | Keep provider payloads encrypted or minimized |
 | SMS/OTP | Termii, Africa's Talking | Configure rate limits and sender ID |
 | Email | SendGrid, Postmark | Use production domain authentication |
 | Storage | Cloudinary or S3-compatible bucket | CAC and identity documents must be private |

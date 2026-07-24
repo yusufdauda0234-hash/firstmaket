@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One-time codes are stored hashed only — the plaintext code exists solely in
- * the SMS or email message (docs/firstmarket_Security_Compliance.md).
+ * the SMS or email message (docs/FirstMaket_Security_Compliance.md).
  */
 /**
  * @property int $id

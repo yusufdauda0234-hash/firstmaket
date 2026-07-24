@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 
 /**
- * Sprint 4 QA (docs/firstmarket_Implementation_Plan.md): the wallet is only
+ * Sprint 4 QA (docs/FirstMaket_Implementation_Plan.md): the wallet is only
  * ever credited by a signature-verified, idempotent Paystack webhook — never
  * by the browser — and no withdrawal path exists.
  */

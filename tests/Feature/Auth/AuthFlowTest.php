@@ -103,9 +103,9 @@ it('marks the phone verified after a successful code login through that phone', 
 });
 
 it('never reveals staff accounts through the public identify endpoint', function () {
-    $staff = User::factory()->staff()->create(['email' => 'admin@firstmarket.ng']);
+    $staff = User::factory()->staff()->create(['email' => 'admin@FirstMaket.ng']);
 
-    $this->postJson('/auth/identify', ['identifier' => 'admin@firstmarket.ng'])
+    $this->postJson('/auth/identify', ['identifier' => 'admin@FirstMaket.ng'])
         ->assertOk()
         ->assertJson(['exists' => false]);
 });

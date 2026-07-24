@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Owns every product status transition (docs/firstmarket_Implementation_Plan.md
+ * Owns every product status transition (docs/FirstMaket_Implementation_Plan.md
  * Sprint 3): Draft/Rejected → Pending Approval → Approved/Rejected;
  * Approved → Delisted, and Approved → Pending Approval again when the vendor
  * changes the price. Each transition is recorded as a status event and an

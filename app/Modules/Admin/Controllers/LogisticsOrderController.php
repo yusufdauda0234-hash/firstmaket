@@ -15,7 +15,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Logistics workspace (docs/firstmarket_Implementation_Plan.md Sprint 6
+ * Logistics workspace (docs/FirstMaket_Implementation_Plan.md Sprint 6
  * steps 5–6): pickups and assigned deliveries with the next-step action.
  * Logistics Personnel see delivery details but no catalog/pricing
  * management (they simply have no permission for those routes).

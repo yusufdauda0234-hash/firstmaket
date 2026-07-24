@@ -42,7 +42,7 @@ interface CategoriesMenuProps {
 }
 
 /**
- * "Categories" hover-or-click mega menu (Temu interaction, FirstMarket
+ * "Categories" hover-or-click mega menu (Temu interaction, FirstMaket
  * styling): left sidebar of category groups, right grid of quick-link tiles.
  */
 export function CategoriesMenu({ categories, forceClose = false, onOpen }: CategoriesMenuProps) {
@@ -285,7 +285,7 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
                             onClick={() => setOpen(false)}
                             className="flex items-center gap-1.5 text-gray-600 hover:text-brand-700"
                         >
-                            <Sparkles className="h-4 w-4 text-gray-400" /> Sell on FirstMarket
+                            <Sparkles className="h-4 w-4 text-gray-400" /> Sell on FirstMaket
                         </Link>
                         <Link
                             href={route('catalog.index')}
@@ -420,7 +420,7 @@ export function LocalePopover() {
         fetch('https://restcountries.com/v3.1/all?fields=name,cca2,region,languages,currencies')
             .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
             .then((data: RestCountry[]) => {
-                // FirstMarket ships from Nigeria, so Africa sorts first, then A-Z.
+                // FirstMarketships from Nigeria, so Africa sorts first, then A-Z.
                 const sorted = data.sort((a, b) => {
                     const africaFirst = Number(a.region !== 'Africa') - Number(b.region !== 'Africa');
                     return africaFirst || a.name.common.localeCompare(b.name.common);
@@ -557,7 +557,7 @@ export function LocalePopover() {
                             <div className="my-3 border-t border-gray-100" />
 
                             <p className="px-1 text-center text-sm leading-snug text-gray-500">
-                                You are shopping on FirstMarket {prefs.countryName}.
+                                You are shopping on FirstMarket{prefs.countryName}.
                             </p>
                             <button
                                 type="button"
@@ -748,7 +748,7 @@ export function GetAppPopover() {
             {open && (
                 <div className="absolute right-0 top-full z-50 mt-2 w-[380px] max-w-[94vw] rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-2xl">
                     {/* Title */}
-                    <p className="mb-3 text-sm font-bold text-gray-900">Get the FirstMarket app</p>
+                    <p className="mb-3 text-sm font-bold text-gray-900">Get the FirstMarketapp</p>
 
                     {/* QR code — real pixel grid with brand logo centred inside */}
                     <div className="relative mx-auto inline-block overflow-hidden rounded-xl ring-1 ring-gray-200">
@@ -757,7 +757,7 @@ export function GetAppPopover() {
                             <div className="rounded-lg bg-white p-1.5 shadow-md ring-1 ring-gray-100">
                                 <img
                                     src="/images/brand/logo-mark-blue.png"
-                                    alt="FirstMarket"
+                                    alt="FirstMaket"
                                     className="h-8 w-8 rounded-md object-contain"
                                 />
                             </div>
@@ -798,7 +798,7 @@ export function GetAppPopover() {
                     <p className="mt-1.5 text-[10px] font-medium text-gray-400">Coming soon</p>
 
                     <p className="mt-3 border-t border-gray-100 pt-3 text-[11px] leading-snug text-gray-400">
-                        Until the apps ship, FirstMarket works great in your phone's browser.
+                        Until the apps ship, FirstMarketworks great in your phone's browser.
                     </p>
                 </div>
             )}

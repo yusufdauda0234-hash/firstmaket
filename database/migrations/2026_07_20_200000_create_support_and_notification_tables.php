@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Sprint 7 Support and Notifications (docs/firstmarket-Database_Schema.md
+ * Sprint 7 Support and Notifications (docs/FirstMaket-Database_Schema.md
  * section 10): Laravel's notifications table for the in-app inbox, per-user
  * per-category channel preferences, a delivery log for failure monitoring,
  * support tickets with message threads, hotline call logs with IVR reasons,

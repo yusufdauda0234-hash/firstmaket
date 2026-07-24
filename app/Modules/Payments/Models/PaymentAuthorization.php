@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Reusable Paystack card authorization, stored for Phase 2 scheduled
- * automatic debit (docs/firstmarket-Database_Schema.md section 7). Sprint 4
+ * automatic debit (docs/FirstMaket-Database_Schema.md section 7). Sprint 4
  * only captures this metadata from successful charges — nothing charges it.
  *
  * @property int $id

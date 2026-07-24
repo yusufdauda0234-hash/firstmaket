@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One reconciliation line comparing a Paystack settlement entry against the
- * internal ledger (docs/firstmarket-Database_Schema.md section 7).
+ * internal ledger (docs/FirstMaket-Database_Schema.md section 7).
  *
  * @property int $id
  * @property int $settlement_import_id

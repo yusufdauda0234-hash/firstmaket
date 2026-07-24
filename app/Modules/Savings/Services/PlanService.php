@@ -7,10 +7,12 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Savings\Events\PlanReadyForDelivery;
 use App\Modules\Savings\Models\OpenSaving;
 use App\Modules\Savings\Models\PlanContribution;
+use App\Modules\Savings\Models\PlanItem;
 use App\Modules\Savings\Models\PlanStatusEvent;
 use App\Modules\Savings\Models\ProductTargetPlan;
 use App\Modules\Wallet\Services\WalletService;
 use App\Shared\Contracts\AuditLoggerContract;
+use App\Shared\Contracts\PlanEligibilityContract;
 use App\Shared\Enums\ContributionSource;
 use App\Shared\Enums\PlanCadence;
 use App\Shared\Enums\PlanPaymentMode;
@@ -23,24 +25,25 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Owns every Product Target Plan state change (docs/firstmarket_Implementation_Plan.md
+ * Owns every Product Target Plan state change (docs/FirstMaket_Implementation_Plan.md
  * Sprint 5): creation with price locking, contributions from wallet or Open
  * Savings, progress/expected-completion recalculation, Pay At Once, and
  * pause/resume. Redirections live in RedirectionService. Emits
- * PlanReadyForDelivery for the Orders module (Sprint 6) to consume.
+ * PlanReadyForDelivery for the Orders module (Sprint 6) to consume. Sprint 8
+ * adds createMultiProduct() for bundled (multi-vendor) plans.
  */
 class PlanService
 {
     public function __construct(
         private readonly WalletService $walletService,
         private readonly AuditLoggerContract $auditLogger,
+        private readonly PlanEligibilityContract $eligibility,
     ) {}
 
     /**
-     * Start a plan toward an approved product, locking today's price forever.
-     * Schedule mode requires verified identity (BVN/NIN); Pay At Once is a
-     * normal purchase and only needs wallet money (which already required a
-     * verified phone to fund).
+     * Start a plan toward an approved product, locking today's price
+     * forever. There is no BVN/NIN identity verification requirement — Pay
+     * At Once is a normal purchase and only needs wallet money.
      */
     public function create(
         User $user,
@@ -54,12 +57,6 @@ class PlanService
         }
 
         if ($mode === PlanPaymentMode::Schedule) {
-            if (! ($user->customerProfile?->canActivateTargetPlans() ?? false)) {
-                throw ValidationException::withMessages([
-                    'identity' => 'Verify your BVN or NIN to start a Product Target Plan.',
-                ]);
-            }
-
             if ($cadence === null) {
                 throw ValidationException::withMessages(['cadence' => 'Choose a contribution schedule.']);
             }
@@ -114,6 +111,93 @@ class PlanService
             $plan = $this->create($user, $product, PlanPaymentMode::PayAtOnce);
 
             return $this->contributeFromWallet($user, $plan, $plan->target_price_kobo);
+        });
+    }
+
+    /**
+     * Bundle two or more cart items — possibly from different vendors —
+     * into one multi-product plan with one combined target and one
+     * contribution schedule (Sprint 8). Gated by PlanEligibilityContract;
+     * single-product plans (create()) are never gated. Reaching Ready for
+     * Delivery later creates one order per plan_item — never a subset — see
+     * OrderService::createFromBundledPlan().
+     *
+     * @param  array<int, array{product: Product, quantity: int}>  $items
+     */
+    public function createMultiProduct(
+        User $user,
+        array $items,
+        PlanCadence $cadence,
+        ?int $suggestedContributionKobo = null,
+    ): ProductTargetPlan {
+        if (count($items) < 2) {
+            throw ValidationException::withMessages(['items' => 'Select at least two products to bundle into one plan.']);
+        }
+
+        if (($reason = $this->eligibility->reasonIneligible($user)) !== null) {
+            throw ValidationException::withMessages(['eligibility' => $reason]);
+        }
+
+        foreach ($items as $item) {
+            if ($item['product']->status !== ProductStatus::Approved) {
+                throw ValidationException::withMessages(['product' => $item['product']->name.' is not available.']);
+            }
+
+            if ($item['quantity'] < 1) {
+                throw ValidationException::withMessages(['quantity' => 'Quantity must be at least 1.']);
+            }
+        }
+
+        if ($suggestedContributionKobo !== null && $suggestedContributionKobo <= 0) {
+            throw ValidationException::withMessages(['contribution' => 'Contribution must be greater than zero.']);
+        }
+
+        return DB::transaction(function () use ($user, $items, $cadence, $suggestedContributionKobo) {
+            $targetTotal = 0;
+            foreach ($items as $item) {
+                $targetTotal += $item['product']->price_kobo * $item['quantity'];
+            }
+
+            $plan = ProductTargetPlan::query()->create([
+                'user_id' => $user->id,
+                'product_id' => null,
+                'target_price_kobo' => $targetTotal,
+                'payment_mode' => PlanPaymentMode::Schedule,
+                'cadence' => $cadence,
+                'suggested_contribution_kobo' => $suggestedContributionKobo,
+                'amount_saved_kobo' => 0,
+                'remaining_balance_kobo' => $targetTotal,
+                'progress_percentage' => 0,
+                'status' => PlanStatus::Active,
+                'started_at' => now(),
+                'expected_completion_date' => $this->projectFromSuggested($cadence, $suggestedContributionKobo, $targetTotal),
+            ]);
+
+            foreach ($items as $item) {
+                PlanItem::query()->create([
+                    'plan_id' => $plan->id,
+                    'product_id' => $item['product']->id,
+                    'vendor_id' => $item['product']->vendor_id,
+                    'locked_price_kobo' => $item['product']->price_kobo,
+                    'quantity' => $item['quantity'],
+                    'created_at' => now(),
+                ]);
+            }
+
+            $this->recordStatusEvent($plan, null, PlanStatus::Active, $user);
+
+            $this->auditLogger->log(
+                actor: $user,
+                subject: $plan,
+                action: 'savings.bundle_plan_created',
+                newValues: [
+                    'target_price_kobo' => $targetTotal,
+                    'item_count' => count($items),
+                    'cadence' => $cadence->value,
+                ],
+            );
+
+            return $plan;
         });
     }
 

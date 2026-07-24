@@ -13,7 +13,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Pay At Once checkout (docs/firstmarket_Implementation_Plan.md Sprint 5):
+ * Pay At Once checkout (docs/FirstMaket_Implementation_Plan.md Sprint 5):
  * pay the full locked product price from the wallet in one step. Feels like
  * a normal purchase; internally it is a pay_at_once Product Target Plan that
  * reaches Ready for Delivery the moment it is fully paid. Wallet money is

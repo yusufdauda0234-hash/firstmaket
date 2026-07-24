@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Single-row admin settings for vendor posting fees
- * (docs/firstmarket_PRD_Laravel.md "Vendor fee settings"). Fee changes apply
+ * (docs/FirstMaket_PRD_Laravel.md "Vendor fee settings"). Fee changes apply
  * only to new posts, never to already-submitted ones.
  */
 /**

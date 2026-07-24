@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Append-only history of plan status transitions
- * (docs/firstmarket-Database_Schema.md section 8), mirroring the catalog's
+ * (docs/FirstMaket-Database_Schema.md section 8), mirroring the catalog's
  * product_status_events pattern.
  *
  * @property int $id

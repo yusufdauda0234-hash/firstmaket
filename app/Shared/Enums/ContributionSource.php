@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * Where a plan contribution's money came from
- * (docs/firstmarket-Database_Schema.md section 8, plan_contributions.source).
+ * (docs/FirstMaket-Database_Schema.md section 8, plan_contributions.source).
  * `paystack_deposit` means straight from the wallet balance (which is only
  * ever funded by verified Paystack deposits); `open_savings` is a partial
  * allocation from the Open Savings pot; `redirection` is a full-balance move

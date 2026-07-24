@@ -11,7 +11,7 @@ use App\Shared\Enums\ProductStatus;
 /**
  * Catalog's reaction to a vendor suspension: every approved listing is
  * delisted so nothing from the suspended vendor stays visible to customers
- * (docs/firstmarket_Implementation_Plan.md Sprint 3 QA). Reinstatement does
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 3 QA). Reinstatement does
  * not relist automatically — the vendor resubmits for review.
  */
 class DelistSuspendedVendorProducts

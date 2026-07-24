@@ -15,7 +15,7 @@ import {
     PiggyBank,
     ReceiptText,
     Settings,
-    ShieldCheck,
+    ShoppingBag,
     Wallet,
 } from 'lucide-react';
 import { ComponentType, PropsWithChildren, ReactNode } from 'react';
@@ -71,6 +71,12 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
             heading: 'Shopping',
             items: [
                 {
+                    label: 'My Cart',
+                    icon: ShoppingBag,
+                    href: route('cart.index'),
+                    match: (p) => p.startsWith('/cart'),
+                },
+                {
                     label: 'My Savings',
                     icon: PiggyBank,
                     href: route('savings.index'),
@@ -107,12 +113,6 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
         {
             heading: 'Account',
             items: [
-                {
-                    label: 'Identity verification',
-                    icon: ShieldCheck,
-                    href: route('identity.status'),
-                    match: (p) => p.startsWith('/identity') || p.startsWith('/phone'),
-                },
                 {
                     label: 'Notifications',
                     icon: Bell,

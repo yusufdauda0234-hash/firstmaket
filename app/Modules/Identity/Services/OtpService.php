@@ -16,8 +16,8 @@ use Illuminate\Validation\ValidationException;
  * OTP lifecycle: hashed-at-rest codes, short expiry, per-destination request
  * throttling, and a hard attempt cap per code. Codes travel by SMS or email —
  * whichever channel matches the identifier the user signed up with
- * (docs/firstmarket_Implementation_Plan.md Sprint 2 + Sprint 2 Addendum,
- * docs/firstmarket_Security_Compliance.md).
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 2 + Sprint 2 Addendum,
+ * docs/FirstMaket_Security_Compliance.md).
  */
 class OtpService
 {
@@ -74,14 +74,28 @@ class OtpService
             'request_ip' => $requestIp,
         ]);
 
-        match ($channel) {
-            OtpChannel::Sms => $this->sms->send(
-                $destination,
-                "Your FirstMarket verification code is {$code}. It expires in ".self::CODE_TTL_MINUTES.' minutes. Never share this code.'
-            ),
-            OtpChannel::Email => Notification::route('mail', $destination)
-                ->notify(new OtpCodeNotification($code, self::CODE_TTL_MINUTES)),
-        };
+        try {
+            match ($channel) {
+                OtpChannel::Sms => $this->sms->send(
+                    $destination,
+                    "Your FirstMarketverification code is {$code}. It expires in ".self::CODE_TTL_MINUTES.' minutes. Never share this code.'
+                ),
+                OtpChannel::Email => Notification::route('mail', $destination)
+                    ->notify(new OtpCodeNotification($code, self::CODE_TTL_MINUTES)),
+            };
+        } catch (\Throwable $e) {
+            // Delivery failed at the gateway (bad credentials, no routing,
+            // provider outage) rather than our own validation — surface it
+            // the same way as any other form error instead of an uncaught
+            // 500 (which Inertia turns into a silent full-page reload), and
+            // free up the destination so the throttle above doesn't also
+            // block a retry with a code that was never delivered.
+            $otp->delete();
+
+            throw ValidationException::withMessages([
+                'identifier' => 'We could not send your verification code right now. Please try again shortly.',
+            ]);
+        }
 
         return $otp;
     }

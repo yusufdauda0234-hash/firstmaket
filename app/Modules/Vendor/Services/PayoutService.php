@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Weekly vendor payout batches (docs/firstmarket_Implementation_Plan.md
+ * Weekly vendor payout batches (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 step 9): Finance generates a batch of every positive cleared
  * earnings balance with a verified active bank account, approves it, then
  * marks each transfer paid or failed. The negative ledger row is written

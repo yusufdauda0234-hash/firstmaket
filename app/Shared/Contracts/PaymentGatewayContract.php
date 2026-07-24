@@ -5,7 +5,7 @@ namespace App\Shared\Contracts;
 use App\Models\User;
 
 /**
- * Payment provider abstraction (docs/firstmarket_Developer_Guidelines.md
+ * Payment provider abstraction (docs/FirstMaket_Developer_Guidelines.md
  * golden rules — modules depend on Shared contracts, not concrete drivers).
  * The MVP driver is Paystack; nothing here exposes a payout/withdrawal
  * operation, because none exists in the system.

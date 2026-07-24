@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notification;
 
 /**
  * Custom Laravel notification channel that delivers through the platform's
- * provider-agnostic SMS contract (docs/firstmarket_Implementation_Plan.md
+ * provider-agnostic SMS contract (docs/FirstMaket_Implementation_Plan.md
  * Sprint 7: notification dispatcher for email, SMS, and browser).
  * Notifications opt in by implementing toSms(): string.
  */

@@ -6,8 +6,9 @@ use Illuminate\Support\Facades\Http;
 
 /**
  * Sprint 4: starting a deposit initializes a Paystack charge and hands the
- * browser to hosted checkout. A verified phone is required first (money
- * movement rule). No wallet is credited here.
+ * browser to hosted checkout. No wallet is credited here. Phone verification
+ * is not required to fund the wallet — it's a secondary/optional identifier
+ * while SMS OTP delivery isn't reliable yet.
  */
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
@@ -46,15 +47,30 @@ it('initializes a Paystack charge and redirects to hosted checkout', function ()
     $this->assertDatabaseCount('wallet_transactions', 0);
 });
 
-it('blocks funding until the phone is verified', function () {
+it('allows funding without a verified phone', function () {
+    Http::fake([
+        'api.paystack.co/transaction/initialize' => Http::response([
+            'status' => true,
+            'data' => [
+                'reference' => 'FMW_generated',
+                'authorization_url' => 'https://checkout.paystack.com/abc123',
+                'access_code' => 'acc_123',
+            ],
+        ]),
+    ]);
+
     $customer = User::factory()->create(['phone_verified_at' => null]);
     $customer->assignRole('Customer');
 
     $this->actingAs($customer)
         ->post(route('wallet.deposit'), ['amount_naira' => 5000])
-        ->assertSessionHasErrors('amount_naira');
+        ->assertRedirect('https://checkout.paystack.com/abc123');
 
-    $this->assertDatabaseCount('paystack_transactions', 0);
+    $this->assertDatabaseHas('paystack_transactions', [
+        'user_id' => $customer->id,
+        'amount_kobo' => 500000,
+        'status' => 'pending',
+    ]);
 });
 
 it('rejects a below-minimum deposit amount', function () {

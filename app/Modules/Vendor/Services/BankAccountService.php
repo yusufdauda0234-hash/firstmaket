@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Vendor payout bank account capture with verification
- * (docs/firstmarket_Implementation_Plan.md Sprint 6): the account name is
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 6): the account name is
  * resolved through the provider before the account is stored, a transfer
  * recipient is registered, and only then is the account marked verified.
  * One active account per vendor; payouts only ever go to verified accounts.

@@ -16,7 +16,7 @@ return [
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'firstmarket'),
+            'database' => env('DB_DATABASE', 'FirstMaket'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
@@ -34,7 +34,7 @@ return [
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'firstmarket'),
+            'database' => env('DB_DATABASE', 'FirstMaket'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
@@ -49,13 +49,13 @@ return [
         // Finance/Admin reporting and reconciliation queries should read
         // from this connection so they never contend with live wallet/order
         // writes on the primary. Points at the same database until a
-        // physical read replica is provisioned (docs/firstmarket-Database_Schema.md).
+        // physical read replica is provisioned (docs/FirstMaket-Database_Schema.md).
         'reporting' => [
             'driver' => env('DB_REPORTING_DRIVER', env('DB_CONNECTION', 'mariadb')),
             'url' => env('DB_REPORTING_URL'),
             'host' => env('DB_REPORTING_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('DB_REPORTING_PORT', env('DB_PORT', '3306')),
-            'database' => env('DB_DATABASE', 'firstmarket'),
+            'database' => env('DB_DATABASE', 'FirstMaket'),
             'username' => env('DB_REPORTING_USERNAME', env('DB_USERNAME', 'root')),
             'password' => env('DB_REPORTING_PASSWORD', env('DB_PASSWORD', '')),
             'unix_socket' => env('DB_SOCKET', ''),
@@ -76,14 +76,14 @@ return [
 
     // Retained for optional future scale-out only — nothing in the MVP uses
     // Redis; cache, sessions, queues, and rate limiting all run on the
-    // database driver (see docs/firstmarket_Implementation_Plan.md).
+    // database driver (see docs/FirstMaket_Implementation_Plan.md).
     'redis' => [
 
         'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'firstmarket'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'FirstMaket'), '_').'_database_'),
         ],
 
         'default' => [

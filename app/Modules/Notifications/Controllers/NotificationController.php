@@ -13,7 +13,7 @@ use Inertia\Response;
 
 /**
  * Customer notification inbox + per-category channel preferences
- * (docs/firstmarket_Implementation_Plan.md Sprint 7).
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 7).
  */
 class NotificationController extends Controller
 {

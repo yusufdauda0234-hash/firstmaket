@@ -15,17 +15,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * A goal-based savings plan toward one product at a locked price
- * (docs/firstmarket-Database_Schema.md section 8). target_price_kobo is
- * copied from the product at creation and never changes automatically —
+ * A goal-based savings plan toward one product (or, since Sprint 8, a
+ * multi-product bundle) at a locked price
+ * (docs/FirstMaket-Database_Schema.md section 8). target_price_kobo is
+ * copied from the product(s) at creation and never changes automatically —
  * vendor price edits do not touch running plans. Pay At Once purchases are
  * plans with payment_mode = pay_at_once that reach Ready for Delivery in one
- * full contribution. All state changes go through PlanService.
+ * full contribution. product_id is null for a bundled plan — its products
+ * live in `items` instead. All state changes go through PlanService.
  *
  * @property int $id
  * @property string $uuid
  * @property int $user_id
- * @property int $product_id
+ * @property int|null $product_id
  * @property int $target_price_kobo
  * @property PlanPaymentMode $payment_mode
  * @property PlanCadence|null $cadence
@@ -44,9 +46,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
- * @property-read Product $product
+ * @property-read Product|null $product
  * @property-read Collection<int, PlanContribution> $contributions
  * @property-read Collection<int, PlanStatusEvent> $statusEvents
+ * @property-read Collection<int, PlanItem> $items
  */
 class ProductTargetPlan extends Model
 {
@@ -113,5 +116,17 @@ class ProductTargetPlan extends Model
     public function statusEvents(): HasMany
     {
         return $this->hasMany(PlanStatusEvent::class, 'plan_id');
+    }
+
+    /** @return HasMany<PlanItem, $this> */
+    public function items(): HasMany
+    {
+        return $this->hasMany(PlanItem::class, 'plan_id');
+    }
+
+    /** True for a Sprint 8 multi-product bundle (no single product_id). */
+    public function isBundle(): bool
+    {
+        return $this->product_id === null;
     }
 }

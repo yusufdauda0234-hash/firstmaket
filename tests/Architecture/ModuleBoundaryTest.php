@@ -2,7 +2,7 @@
 
 // Modules communicate through domain events or App\Shared\Contracts
 // interfaces, never by depending on another module's classes directly
-// (docs/firstmarket_Developer_Guidelines.md golden rules). Shared code must
+// (docs/FirstMaket_Developer_Guidelines.md golden rules). Shared code must
 // stay dependency-free of feature modules, since modules depend on Shared,
 // not the other way around.
 

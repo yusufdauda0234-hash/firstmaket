@@ -18,7 +18,7 @@ use PragmaRX\Google2FA\Google2FA;
 
 /**
  * Mandatory 2FA enrollment for Super Administrator, Administrator, and
- * Finance Officer accounts (docs/firstmarket_Security_Compliance.md
+ * Finance Officer accounts (docs/FirstMaket_Security_Compliance.md
  * section 3). Gated in front of every other admin route by
  * App\Shared\Middleware\EnsureTwoFactorEnrolled.
  */

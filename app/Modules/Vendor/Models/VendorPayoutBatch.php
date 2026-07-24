@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A periodic (weekly) batch of cleared vendor earnings reviewed by Finance
- * (docs/firstmarket-Database_Schema.md section 9).
+ * (docs/FirstMaket-Database_Schema.md section 9).
  *
  * @property int $id
  * @property string $uuid

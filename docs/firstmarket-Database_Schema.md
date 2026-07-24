@@ -1,11 +1,11 @@
-# FirstMarket Database Schema
+# FirstMarketDatabase Schema
 
 Version: 1.0  
 Database recommendation: MySQL
 
 ## 1. Database Recommendation
 
-Use MySQL for FirstMarket (decision revised 2026-07-17: MySQL 8 in production, MariaDB 10.4+ for local development via XAMPP — same SQL family, both supported by Laravel's mysql/mariadb drivers).
+Use MySQL for FirstMarket(decision revised 2026-07-17: MySQL 8 in production, MariaDB 10.4+ for local development via XAMPP — same SQL family, both supported by Laravel's mysql/mariadb drivers).
 
 What matters for money integrity is fully preserved on MySQL/InnoDB:
 
@@ -26,7 +26,7 @@ Final decision: MySQL family everywhere (MySQL 8 production, MariaDB locally). D
 - Primary key: `id` big integer or UUID, but all public URLs expose `uuid`.
 - Timestamps: `created_at`, `updated_at`; use `deleted_at` where recovery is useful.
 - Money: store in kobo as integer where possible, or `DECIMAL(15,2)` if the team prefers Naira decimals. Pick one convention and enforce it everywhere.
-- Identity fields: encrypt BVN, NIN, document references, and sensitive contact data.
+- Identity fields: encrypt document references and sensitive contact data.
 - Audit: every ledger, identity, vendor, product, plan, order, and admin action needs audit trail.
 - Status fields should be backed by PHP enums.
 - All write flows that touch money must use transactions and row locks.
@@ -35,7 +35,7 @@ Recommended money convention: store money as integer kobo in the database, displ
 
 Reporting/reconciliation queries (Finance dashboards, Admin reports) should run against a dedicated `reporting` database connection, pointed at a read replica once one is provisioned, so heavy report queries never contend with live wallet/order writes on the primary. Define this connection in `config/database.php` from Sprint 1 even before a physical replica exists, so reporting code is written against the right connection from the start.
 
-Define a retention window per sensitive/short-lived table (`otp_codes`, `login_events`, `identity_verifications` provider payloads, `uploaded_documents` for rejected/expired verifications) and a scheduled job that purges or anonymizes rows past that window, excluding anything required for financial audit trail (`wallet_transactions`, `audit_logs`, `receipts` are retained, not purged). This supports the NDPA data-minimization and erasure requirements described in the Security and Compliance document.
+Define a retention window per sensitive/short-lived table (`otp_codes`, `login_events`, `uploaded_documents` for rejected/expired vendor documents) and a scheduled job that purges or anonymizes rows past that window, excluding anything required for financial audit trail (`wallet_transactions`, `audit_logs`, `receipts` are retained, not purged). This supports the NDPA data-minimization and erasure requirements described in the Security and Compliance document.
 
 ## 3. Full Table Inventory
 
@@ -45,12 +45,13 @@ This is the expected full schema surface from MVP through Phase 4. MVP tables sh
 | --- | --- |
 | Core auth/RBAC | `users`, `social_accounts`, `password_reset_tokens`, `sessions`, `personal_access_tokens`, `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` |
 | Security/audit | `login_events`, `otp_codes`, `audit_logs`, `activity_log`, `security_events` |
-| Profiles/identity | `customer_profiles`, `vendor_profiles`, `identity_verifications`, `uploaded_documents`, `addresses` |
+| Profiles/identity | `customer_profiles`, `vendor_profiles`, `uploaded_documents`, `addresses` |
 | Catalog | `categories`, `products`, `product_images`, `product_price_history`, `product_status_events` |
 | Vendor fees | `vendor_fee_settings`, `product_posting_fees` |
 | AI/moderation | `ai_listing_reviews`, `ai_settings`, `ai_recommendations`, `ai_conversations`, `ai_messages`, `ai_cost_logs` |
 | Wallet/payments | `wallets`, `wallet_transactions`, `paystack_transactions`, `payment_authorizations`, `receipts`, `paystack_webhook_events`, `settlement_imports`, `settlement_reconciliation_items` |
-| Purchase/savings | `open_savings`, `product_target_plans`, `direct_checkouts`, `plan_contributions`, `plan_redirections`, `automatic_debits`, `plan_status_events` |
+| Purchase/savings | `open_savings`, `product_target_plans`, `plan_items` (Sprint 8), `direct_checkouts`, `plan_contributions`, `plan_redirections`, `automatic_debits`, `plan_status_events` |
+| Cart/checkout (Sprint 8) | `carts`, `cart_items`, `checkout_sessions` |
 | Orders/logistics | `orders`, `order_status_events`, `delivery_assignments`, `vendor_preparation_events` |
 | Vendor settlement | `category_commission_rates`, `vendor_earnings`, `vendor_bank_accounts`, `vendor_payout_batches`, `vendor_payout_items` |
 | Notifications/support | `notifications`, `notification_preferences`, `notification_deliveries`, `support_tickets`, `support_ticket_messages`, `hotline_call_logs`, `faqs` |
@@ -179,19 +180,7 @@ Core roles:
 
 ## 5. Identity And Verification
 
-### identity_verifications
-
-- `id`
-- `user_id`
-- `type` (`bvn`, `nin`, `cac`)
-- `provider`
-- `provider_reference`
-- `status`
-- `verified_at`
-- `failure_reason`
-- `metadata`
-
-Security note: provider payloads should be minimized. If full payload storage is required, encrypt it.
+There is no BVN/NIN identity verification feature — it was removed. Vendor identity assurance is CAC document review only (`uploaded_documents` below); phone verification (Sprint 2) is optional and never gates wallet funding or Product Target Plans.
 
 ### vendor_profiles
 
@@ -199,8 +188,6 @@ Security note: provider payloads should be minimized. If full payload storage is
 - `user_id`
 - `business_name`
 - `contact_name`
-- `bvn_encrypted`
-- `nin_encrypted`
 - `cac_document_path`
 - `address`
 - `status`
@@ -218,9 +205,6 @@ Required constraints:
 
 - `id`
 - `user_id`
-- `bvn_encrypted`
-- `nin_encrypted`
-- `identity_status`
 - `default_state`
 - `default_lga`
 
@@ -519,8 +503,8 @@ Required constraints:
 - `id`
 - `uuid`
 - `user_id`
-- `product_id`
-- `target_price`
+- `product_id` nullable from Sprint 8 — set for a single-product plan (unchanged today); null for a multi-product (bundled) plan, whose products live in `plan_items` instead
+- `target_price` single product's price, or the sum of `plan_items.locked_price` × `quantity` for a bundled plan
 - `payment_mode` (`schedule`, `pay_at_once`)
 - `cadence` (`daily`, `weekly`, `monthly`, nullable)
 - `suggested_contribution`
@@ -545,6 +529,25 @@ Required constraints:
 - `target_price` is copied from product price at creation and never automatically changes.
 - `progress_percentage` must be between 0 and 100.
 - Redirection is blocked once status is Ready for Delivery.
+- Exactly one of `product_id` or a `plan_items` set must exist for a given plan, never both and never neither.
+- Reaching Ready for Delivery on a multi-product (`plan_items`) plan creates one `order` per plan item, all in the same transaction — never a subset of them early.
+
+### plan_items
+
+Sprint 8. Holds the bundled products for a multi-product plan; absent entirely for a single-product plan (which keeps using `product_target_plans.product_id` as today).
+
+- `id`
+- `plan_id`
+- `product_id`
+- `vendor_id` snapshot, since a bundled plan can span vendors
+- `locked_price_kobo` copied from product price when the plan is created, same rule as `target_price`
+- `quantity`
+- `created_at`
+
+Required constraints:
+
+- Sum of `locked_price_kobo` × `quantity` across a plan's items must equal that plan's `target_price` at creation.
+- A plan's items are immutable once the plan leaves Active status.
 
 ### direct_checkouts
 
@@ -633,13 +636,61 @@ Phase 2.
 - `reason`
 - `created_at`
 
+## 8a. Cart And Checkout (Sprint 8)
+
+### carts
+
+- `id`
+- `uuid`
+- `user_id`
+- `created_at`
+- `updated_at`
+
+Required constraints:
+
+- Unique `user_id` — one cart per customer, persists across devices/sessions.
+
+### cart_items
+
+- `id`
+- `cart_id`
+- `product_id`
+- `quantity`
+- `created_at`
+- `updated_at`
+
+Required constraints:
+
+- Unique (`cart_id`, `product_id`) — adding the same product again increases quantity instead of duplicating a row.
+- Product must be Approved and in stock; re-validated again at checkout, not just at add-time.
+
+### checkout_sessions
+
+Groups the orders created from a single cart full-payment checkout so the customer's receipt/history shows them together. Does not change how any individual order is fulfilled — see section 9.
+
+- `id`
+- `uuid`
+- `user_id`
+- `wallet_transaction_id` the single wallet debit that funded every order in this session
+- `total_amount`
+- `delivery_address`, `state`, `lga` — collected once here, upfront on the checkout screen, before the wallet debit (resolves the address-timing design question: pay-in-full asks upfront, a plan still asks once fully funded)
+- `created_at`
+
+Required constraints:
+
+- A cart item with `quantity` greater than 1 produces that many `orders` rows (each quantity 1) linked to the same checkout session — `orders` itself gains no `quantity` column.
+- Every product is re-validated Approved + in stock inside the same transaction as the wallet debit; an item that fails stays in the cart uncharged and does not block the rest of the checkout.
+
 ## 9. Orders And Delivery
 
 ### orders
 
 - `id`
 - `uuid`
-- `plan_id`
+- `plan_id` nullable from Sprint 8 (null for a cart-checkout order) and no longer unique — a bundled multi-product plan's orders share one `plan_id`; the app layer still enforces exactly one order per single-product plan
+- `checkout_session_id` nullable, set when this order came from a cart full-payment checkout (Sprint 8) — display/grouping only, no fulfillment behavior depends on it
+- `plan_item_id` nullable, set when this order came from a bundled multi-product plan (Sprint 8), pointing at its specific `plan_items` row
+- `plan_delivery_group_id` nullable, set when this order came from a multi-product plan (Sprint 8) reaching Ready for Delivery — groups the sibling orders created in the same transaction; display/grouping only
 - `customer_id`
 - `vendor_id`
 - `product_id`
@@ -661,7 +712,7 @@ Phase 2.
 
 Required constraints:
 
-- Order is created only from a Ready for Delivery plan.
+- Order is created either from a Ready for Delivery plan (single- or multi-product) or, since Sprint 8, directly from a cart full-payment checkout — exactly one of `plan_id` or `checkout_session_id` is set, never both and never neither.
 - Vendor-facing order views must not expose customer identity or delivery address unless business policy changes.
 - Commission fields are snapshots frozen at order creation; later rate changes never alter existing orders.
 
@@ -920,7 +971,7 @@ Approved partner or customer-affiliate profile. Affiliate payout is separate fro
 
 ### affiliate_links
 
-Protected tracking links. Do not expose database IDs, email addresses, phone numbers, BVN, NIN, or other sensitive values.
+Protected tracking links. Do not expose database IDs, email addresses, phone numbers, or other sensitive values.
 
 - `id`
 - `affiliate_id`

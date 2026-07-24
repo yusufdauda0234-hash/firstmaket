@@ -13,7 +13,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Admin product approval queue (docs/firstmarket_Implementation_Plan.md
+ * Admin product approval queue (docs/FirstMaket_Implementation_Plan.md
  * Sprint 3). Reads listing data for display but delegates every state
  * change to the Catalog module's ProductStatusService, which owns the
  * transition rules and domain events. Admins never edit the vendor-set
@@ -93,7 +93,7 @@ class ProductApprovalController extends Controller
                 'note' => $event->note,
                 'changedAt' => $event->created_at->toDayDateTimeString(),
             ]),
-            // Advisory only — humans decide; AI population arrives Sprint 8.
+            // Advisory only — humans decide; AI population arrives Sprint 9.
             'aiReview' => $aiReview !== null ? [
                 'status' => $aiReview->status,
                 'flags' => $aiReview->flags ?? [],

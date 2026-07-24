@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One message in a support ticket thread
- * (docs/firstmarket-Database_Schema.md section 10).
+ * (docs/FirstMaket-Database_Schema.md section 10).
  *
  * @property int $id
  * @property int $support_ticket_id

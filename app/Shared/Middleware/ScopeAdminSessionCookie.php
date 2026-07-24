@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
  * subdomains each get their own session cookie name and domain instead of
  * the customer app's. This is what keeps an XSS on the public/customer
  * surface from being able to reach an admin or vendor session cookie
- * (docs/firstmarket_Security_Compliance.md section 11.1).
+ * (docs/FirstMaket_Security_Compliance.md section 11.1).
  */
 class ScopeAdminSessionCookie
 {

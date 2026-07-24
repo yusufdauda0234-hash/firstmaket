@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Weekly vendor payout batch lifecycle (docs/firstmarket-Database_Schema.md
+ * Weekly vendor payout batch lifecycle (docs/FirstMaket-Database_Schema.md
  * section 9): generated as a draft, submitted for Finance approval, then
  * processed item by item.
  */

@@ -76,9 +76,9 @@ it('links Google to an existing account with the same email and verifies it', fu
 });
 
 it('never signs a staff account in through social login', function () {
-    $staff = User::factory()->staff()->create(['email' => 'admin@firstmarket.ng']);
+    $staff = User::factory()->staff()->create(['email' => 'admin@FirstMaket.ng']);
 
-    mockSocialite(fakeOAuthUser(email: 'admin@firstmarket.ng'));
+    mockSocialite(fakeOAuthUser(email: 'admin@FirstMaket.ng'));
 
     $this->get('/auth/google/callback')->assertRedirect(route('home'));
 

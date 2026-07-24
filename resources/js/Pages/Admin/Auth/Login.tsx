@@ -20,7 +20,7 @@ export default function AdminLogin() {
 
     return (
         <StaffAuthLayout
-            title="FirstMarket Staff Sign In"
+            title="FirstMarketStaff Sign In"
             subtitle="Sign in with your staff account. 2FA is required for privileged roles."
         >
             <Head title="Admin log in" />

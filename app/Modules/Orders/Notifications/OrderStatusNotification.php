@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
- * Customer delivery-chain update (docs/firstmarket_Implementation_Plan.md
+ * Customer delivery-chain update (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6, preference-aware since Sprint 7: email/SMS/in-app follow the
  * user's "Orders and delivery" toggles).
  */
@@ -31,12 +31,12 @@ class OrderStatusNotification extends PreferenceAwareNotification implements Sho
             ->subject("Order {$this->orderNumber}: {$this->statusLabel}")
             ->line("Update on your order for \"{$this->productName}\":")
             ->line("Status: {$this->statusLabel}")
-            ->line('Track every step from My Orders in your FirstMarket account.');
+            ->line('Track every step from My Orders in your FirstMarketaccount.');
     }
 
     public function toSms(object $notifiable): string
     {
-        return "FirstMarket: your order for {$this->productName} is now \"{$this->statusLabel}\". Track it at firstmarket.ng/orders";
+        return "FirstMaket: your order for {$this->productName} is now \"{$this->statusLabel}\". Track it at FirstMaket.ng/orders";
     }
 
     public function toDatabase(object $notifiable): array

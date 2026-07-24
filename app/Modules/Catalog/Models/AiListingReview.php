@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Advisory AI review of a listing (structure ships in Sprint 3; the actual
- * Listing Review Assistant integration is Sprint 8). AI never approves or
+ * Listing Review Assistant integration is Sprint 9). AI never approves or
  * rejects — human administrators decide.
  */
 /**

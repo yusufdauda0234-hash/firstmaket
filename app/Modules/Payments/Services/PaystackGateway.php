@@ -26,7 +26,7 @@ class PaystackGateway implements PaymentGatewayContract
         $response = Http::withToken((string) config('services.paystack.secret_key'))
             ->asJson()
             ->post(config('services.paystack.base_url').'/transaction/initialize', [
-                'email' => $user->email ?? $user->phone.'@wallet.firstmarket.ng',
+                'email' => $user->email ?? $user->phone.'@wallet.FirstMaket.ng',
                 'amount' => $amountKobo, // Paystack expects the smallest unit (kobo).
                 'currency' => 'NGN',
                 'reference' => $reference,

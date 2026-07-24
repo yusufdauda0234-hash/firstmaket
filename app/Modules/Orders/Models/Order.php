@@ -3,7 +3,9 @@
 namespace App\Modules\Orders\Models;
 
 use App\Models\User;
+use App\Modules\Cart\Models\CheckoutSession;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Savings\Models\PlanItem;
 use App\Modules\Savings\Models\ProductTargetPlan;
 use App\Modules\Vendor\Models\VendorProfile;
 use App\Shared\Enums\OrderStatus;
@@ -15,17 +17,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * A fulfillment order created from a fully funded (Ready for Delivery)
- * Product Target Plan (docs/firstmarket-Database_Schema.md section 9).
- * Delivery address is captured only at creation — after full funding.
- * locked_price/commission/vendor_earning are snapshots frozen at creation;
- * later rate changes never alter existing orders. All state changes go
- * through OrderService. Vendor-facing views must never expose customer
- * identity or the delivery address.
+ * A fulfillment order created either from a fully funded (Ready for
+ * Delivery) Product Target Plan or, since Sprint 8, directly from a cart
+ * full-payment checkout (docs/FirstMaket-Database_Schema.md section 9).
+ * plan_id is null for a checkout-session order; checkout_session_id is null
+ * for a plan order. plan_item_id + plan_delivery_group_id are set only when
+ * this order came from a bundled multi-product plan (several orders share
+ * one plan_id and plan_delivery_group_id in that case). Delivery address is
+ * captured once — either upfront at cart checkout, or after full funding for
+ * a plan. locked_price/commission/vendor_earning are snapshots frozen at
+ * creation; later rate changes never alter existing orders. All state
+ * changes go through OrderService. Vendor-facing views must never expose
+ * customer identity or the delivery address.
  *
  * @property int $id
  * @property string $uuid
- * @property int $plan_id
+ * @property int|null $plan_id
+ * @property int|null $checkout_session_id
+ * @property int|null $plan_item_id
+ * @property string|null $plan_delivery_group_id
  * @property int $customer_id
  * @property int $vendor_id
  * @property int $product_id
@@ -46,7 +56,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $earnings_credited_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property-read ProductTargetPlan $plan
+ * @property-read ProductTargetPlan|null $plan
+ * @property-read CheckoutSession|null $checkoutSession
+ * @property-read PlanItem|null $planItem
  * @property-read User $customer
  * @property-read VendorProfile $vendor
  * @property-read Product $product
@@ -60,6 +72,9 @@ class Order extends Model
 
     protected $fillable = [
         'plan_id',
+        'checkout_session_id',
+        'plan_item_id',
+        'plan_delivery_group_id',
         'customer_id',
         'vendor_id',
         'product_id',
@@ -100,6 +115,18 @@ class Order extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(ProductTargetPlan::class, 'plan_id');
+    }
+
+    /** @return BelongsTo<CheckoutSession, $this> */
+    public function checkoutSession(): BelongsTo
+    {
+        return $this->belongsTo(CheckoutSession::class);
+    }
+
+    /** @return BelongsTo<PlanItem, $this> */
+    public function planItem(): BelongsTo
+    {
+        return $this->belongsTo(PlanItem::class);
     }
 
     /** @return BelongsTo<User, $this> */

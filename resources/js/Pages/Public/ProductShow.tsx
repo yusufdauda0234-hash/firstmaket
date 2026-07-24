@@ -5,8 +5,8 @@ import Reveal from '@/Components/ui/Reveal';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { Category, PageProps, ProductSummary } from '@/Types';
 import { formatNairaFromKobo } from '@/Utils/money';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronRight, PiggyBank, ShieldCheck, Store, Truck, Undo2, Zap } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ChevronRight, PiggyBank, ShieldCheck, ShoppingBag, Store, Truck, Undo2, Zap } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 
 interface ProductShowProps {
@@ -55,17 +55,54 @@ function AuthGateButton({
     );
 }
 
+/** Same auth-gate as AuthGateButton, but posts an action instead of navigating. */
+function AuthGateAction({
+    onClick,
+    disabled,
+    className,
+    children,
+}: {
+    onClick: () => void;
+    disabled?: boolean;
+    className: string;
+    children: ReactNode;
+}) {
+    const openAuth = useAuthModal();
+    const { auth } = usePage<PageProps>().props;
+
+    return (
+        <button
+            type="button"
+            onClick={auth.user ? onClick : openAuth}
+            disabled={auth.user ? disabled : false}
+            className={className}
+        >
+            {children}
+        </button>
+    );
+}
+
 export default function ProductShow({ product, relatedProducts, categories }: ProductShowProps) {
     const [activeImage, setActiveImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
     const [quickView, setQuickView] = useState<ProductSummary | null>(null);
+    const [addingToCart, setAddingToCart] = useState(false);
 
     // Reset the gallery when navigating between products.
     useEffect(() => {
         setActiveImage(0);
         setQuantity(1);
     }, [product.uuid]);
+
+    const addToCart = () => {
+        setAddingToCart(true);
+        router.post(
+            route('cart.items.store'),
+            { product_uuid: product.uuid, quantity },
+            { preserveScroll: true, onFinish: () => setAddingToCart(false) },
+        );
+    };
 
     const maxQuantity = Math.max(product.stockQuantity, 1);
     const inStock = product.stockQuantity > 0;
@@ -81,10 +118,10 @@ export default function ProductShow({ product, relatedProducts, categories }: Pr
     return (
         <PublicLayout categories={categories}>
             <Head>
-                <title>{`${product.name} — FirstMarket`}</title>
+                <title>{`${product.name} — FirstMaket`}</title>
                 <meta
                     name="description"
-                    content={`Buy ${product.name} on FirstMarket — pay at once or save small small at a locked price. ${formatNairaFromKobo(product.priceKobo)}.`}
+                    content={`Buy ${product.name} on FirstMarket— pay at once or save small small at a locked price. ${formatNairaFromKobo(product.priceKobo)}.`}
                 />
             </Head>
 
@@ -211,7 +248,7 @@ export default function ProductShow({ product, relatedProducts, categories }: Pr
                         <div className="mt-6 grid gap-3 border-t border-gray-100 pt-5 sm:grid-cols-2">
                             {[
                                 { icon: ShieldCheck, text: 'Paystack-secured payments' },
-                                { icon: Truck, text: 'FirstMarket delivery nationwide' },
+                                { icon: Truck, text: 'FirstMarketdelivery nationwide' },
                                 { icon: Store, text: 'Verified vendor' },
                                 { icon: Undo2, text: '30-day returns on eligible items' },
                             ].map((item) => (
@@ -231,7 +268,7 @@ export default function ProductShow({ product, relatedProducts, categories }: Pr
                             {/* Price */}
                             <div className="rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 px-4 py-3">
                                 <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">
-                                    FirstMarket price
+                                    FirstMarketprice
                                 </p>
                                 <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2.5">
                                     <span className="text-3xl font-extrabold tracking-tight text-brand-700">
@@ -316,6 +353,16 @@ export default function ProductShow({ product, relatedProducts, categories }: Pr
 
                             {/* Actions */}
                             <div className="mt-4 space-y-2.5">
+                                {inStock && (
+                                    <AuthGateAction
+                                        onClick={addToCart}
+                                        disabled={addingToCart}
+                                        className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-200 bg-white py-3 text-sm font-bold text-gray-900 transition hover:border-brand-300 hover:shadow-sm active:scale-[0.98] disabled:opacity-60"
+                                    >
+                                        <ShoppingBag className="h-4 w-4" />
+                                        {addingToCart ? 'Adding…' : 'Add to cart'}
+                                    </AuthGateAction>
+                                )}
                                 <AuthGateButton
                                     href={route('checkout.pay-at-once', product.slug)}
                                     className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 py-3 text-sm font-bold text-white transition hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-[0.98]"

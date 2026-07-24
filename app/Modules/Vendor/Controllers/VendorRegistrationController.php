@@ -23,7 +23,7 @@ use Inertia\Response;
 /**
  * Vendor onboarding: account + vendor profile + CAC document in one step.
  * The profile starts Pending and product listing stays locked until an
- * Administrator approves it (docs/firstmarket_Implementation_Plan.md Sprint 2).
+ * Administrator approves it (docs/FirstMaket_Implementation_Plan.md Sprint 2).
  * The CAC file goes to the private local disk — never a public one.
  */
 class VendorRegistrationController extends Controller

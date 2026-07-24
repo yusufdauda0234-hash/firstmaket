@@ -1,4 +1,4 @@
-import { Badge, statusTone } from '@/Components/ui/Badge';
+import { Badge } from '@/Components/ui/Badge';
 import AccountLayout from '@/Layouts/AccountLayout';
 import { cn } from '@/Utils/cn';
 import { formatNairaFromKobo } from '@/Utils/money';
@@ -14,7 +14,6 @@ import {
     PiggyBank,
     Plus,
     ReceiptText,
-    ShieldCheck,
     Star,
     Truck,
     Wallet,
@@ -31,7 +30,6 @@ interface Props {
         memberSince: string | null;
     };
     walletBalanceKobo: number;
-    identityStatus: string;
     orderCounts: {
         awaitingAddress: number;
         processing: number;
@@ -117,7 +115,7 @@ function ActionTile({
 }
 
 export default function AccountOverview() {
-    const { account, walletBalanceKobo, identityStatus, orderCounts } = usePage<Props>().props;
+    const { account, walletBalanceKobo, orderCounts } = usePage<Props>().props;
     const firstName = account.name.split(' ')[0];
     const initials = account.name
         .split(/\s+/)
@@ -148,10 +146,6 @@ export default function AccountOverview() {
                         </p>
                         <h1 className="mt-0.5 truncate text-2xl font-extrabold tracking-tight">{firstName}</h1>
                         <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-brand-100">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-medium">
-                                <ShieldCheck className="h-3.5 w-3.5" />
-                                Identity {identityStatus.replace('_', ' ')}
-                            </span>
                             {account.memberSince && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-medium">
                                     <Clock className="h-3.5 w-3.5" />
@@ -221,12 +215,6 @@ export default function AccountOverview() {
                     icon={ReceiptText}
                     href={route('wallet.transactions')}
                     accent="bg-indigo-50 text-indigo-600"
-                />
-                <ActionTile
-                    label="Verify ID"
-                    icon={ShieldCheck}
-                    href={route('identity.status')}
-                    accent="bg-emerald-50 text-emerald-600"
                 />
                 <ActionTile
                     label="Savings"
@@ -316,32 +304,6 @@ export default function AccountOverview() {
                                 View wallet
                             </Link>
                         </div>
-                    </div>
-                </section>
-
-                {/* Identity verification */}
-                <section className="rounded-2xl border border-gray-200 bg-white shadow-sm sm:col-span-2">
-                    <header className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
-                        <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                            Identity verification
-                        </h2>
-                        <Badge tone={statusTone(identityStatus)}>{identityStatus.replace('_', ' ')}</Badge>
-                    </header>
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                        <p className="flex items-center gap-2 text-sm text-gray-600">
-                            <ShieldCheck className="h-4 w-4 text-brand-600" />
-                            {identityStatus === 'verified'
-                                ? 'Your identity is verified — Product Target Plans are unlocked.'
-                                : 'Verify your BVN or NIN to unlock Product Target Plans.'}
-                        </p>
-                        {identityStatus !== 'verified' && (
-                            <Link
-                                href={route('identity.status')}
-                                className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline"
-                            >
-                                Verify now <ArrowRight className="h-3.5 w-3.5" />
-                            </Link>
-                        )}
                     </div>
                 </section>
             </div>

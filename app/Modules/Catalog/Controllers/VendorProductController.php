@@ -24,7 +24,7 @@ use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
- * Vendor-facing listing management (docs/firstmarket_Implementation_Plan.md
+ * Vendor-facing listing management (docs/FirstMaket_Implementation_Plan.md
  * Sprint 3). Every query is scoped to the authenticated vendor's own
  * profile; only Approved vendors can create or edit listings. Vendors
  * control the price — and changing it on an approved product sends the

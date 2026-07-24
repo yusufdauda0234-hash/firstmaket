@@ -4,7 +4,7 @@ namespace App\Shared\Contracts;
 
 /**
  * Bank account verification for vendor payouts
- * (docs/firstmarket_Implementation_Plan.md Sprint 6): resolve the account
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 6): resolve the account
  * name for a number+bank pair and register a transfer recipient with the
  * provider. Kept separate from PaymentGatewayContract because customer-side
  * payments deliberately expose no payout surface.

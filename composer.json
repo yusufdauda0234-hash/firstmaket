@@ -1,8 +1,8 @@
 {
-    "name": "firstmarket/firstmarket",
+    "name": "FirstMaket/FirstMaket",
     "type": "project",
-    "description": "FirstMarket - Pay small small, collect with peace of mind.",
-    "keywords": ["laravel", "firstmarket", "marketplace", "savings"],
+    "description": "FirstMarket- Pay small small, collect with peace of mind.",
+    "keywords": ["laravel", "FirstMaket", "marketplace", "savings"],
     "license": "proprietary",
     "require": {
         "php": "^8.2",

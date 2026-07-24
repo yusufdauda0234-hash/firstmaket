@@ -7,9 +7,12 @@ use Illuminate\Foundation\Events\Dispatchable;
 
 /**
  * Fired the moment a Product Target Plan (schedule or Pay At Once) reaches
- * 100% of its locked target price. Sprint 6's Orders module listens to this
- * to create the order and notify the vendor — the Savings module does not
- * know Orders exists.
+ * 100% of its locked target price — including, since Sprint 8, a
+ * multi-product bundle, where $productId is null (its products live in
+ * plan_items instead; see PlanItem). The customer still submits a delivery
+ * address afterward (OrderController::store), which creates the order(s)
+ * and notifies the vendor(s) — the Savings module does not know Orders
+ * exists.
  */
 class PlanReadyForDelivery implements DomainEvent
 {
@@ -18,7 +21,7 @@ class PlanReadyForDelivery implements DomainEvent
     public function __construct(
         public readonly int $planId,
         public readonly int $userId,
-        public readonly int $productId,
+        public readonly ?int $productId,
         public readonly int $targetPriceKobo,
     ) {}
 }

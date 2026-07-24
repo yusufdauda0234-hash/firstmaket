@@ -27,7 +27,7 @@ interface Props {
         productName: string;
         vendorName: string;
         customerName: string;
-        planUuid: string;
+        planUuid: string | null;
         status: string;
         statusLabel: string;
         lockedPriceKobo: number;
@@ -179,7 +179,13 @@ export default function AdminOrderShow() {
                         />
                         <DetailRow
                             label="Plan"
-                            value={<span className="font-mono text-xs">{order.planUuid.slice(0, 8).toUpperCase()}</span>}
+                            value={
+                                order.planUuid ? (
+                                    <span className="font-mono text-xs">{order.planUuid.slice(0, 8).toUpperCase()}</span>
+                                ) : (
+                                    'Cart checkout'
+                                )
+                            }
                         />
                     </dl>
                 </Card>

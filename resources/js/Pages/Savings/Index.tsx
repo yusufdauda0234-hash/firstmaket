@@ -9,8 +9,9 @@ import { FormEventHandler, useState } from 'react';
 
 interface PlanRow {
     uuid: string;
+    isBundle: boolean;
     productName: string;
-    productSlug: string;
+    productSlug: string | null;
     productImage: string | null;
     targetPriceKobo: number;
     amountSavedKobo: number;
@@ -28,7 +29,6 @@ interface Props {
     walletBalanceKobo: number;
     plans: PlanRow[];
     activePlanCount: number;
-    identityVerified: boolean;
     [key: string]: unknown;
 }
 
@@ -49,8 +49,7 @@ const statusLabel: Record<string, string> = {
 };
 
 export default function SavingsIndex() {
-    const { openSavingsBalanceKobo, walletBalanceKobo, plans, activePlanCount, identityVerified } =
-        usePage<Props>().props;
+    const { openSavingsBalanceKobo, walletBalanceKobo, plans, activePlanCount } = usePage<Props>().props;
 
     const [allocating, setAllocating] = useState(false);
     const allocateForm = useForm({ amount_naira: '' });
@@ -149,16 +148,6 @@ export default function SavingsIndex() {
                     </form>
                 )}
             </div>
-
-            {/* ── Identity nudge for plans ── */}
-            {!identityVerified && (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-                    <span>Verify your BVN or NIN to start Product Target Plans. Open Savings works right away.</span>
-                    <Link href={route('identity.status')} className="font-semibold underline">
-                        Verify now
-                    </Link>
-                </div>
-            )}
 
             {/* ── Plans ── */}
             <div className="mt-6 flex items-center justify-between">

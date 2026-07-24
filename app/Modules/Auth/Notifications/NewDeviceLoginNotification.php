@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 /**
  * Login alert sent when a sign-in comes from a device fingerprint the
- * account has never used before (docs/firstmarket_Implementation_Plan.md
+ * account has never used before (docs/FirstMaket_Implementation_Plan.md
  * Sprint 2: email verification and login-alert events). Security category —
  * the email toggle is locked on.
  */
@@ -28,8 +28,8 @@ class NewDeviceLoginNotification extends PreferenceAwareNotification implements 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New device sign-in to your FirstMarket account')
-            ->line('Your FirstMarket account was just signed in to from a device we have not seen before.')
+            ->subject('New device sign-in to your FirstMarketaccount')
+            ->line('Your FirstMarketaccount was just signed in to from a device we have not seen before.')
             ->line("IP address: {$this->ipAddress}")
             ->line("Device: {$this->userAgent}")
             ->line('If this was you, no action is needed. If not, change your password immediately and contact support.');

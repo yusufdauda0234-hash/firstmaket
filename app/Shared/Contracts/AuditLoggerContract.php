@@ -10,7 +10,7 @@ interface AuditLoggerContract
      * Record a business-action audit entry. Every money, plan, listing,
      * vendor, order, and admin state change must go through this rather
      * than being written directly, so audit coverage cannot be forgotten
-     * on a case-by-case basis (docs/firstmarket_Security_Compliance.md
+     * on a case-by-case basis (docs/FirstMaket_Security_Compliance.md
      * section 8).
      */
     public function log(

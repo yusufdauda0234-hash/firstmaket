@@ -23,8 +23,8 @@ return [
     ],
 
     'support' => [
-        'hotline' => env('FIRSTMARKET_SUPPORT_HOTLINE', '0700-FIRSTMARKET'),
-        'whatsapp' => env('FIRSTMARKET_SUPPORT_WHATSAPP', ''),
+        'hotline' => env('FirstMaket_SUPPORT_HOTLINE', '0700-FirstMaket'),
+        'whatsapp' => env('FirstMaket_SUPPORT_WHATSAPP', ''),
     ],
 
 ];

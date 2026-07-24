@@ -10,8 +10,8 @@ use Illuminate\Support\ServiceProvider;
  * Auto-loads each app/Modules/{Name}/routes.php. Modules communicate with
  * each other through domain events or Shared/Contracts interfaces, never by
  * reaching into another module's models directly (see
- * docs/firstmarket_Developer_Guidelines.md and
- * docs/firstmarket_Implementation_Plan.md section 1.1).
+ * docs/FirstMaket_Developer_Guidelines.md and
+ * docs/FirstMaket_Implementation_Plan.md section 1.1).
  *
  * loadRoutes() is called from bootstrap/app.php's routing closure — not from
  * boot() — because registration order is what makes domain isolation work:

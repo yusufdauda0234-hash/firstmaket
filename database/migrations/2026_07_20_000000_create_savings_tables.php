@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Sprint 5 Purchase and Savings Engine (docs/firstmarket-Database_Schema.md
+ * Sprint 5 Purchase and Savings Engine (docs/FirstMaket-Database_Schema.md
  * section 8). Pay At Once is modeled as product_target_plans.payment_mode =
  * 'pay_at_once' (the schema doc's stated option), so no direct_checkouts
  * table. Money amounts are integer kobo; balances are unsigned so they can
@@ -29,7 +29,9 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained();
+            // Null for a multi-product (bundled) plan — its products live in
+            // plan_items instead (Sprint 8).
+            $table->foreignId('product_id')->nullable()->constrained();
             // Copied from the product at creation and never automatically changed.
             $table->unsignedBigInteger('target_price_kobo');
             $table->string('payment_mode', 20); // schedule | pay_at_once

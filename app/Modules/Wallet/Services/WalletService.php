@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * The single gateway for every wallet balance change
- * (docs/firstmarket_Implementation_Plan.md Sprint 4). Balances are only ever
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 4). Balances are only ever
  * mutated here, inside a database transaction that row-locks the wallet, so
  * concurrent deposits serialize and balance_before/after stay exact. The
  * ledger is append-only and each credit issues its receipt in the same
@@ -128,11 +128,12 @@ class WalletService
     }
 
     /**
-     * Debit the wallet for an internal savings-engine move (plan contribution
-     * or Open Savings allocation). Never external: the only accepted types
-     * are the two internal ones, enforced here so no withdrawal-shaped call
-     * can ever compile into a balance decrease. Locks the wallet row, checks
-     * funds, and appends the ledger row with exact balance_before/after.
+     * Debit the wallet for an internal savings/purchase move (plan
+     * contribution, Open Savings allocation, or a cart pay-in-full checkout).
+     * Never external: only these internal types are accepted, enforced here
+     * so no withdrawal-shaped call can ever compile into a balance decrease.
+     * Locks the wallet row, checks funds, and appends the ledger row with
+     * exact balance_before/after.
      *
      * Callers own the surrounding DB transaction so the ledger row and the
      * savings-side credit commit atomically.
@@ -146,7 +147,11 @@ class WalletService
         string $reference,
         array $metadata = [],
     ): WalletTransaction {
-        if (! in_array($type, [WalletTransactionType::PlanContribution, WalletTransactionType::OpenSavingsAllocation], true)) {
+        if (! in_array($type, [
+            WalletTransactionType::PlanContribution,
+            WalletTransactionType::OpenSavingsAllocation,
+            WalletTransactionType::CartCheckout,
+        ], true)) {
             throw new \InvalidArgumentException('Only internal savings debits are allowed on the wallet.');
         }
 

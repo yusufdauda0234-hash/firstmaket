@@ -1,4 +1,4 @@
-# FirstMarket Implementation Plan
+# FirstMarketImplementation Plan
 
 Version: 1.0  
 Date: July 2026  
@@ -6,7 +6,7 @@ Source: `documentation.docx`, reviewed against IHMS Laravel documentation and fo
 
 ## 1. Recommended Architecture
 
-Build FirstMarket as a Laravel modular monolith with Inertia and a typed frontend. This follows the strongest IHMS pattern: one backend, one database, domain modules under `app/Modules`, shared cross-cutting code under `app/Shared`, and role-specific web surfaces served by the same Laravel application.
+Build FirstMarketas a Laravel modular monolith with Inertia and a typed frontend. This follows the strongest IHMS pattern: one backend, one database, domain modules under `app/Modules`, shared cross-cutting code under `app/Shared`, and role-specific web surfaces served by the same Laravel application.
 
 Recommended stack:
 
@@ -51,17 +51,18 @@ Reserve `/api/v1` for any JSON API surface from the start, even though Phase 1 i
 | --- | --- | --- |
 | 0 | Public home page | Marketplace-style public home page shell (header, search, categories, hero, product sections, footer), brand assets |
 | 1 | Foundation | Laravel/Inertia setup, modules, RBAC, audit logging, database baseline |
-| 2 | Onboarding | Customer/vendor registration, OTP, email verification, BVN/NIN provider hooks, vendor approval |
+| 2 | Onboarding | Customer/vendor registration, OTP, email verification, vendor approval |
 | 3 | Marketplace catalog | Categories, vendor products, product approval, vendor pricing, posting fees |
 | 4 | Wallet and payments | Paystack initialization, webhook-only wallet crediting, receipts, transaction history, finance reconciliation |
 | 5 | Purchase and savings | Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target price locking, tracker, redirection |
 | 6 | Orders and delivery | Ready-for-delivery order creation, delivery address, admin confirmation, vendor sold-notification and preparation, logistics tracking, vendor earnings and payouts |
 | 7 | Support and communication | Notifications, support tickets, hotline logs, IVR routing, support-agent lookup |
-| 8 | AI and operations | Listing Review Assistant, reports, vendor/user suspension, operational controls |
-| 9 | MVP launch | Security hardening, no-withdrawal tests, ledger tests, E2E tests, pilot vendor launch |
-| 10 | Growth | Wishlist, rewards, referral, basic affiliate tracking, automatic debit, pause/resume, live chat, AI assistant, risk dashboards |
-| 11 | Scale | Agents, advanced affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
-| 12 | Public website | Public marketing website, SEO, real screenshots/workflows, vendor CTA, final brand launch |
+| 8 | Cart and checkout | Multi-vendor cart, quantity, cart-based full-payment checkout, cart-based plan starts, checkout session grouping |
+| 9 | AI and operations | Listing Review Assistant, reports, vendor/user suspension, operational controls |
+| 10 | MVP launch | Security hardening, no-withdrawal tests, ledger tests, E2E tests, pilot vendor launch |
+| 11 | Growth | Wishlist, rewards, referral, basic affiliate tracking, automatic debit, pause/resume, live chat, AI assistant, risk dashboards |
+| 12 | Scale | Agents, advanced affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
+| 13 | Public website | Public marketing website, SEO, real screenshots/workflows, vendor CTA, final brand launch |
 
 ### Phase 1: MVP Transaction Platform
 
@@ -75,15 +76,15 @@ Note: Sprints 1 and 2 were built before this sprint was added. Sprint 0 is execu
 
 Common home page anatomy found in the survey (adopt this structure):
 
-1. **Top utility bar**: delivery location/language, "Sell on FirstMarket" vendor CTA, Help/Support link, app-download placeholder.
+1. **Top utility bar**: delivery location/language, "Sell on FirstMaket" vendor CTA, Help/Support link, app-download placeholder.
 2. **Main header**: logo (left), prominent full-width search bar with category scope (center), account and cart icons (right). Search is the single most dominant element on every surveyed site.
 3. **Category navigation**: sidebar category menu (Jumia/AliExpress style) or horizontal mega-menu, listing the six launch categories: Electronics, Home Appliances, Solar Equipment, Furniture, Fashion, Business Equipment.
 4. **Hero area**: rotating promotional carousel beside the category menu, plus 1–2 static promo tiles (wallet funding, savings plans).
 5. **Flash/featured strip**: horizontally scrolling product row ("Featured", later "Flash Sales" with countdown) — Featured posting-fee tier products surface here.
 6. **Category grid blocks**: image tiles per category linking into the catalog.
 7. **Product feed**: paginated/infinite "For You"/"Top Selling" grid of approved products.
-8. **How-it-works strip** (FirstMarket-specific): three cards — Pay At Once, Save Small Small (Product Target Plans), FirstMarket Delivers — since goal-based savings is the differentiator none of the surveyed sites have.
-9. **Trust strip**: secure Paystack payments, verified vendors, FirstMarket-controlled delivery, support hotline.
+8. **How-it-works strip** (FirstMaket-specific): three cards — Pay At Once, Save Small Small (Product Target Plans), FirstMarketDelivers — since goal-based savings is the differentiator none of the surveyed sites have.
+9. **Trust strip**: secure Paystack payments, verified vendors, FirstMaket-controlled delivery, support hotline.
 10. **SEO footer**: category links, help/FAQ, About, Become a Vendor, Terms, Privacy, contact channels, social links, payment method logos.
 
 Backend:
@@ -100,7 +101,7 @@ Frontend:
 - Public layout (header, category nav, footer) reusable by later public pages (product detail preview, Phase 4 pages).
 - Search bar routing to the catalog search page (works fully once Sprint 3 lands).
 - Skeleton/empty states for sections whose data source is not live yet.
-- Brand assets wired in: logo variants (see `docs/firstmarket_Brand_Assets.md`), favicon, brand colors in Tailwind config.
+- Brand assets wired in: logo variants (see `docs/FirstMaket_Brand_Assets.md`), favicon, brand colors in Tailwind config.
 
 QA and security:
 
@@ -129,7 +130,7 @@ Backend:
 - Install Laravel Pennant and define the feature-flag convention for gating unfinished/dark modules.
 - Establish the domain event bus convention (event classes, listener registration per module) before a second module is built.
 - Reserve `/api/v1` route prefix for any JSON API surface.
-- Route Admin, Support, Logistics, and Finance dashboards under an isolated subdomain (`admin.firstmarket.ng`) with a separate session cookie scope from the customer app.
+- Route Admin, Support, Logistics, and Finance dashboards under an isolated subdomain (`admin.FirstMaket.ng`) with a separate session cookie scope from the customer app.
 - Enforce mandatory 2FA enrollment at first login for Admin, Finance Officer, and Super Administrator accounts.
 
 Frontend:
@@ -168,7 +169,7 @@ Exit criteria:
 
 #### Sprint 2: Identity and Account Onboarding
 
-Scope: customer and vendor registration, identity verification hooks, document upload, and admin approval.
+Scope: customer and vendor registration, document upload, and admin approval. There is no BVN/NIN identity verification feature — a version of it was built here originally and later removed entirely (schema, contracts, admin review queue, and UI); vendor identity assurance is CAC document review only.
 
 Backend:
 
@@ -176,8 +177,6 @@ Backend:
 - Build vendor registration and vendor profile creation.
 - Implement OTP generation, expiry, verification, retry limits, and SMS provider abstraction.
 - Implement email verification and login-alert events.
-- Add BVN verification service interface using Paystack Identity Verification.
-- Add NIN verification service interface for Youverify, Smile Identity, or Prembly.
 - Add vendor CAC document upload and private storage handling.
 - Build admin approval/rejection workflow for vendors.
 - Revoke active sessions on user suspension or ban.
@@ -188,28 +187,25 @@ Frontend:
 - Vendor onboarding flow with CAC upload.
 - OTP verification screen.
 - Email verification prompt.
-- Identity verification status screen.
 - Admin vendor approval queue.
 - Admin vendor detail page with approve/reject actions.
 - User status indicators and rejection reason display.
 
 Database:
 
-- Add `customer_profiles`, `vendor_profiles`, `identity_verifications`, upload/document metadata, and login-event tables.
-- Add encrypted casts for BVN, NIN, phone/address where required.
+- Add `customer_profiles`, `vendor_profiles`, upload/document metadata, and login-event tables.
+- Add encrypted casts for phone/address where required.
 - Add vendor status enum: Pending, Approved, Rejected, Suspended, Banned.
 
 QA and security:
 
 - Test OTP expiry and rate limits.
-- Test Product Target Plan activation is blocked until BVN/NIN pass.
-- Test Open Savings can start before full verification if allowed by policy.
 - Test only Admin/Super Admin can approve vendors.
 - Test CAC documents are private and not publicly accessible.
 
 DevOps and docs:
 
-- Add SMS, mail, BVN, NIN, and file-storage env placeholders.
+- Add SMS, mail, and file-storage env placeholders.
 - Document provider sandbox/test setup.
 
 Exit criteria:
@@ -412,7 +408,7 @@ Exit criteria:
 
 #### Sprint 6: Orders, Logistics, and Vendor Settlement
 
-Scope: conversion from fully funded plan to order, vendor sold-notification, vendor preparation with a packing SLA, FirstMarket-controlled pickup and delivery, customer notifications, and vendor earnings/payout so the fulfillment chain is complete end to end.
+Scope: conversion from fully funded plan to order, vendor sold-notification, vendor preparation with a packing SLA, FirstMaket-controlled pickup and delivery, customer notifications, and vendor earnings/payout so the fulfillment chain is complete end to end.
 
 The complete fulfillment chain (modeled on Jumia's dropship flow, where the marketplace controls delivery):
 
@@ -420,7 +416,7 @@ The complete fulfillment chain (modeled on Jumia's dropship flow, where the mark
 2. **Vendor notified** — vendor instantly receives an "item sold" notification (dashboard + email/SMS) with product, quantity, and order number — never customer identity or address.
 3. **Admin confirmation** — admin confirms the order (checks payment/ledger match) and moves it to Processing.
 4. **Vendor prepares** — vendor confirms stock and packs within the preparation SLA (48 hours, configurable). Vendor marks the order **Ready for Pickup**. If the vendor cannot fulfil (out of stock), the vendor rejects with a reason and admin triggers the resolution path (redirect plan to another product or admin-managed refund-to-savings — never cash out).
-5. **Handover to logistics** — FirstMarket logistics picks up from the vendor, or the vendor drops off at a FirstMarket hub. Logistics scans/accepts the package: status Packed → Shipped.
+5. **Handover to logistics** — FirstMarketlogistics picks up from the vendor, or the vendor drops off at a FirstMarkethub. Logistics scans/accepts the package: status Packed → Shipped.
 6. **Delivery** — logistics is assigned, status moves Out for Delivery → Delivered. Customer is notified at every step.
 7. **Delivery confirmation window** — customer confirms receipt, or the order auto-confirms after N days (default 3) without a complaint/dispute.
 8. **Vendor earnings credited** — on confirmed delivery, commission (per-category percentage set by admin) is deducted from the locked product price and the remainder is credited to the vendor's **earnings ledger** (separate from customer wallets).
@@ -533,9 +529,76 @@ Exit criteria:
 - Customers can get help through FAQ, WhatsApp, hotline, and tickets.
 - Support agents have safe, limited visibility.
 
-#### Sprint 8: AI, Reporting, and Operational Controls
+#### Sprint 8: Cart and Multi-Vendor Checkout — COMPLETE
 
-Scope: AI-assisted listing review, configurable thresholds, operational reports, vendor suspension, user suspension, and admin controls.
+Scope: replace the single-product-at-a-time Pay At Once/Save Small Small entry points with a standard product → cart → checkout flow. Cart items can come from any vendor. Checkout offers two branches: pay the full cart total now, or send selected items into a Product Target Plan — which can now, for eligible customers, bundle multiple products (from different vendors) into one plan with one combined target. This sprint does not change how an individual order is fulfilled once a plan/checkout is paid (Sprint 6's chain is untouched) — it changes how a customer assembles and pays for one or more products, and what a "plan" is allowed to contain.
+
+**Build note (2026-07-24):** cart CRUD shipped first; checkout stalled on a delivery-address-timing conflict — `PlanService::payAtOnce()` only reaches Ready-for-Delivery, and the actual `Order` needs a separately-submitted address, which didn't fit a multi-item cart's "one address at checkout" expectation. Resolved as: **address timing follows payment timing.** Pay-in-full checkout collects the address once, upfront, on the checkout screen, before the single wallet debit — it never creates a plan at all, going straight from `checkout_sessions` to `Order` rows via `OrderService::createFromCheckoutSession()`. A plan (single- or multi-product) keeps the existing "ask once fully funded" pattern — a bundled plan's address form creates every bundled order in one transaction via `OrderService::createFromBundledPlan()`, never a subset early. `orders.plan_id` is now nullable and no longer unique (a bundle's orders share one `plan_id`); `orders.checkout_session_id`, `orders.plan_item_id`, and `orders.plan_delivery_group_id` were added for grouping/display. See `docs/firstmarket-Database_Schema.md` section 8a for the final table shapes.
+
+Design decisions (confirm before building):
+
+- A cart holds items from multiple vendors at once. At full-payment checkout, items are grouped by vendor and one `Order` is still created per unit purchased (matching today's one-order-per-product model exactly) — a lightweight `checkout_sessions` record ties those orders together only for "placed together" display and receipts. Each resulting order still runs through the existing independent per-vendor fulfillment chain (vendor notified, admin confirms, preparation SLA, logistics, earnings) with no changes.
+- Cart items carry a `quantity`. At full-payment checkout, a quantity greater than 1 fans out into that many individual `Order` rows (each still quantity 1) rather than adding a `quantity`/line-item model to `orders` — this avoids touching commission math, vendor preparation, or delivery tracking, which are all built per single unit today.
+- **Plans can now be single-product (unchanged, default, no eligibility check — exactly today's behavior) or multi-product (new).** A multi-product plan bundles several cart items — possibly different vendors — into one combined target price and one contribution schedule. `product_target_plans.product_id` becomes nullable; a new `plan_items` table (`plan_id`, `product_id`, `vendor_id`, `locked_price_kobo`, `quantity`) holds the products for multi-product plans only, so single-product plans need no data migration and no existing Sprint 5/6 behavior changes.
+- **Multi-product plans require passing a rule-based eligibility check** (new `PlanEligibilityContract`, bound to a `RuleBasedPlanEligibilityChecker` — same swappable-contract pattern as `SmsSenderContract`/`PaymentGatewayContract`). Eligible when **all** of: account is at least 30 days old; at least one prior Completed plan or two delivered Pay At Once orders (proven follow-through); no more than one plan currently `Cancelled` (protects against serial abandoners). Ineligible customers can still start any number of single-product plans — the gate only applies to bundling multiple products into one plan. **Sprint 9 swaps the implementation for an AI-scored checker behind the same contract** (using the customer's full contribution/purchase history as model input) without changing anything else in Sprint 8 — see the note added to Sprint 9 below.
+- **A multi-product plan delivers all-or-nothing.** `PlanService::recalculate()` already computes progress against `target_price_kobo` regardless of what makes up that target, so the math is unchanged — but reaching 100% now creates one `Order` per `plan_item` simultaneously (grouped the same way cart checkouts are grouped), never one early order for whichever product's "share" happened to be funded first.
+- One wallet debit funds an entire full-payment checkout (the cart total), exactly like today's single-product Pay At Once — the shortfall-driven "Add money" prompt already used on the Pay At Once page carries over unchanged.
+
+Backend:
+
+- Build a persistent cart (one per customer, not session-only, so it survives across devices and logins).
+- Add/update/remove cart items; enforce product is Approved and in stock at add-time and again at checkout.
+- Build cart checkout (full payment): validate stock/approval for every item, debit the wallet once for the total, create one `checkout_sessions` row, and create one `Order` per unit exactly as `PlanService::payAtOnce()` does today, tagged with the new session id.
+- Build "start a plan from cart": one selected item reuses `PlanService::create()`/`StartPlan` unchanged; multiple selected items call a new `PlanService::createMultiProduct()` that first calls `PlanEligibilityContract::check($user)` and blocks with a clear reason if ineligible.
+- On a multi-product plan reaching Ready for Delivery, create one `Order` per `plan_item` in the same transaction, tagged with a shared grouping id, then proceed through the existing Sprint 6 chain per order.
+- Remove successfully checked-out items from the cart; leave failed items (e.g. now out of stock) in place with a clear error.
+
+Frontend:
+
+- Add-to-cart action on the product page/catalog (alongside or replacing the direct "Pay At Once" / "Save Small Small" buttons).
+- Cart page: items grouped by vendor, quantity controls, remove item, running subtotal/total, wallet balance shown, multi-select for "Pay Small" across items.
+- Checkout screen: "Pay in full" (existing shortfall/add-money pattern) vs "Pay Small" — single item routes into the existing StartPlan flow; multiple selected items route into a new bundle-plan setup screen, with a clear message if the eligibility check fails.
+- Product Tracker page shows all bundled products, their individual locked prices, and the combined progress bar for multi-product plans.
+- Order confirmation / receipt view groups orders from the same checkout session (or the same multi-product plan's delivery) together for the customer, even though each is tracked independently afterward.
+
+Database:
+
+- Add `carts` (`id`, `uuid`, `user_id`, `created_at`, `updated_at`) — unique `user_id`.
+- Add `cart_items` (`id`, `cart_id`, `product_id`, `quantity`, `created_at`, `updated_at`).
+- Add `checkout_sessions` (`id`, `uuid`, `user_id`, `wallet_transaction_id`, `total_amount`, `created_at`) — groups orders placed together.
+- Add nullable `orders.checkout_session_id` (FK to `checkout_sessions`) and nullable `orders.plan_delivery_group_id` — purely grouping/display fields, no change to existing order semantics.
+- Make `product_target_plans.product_id` nullable; add `plan_items` (`id`, `plan_id`, `product_id`, `vendor_id`, `locked_price_kobo`, `quantity`, `created_at`) for multi-product plans.
+
+QA and security:
+
+- Test a cart can hold items from multiple vendors and checkout still creates one independent order per unit per vendor.
+- Test a quantity of N fans out into N separate orders with correct per-unit pricing.
+- Test stock/approval is re-validated at checkout, not just at add-to-cart.
+- Test single-product "Pay Small" is blocked for a cart item with quantity greater than 1 until reduced to 1.
+- Test a multi-product plan is blocked for an ineligible customer with a clear reason, and that single-product plans remain unaffected by eligibility.
+- Test a multi-product plan reaches Ready for Delivery only when the combined target is met, never per individual product.
+- Test a multi-product plan at 100% creates one order per bundled product, in one transaction, across different vendors.
+- Test a partially-failed checkout (one item now out of stock) leaves that item in the cart and does not charge the wallet for it.
+- Test removing/adjusting cart items never affects an already-placed order or an already-started plan.
+
+DevOps and docs:
+
+- Update the PRD's Pay At Once/Product Target Plan descriptions to reflect the cart-based, multi-product flow (done alongside this sprint).
+- Add monitoring for abandoned carts (informational only — no automated reminder messaging is in scope here).
+
+Exit criteria:
+
+- A customer can add products from more than one vendor to a single cart and either pay for all of them in one checkout, or — if eligible — bundle several into one savings plan with one combined target.
+- Every resulting order still follows the exact Sprint 6 fulfillment chain with no vendor ever seeing another vendor's items in the same checkout or plan.
+- A multi-product plan never delivers a subset of its bundled products early.
+
+#### Sprint 9: AI, Reporting, and Operational Controls
+
+Scope: AI-assisted listing review, configurable thresholds, operational reports, vendor suspension, user suspension, admin controls, and swapping the Sprint 8 rule-based multi-product plan eligibility checker for an AI-scored one.
+
+Additional backend item carried over from Sprint 8:
+
+- Bind `PlanEligibilityContract` to a new AI-scored checker (in place of `RuleBasedPlanEligibilityChecker`), using the customer's contribution reliability and purchase history as model input. Keep the rule-based checker available as a fallback/override — the AI output is advisory input to the same eligibility decision, not a black box the customer can't get an explanation from; a blocked customer still sees a clear, human-readable reason.
 
 Backend:
 
@@ -582,7 +645,7 @@ Exit criteria:
 - Admin can review AI-assisted product flags.
 - Operational reports and suspension workflows are usable and audited.
 
-#### Sprint 9: Hardening and Launch
+#### Sprint 10: Hardening and Launch
 
 Scope: security review, test depth, performance, deployment readiness, pilot vendor launch, and production rehearsal.
 
@@ -685,7 +748,7 @@ QA and security:
 - Test affiliate click tracking grants no application permission.
 - Test suspended affiliate links stop tracking.
 - Test self-referral is blocked.
-- Test duplicate phone, email, BVN, NIN, or suspicious device patterns are blocked or flagged.
+- Test duplicate phone, email, or suspicious device patterns are blocked or flagged.
 - Test affiliate commission is not payable until a qualified delivered order or qualified vendor conversion occurs.
 - Test affiliate payout cannot touch the customer wallet ledger.
 
@@ -806,7 +869,7 @@ Exit criteria:
 
 ### Phase 3: Scale
 
-Goal: extend FirstMarket into new channels, new savings models, and mobile access after real usage data proves the MVP and growth features.
+Goal: extend FirstMarketinto new channels, new savings models, and mobile access after real usage data proves the MVP and growth features.
 
 #### Phase 3A: Agent Network
 
@@ -838,7 +901,7 @@ QA and security:
 
 Exit criteria:
 
-- FirstMarket can support offline/community-assisted acquisition and deposits without weakening ledger controls.
+- FirstMarketcan support offline/community-assisted acquisition and deposits without weakening ledger controls.
 
 #### Phase 3B: Advanced Affiliate Program
 
@@ -1010,8 +1073,8 @@ Content and brand:
 
 - Use real product screenshots and completed workflows.
 - Explain Pay At Once, Open Savings, and Product Target Plans clearly.
-- State that FirstMarket is not a loan app, bank, BNPL product, or withdrawal wallet.
-- Highlight trust pillars: Paystack payments, verified vendors, FirstMarket-controlled delivery, support hotline, and no vendor access to customer identity.
+- State that FirstMarketis not a loan app, bank, BNPL product, or withdrawal wallet.
+- Highlight trust pillars: Paystack payments, verified vendors, FirstMaket-controlled delivery, support hotline, and no vendor access to customer identity.
 
 QA and security:
 
@@ -1030,13 +1093,13 @@ DevOps and launch:
 Exit criteria:
 
 - Website is live on production domain.
-- Core copy explains that FirstMarket supports Pay At Once and savings-based purchases, but is not loans or BNPL.
+- Core copy explains that FirstMarketsupports Pay At Once and savings-based purchases, but is not loans or BNPL.
 - Marketing content reflects the completed application, not planned features.
 - Contact form, hotline, and vendor interest form are working.
 
 ## 3. Recommended Folder Structure
 
-Use the IHMS modular layout, adapted to FirstMarket:
+Use the IHMS modular layout, adapted to FirstMaket:
 
 ```text
 app/
@@ -1169,8 +1232,6 @@ tests/
 | Service | Recommended Provider Options | Used For |
 | --- | --- | --- |
 | Payment processing | Paystack | Card, bank transfer, USSD, reusable authorizations |
-| BVN verification | Paystack Identity Verification | Customer and vendor BVN checks |
-| NIN verification | Youverify, Smile Identity, Prembly | NIN checks against Nigerian identity records |
 | SMS/OTP | Termii, Africa's Talking | OTP and reminders |
 | Social login | Google OAuth, Facebook Login (via Laravel Socialite) | Register/login with Google or Facebook |
 | Vendor payouts | Paystack Transfers | Weekly vendor payout batches to verified bank accounts |

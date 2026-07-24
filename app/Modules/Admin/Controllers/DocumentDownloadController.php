@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /**
  * The only way a CAC/identity document ever leaves storage: an authenticated,
  * permission-checked stream on the admin subdomain. Documents live on a
- * private disk with no public URL (docs/firstmarket_Security_Compliance.md).
+ * private disk with no public URL (docs/FirstMaket_Security_Compliance.md).
  */
 class DocumentDownloadController extends Controller
 {

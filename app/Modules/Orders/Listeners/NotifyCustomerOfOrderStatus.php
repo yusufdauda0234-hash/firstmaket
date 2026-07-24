@@ -9,7 +9,7 @@ use App\Shared\Enums\OrderStatus;
 
 /**
  * Customer notification on every order status transition
- * (docs/firstmarket_Implementation_Plan.md Sprint 6 step 6).
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 6 step 6).
  */
 class NotifyCustomerOfOrderStatus
 {

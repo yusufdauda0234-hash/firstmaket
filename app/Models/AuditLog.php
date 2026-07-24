@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 /**
  * Immutable application-level audit trail. Rows are created only through
  * App\Shared\Services\AuditLogger and are never updated or deleted
- * (docs/firstmarket_Security_Compliance.md section 8).
+ * (docs/FirstMaket_Security_Compliance.md section 8).
  */
 class AuditLog extends Model
 {

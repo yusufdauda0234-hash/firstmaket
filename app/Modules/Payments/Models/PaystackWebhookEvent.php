@@ -7,7 +7,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Raw webhook event log for replay protection and debugging
- * (docs/firstmarket-Database_Schema.md section 7). Every inbound webhook is
+ * (docs/FirstMaket-Database_Schema.md section 7). Every inbound webhook is
  * recorded here — valid or not — before any wallet is touched.
  *
  * @property int $id

@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Modules\Catalog\Listeners\DelistSuspendedVendorProducts;
-use App\Modules\Identity\Services\PaystackBvnVerifier;
-use App\Modules\Identity\Services\YouverifyNinVerifier;
 use App\Modules\Notifications\Listeners\RecordNotificationDelivery;
 use App\Modules\Notifications\Services\SmsChannel;
 use App\Modules\Orders\Events\OrderDeliveryConfirmed;
@@ -14,19 +12,19 @@ use App\Modules\Orders\Events\OrderStatusChanged;
 use App\Modules\Orders\Listeners\NotifyCustomerOfOrderStatus;
 use App\Modules\Payments\Services\PaystackBankResolver;
 use App\Modules\Payments\Services\PaystackGateway;
+use App\Modules\Savings\Services\RuleBasedPlanEligibilityChecker;
 use App\Modules\Vendor\Events\VendorSuspended;
 use App\Modules\Vendor\Listeners\CreditVendorEarnings;
 use App\Modules\Vendor\Listeners\NotifyVendorOfSale;
 use App\Shared\Contracts\AuditLoggerContract;
 use App\Shared\Contracts\BankAccountResolverContract;
-use App\Shared\Contracts\BvnVerifierContract;
-use App\Shared\Contracts\NinVerifierContract;
 use App\Shared\Contracts\PaymentGatewayContract;
+use App\Shared\Contracts\PlanEligibilityContract;
 use App\Shared\Contracts\SmsSenderContract;
 use App\Shared\Features;
 use App\Shared\Services\AuditLogger;
 use App\Shared\Services\Sms\LogSmsSender;
-use App\Shared\Services\Sms\TermiiSmsSender;
+use App\Shared\Services\Sms\SmartSmsSolutionsSender;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
@@ -42,15 +40,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditLoggerContract::class, AuditLogger::class);
 
         $this->app->bind(SmsSenderContract::class, fn () => match (config('services.sms.driver')) {
-            'termii' => new TermiiSmsSender,
+            'smartsmssolutions' => new SmartSmsSolutionsSender,
             default => new LogSmsSender,
         });
-
-        // Single implementation per provider slot for now; additional
-        // drivers (Smile Identity, Prembly) plug in through these contracts
-        // when needed (docs/firstmarket_Implementation_Plan.md Sprint 2).
-        $this->app->bind(BvnVerifierContract::class, PaystackBvnVerifier::class);
-        $this->app->bind(NinVerifierContract::class, YouverifyNinVerifier::class);
 
         // Payment gateway (Sprint 4). Paystack is the MVP driver.
         $this->app->bind(PaymentGatewayContract::class, PaystackGateway::class);
@@ -60,6 +52,11 @@ class AppServiceProvider extends ServiceProvider
             BankAccountResolverContract::class,
             PaystackBankResolver::class,
         );
+
+        // Multi-product plan bundling eligibility (Sprint 8). Rule-based for
+        // now; Sprint 9 swaps this for an AI-scored implementation behind the
+        // same contract.
+        $this->app->bind(PlanEligibilityContract::class, RuleBasedPlanEligibilityChecker::class);
     }
 
     public function boot(): void
@@ -67,7 +64,7 @@ class AppServiceProvider extends ServiceProvider
         Features::register();
 
         // Cross-module reactions travel through domain events, never direct
-        // module-to-module calls (docs/firstmarket_Developer_Guidelines.md).
+        // module-to-module calls (docs/FirstMaket_Developer_Guidelines.md).
         Event::listen(VendorSuspended::class, DelistSuspendedVendorProducts::class);
         Event::listen(OrderPaid::class, NotifyVendorOfSale::class);
         Event::listen(OrderDeliveryConfirmed::class, CreditVendorEarnings::class);
@@ -80,7 +77,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Super Administrator gets every ability automatically, so newly
         // added permissions never need a reseed
-        // (docs/firstmarket_Developer_Guidelines.md section 8).
+        // (docs/FirstMaket_Developer_Guidelines.md section 8).
         Gate::before(fn (User $user) => $user->hasRole('Super Administrator') ?: null);
 
         // Baseline password policy enforced everywhere Password::defaults() is

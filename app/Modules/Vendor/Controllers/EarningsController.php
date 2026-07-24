@@ -17,7 +17,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Vendor Center earnings page (docs/firstmarket_Implementation_Plan.md
+ * Vendor Center earnings page (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6): cleared balance, pending (in-delivery) earnings, per-order
  * commission breakdown, payout history, and the verified bank account.
  */

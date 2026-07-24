@@ -15,10 +15,9 @@ use Inertia\Response;
 
 /**
  * Support-agent read-only customer lookup
- * (docs/firstmarket_Implementation_Plan.md Sprint 7). Deliberately narrow:
- * order/plan/wallet CONTEXT only — never card data (none is stored), never
- * BVN/NIN values (encrypted; only the aggregate identity status is shown),
- * and no mutation endpoints exist here at all.
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 7). Deliberately narrow:
+ * order/plan/wallet CONTEXT only — never card data (none is stored), and no
+ * mutation endpoints exist here at all.
  */
 class CustomerLookupController extends Controller
 {
@@ -70,8 +69,6 @@ class CustomerLookupController extends Controller
             'phone' => $user->phone,
             'emailVerified' => $user->hasVerifiedEmail(),
             'phoneVerified' => $user->hasVerifiedPhone(),
-            // Aggregate status only — never the underlying BVN/NIN values.
-            'identityStatus' => $user->customerProfile?->identity_status->value ?? 'unverified',
             'memberSince' => $user->created_at->format('j M Y'),
             'walletBalanceKobo' => (int) Wallet::query()->where('user_id', $user->id)->value('balance_kobo'),
             'orders' => Order::query()

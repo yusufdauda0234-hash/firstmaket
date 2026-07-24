@@ -27,9 +27,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * 3. Otherwise → create a Customer account with a verified email and no
  *    password (the user may set one later in settings).
  *
- * Staff accounts can never be reached through social login; phone
- * verification is still required before wallet funding regardless of how
- * the account was created.
+ * Staff accounts can never be reached through social login.
  */
 class SocialAuthController extends Controller
 {
@@ -93,7 +91,7 @@ class SocialAuthController extends Controller
                 }
 
                 $user = User::query()->create([
-                    'name' => $oauthUser->getName() ?: 'FirstMarket Customer',
+                    'name' => $oauthUser->getName() ?: 'FirstMarketCustomer',
                     'email' => mb_strtolower($email),
                     'phone' => null,
                     'password' => null,

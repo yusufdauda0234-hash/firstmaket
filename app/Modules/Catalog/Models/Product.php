@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * A vendor listing. Prices are integer kobo and vendor-controlled — admin
  * approves or rejects but never edits the price; an approved product whose
  * price changes drops back to Pending Approval
- * (docs/firstmarket_Implementation_Plan.md Sprint 3).
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 3).
  */
 /**
  * @property int $id

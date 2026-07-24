@@ -9,7 +9,6 @@ use App\Modules\Savings\Services\OpenSavingsService;
 use App\Modules\Savings\Services\PlanService;
 use App\Modules\Savings\Services\RedirectionService;
 use App\Modules\Wallet\Services\WalletService;
-use App\Shared\Enums\IdentityStatus;
 use App\Shared\Enums\PlanCadence;
 use App\Shared\Enums\PlanPaymentMode;
 use App\Shared\Enums\PlanStatus;
@@ -27,10 +26,7 @@ beforeEach(function () {
 
     $this->customer = User::factory()->create(['phone_verified_at' => now()]);
     $this->customer->assignRole('Customer');
-    CustomerProfile::query()->create([
-        'user_id' => $this->customer->id,
-        'identity_status' => IdentityStatus::Verified,
-    ]);
+    CustomerProfile::query()->create(['user_id' => $this->customer->id]);
 
     $this->product = Product::factory()->approved()->create(['price_kobo' => 150_000_00]);
 });
@@ -59,20 +55,6 @@ it('completes a Pay At Once purchase straight to Ready for Delivery', function (
     expect(app(WalletService::class)->getOrCreate($this->customer)->balance_kobo)->toBe(50_000_00);
 
     Event::assertDispatched(PlanReadyForDelivery::class);
-});
-
-it('does not require BVN/NIN for Pay At Once (it is a normal purchase)', function () {
-    $unverified = User::factory()->create(['phone_verified_at' => now()]);
-    $unverified->assignRole('Customer');
-    CustomerProfile::query()->create(['user_id' => $unverified->id]);
-    topUp($unverified, 150_000_00);
-
-    $this->actingAs($unverified)
-        ->post(route('checkout.pay-at-once.store', $this->product->slug))
-        ->assertRedirect();
-
-    expect(ProductTargetPlan::query()->where('user_id', $unverified->id)->firstOrFail()->status)
-        ->toBe(PlanStatus::ReadyForDelivery);
 });
 
 it('refuses Pay At Once when the wallet cannot cover the price', function () {

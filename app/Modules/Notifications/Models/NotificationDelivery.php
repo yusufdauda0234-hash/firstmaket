@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One row per attempted notification send
- * (docs/firstmarket-Database_Schema.md section 10) — the raw material for
+ * (docs/FirstMaket-Database_Schema.md section 10) — the raw material for
  * delivery-failure monitoring. Written by RecordNotificationDelivery on the
  * framework's NotificationSent/NotificationFailed events.
  *

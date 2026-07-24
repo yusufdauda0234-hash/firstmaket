@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
  * Everything that must happen when a user's session is established, whatever
  * the entry path — password, OTP code, or social login: device/login-event
  * recording, new-device email alert, last-login stamp, audit trail
- * (docs/firstmarket_PRD_Laravel.md "Authentication and Identity").
+ * (docs/FirstMaket_PRD_Laravel.md "Authentication and Identity").
  */
 class SessionAuthenticator
 {

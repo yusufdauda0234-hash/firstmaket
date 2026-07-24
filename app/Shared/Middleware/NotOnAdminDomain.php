@@ -10,9 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Customer routes carry no domain constraint (they must work on
- * firstmarket.localhost, 127.0.0.1, and the production domain alike), which
+ * FirstMaket.localhost, 127.0.0.1, and the production domain alike), which
  * means they would also answer on the admin and vendor subdomains — e.g.
- * admin.firstmarket.ng/register would happily register a customer. This
+ * admin.FirstMaket.ng/register would happily register a customer. This
  * middleware 404s them there so each portal origin exposes only its own
  * routes.
  */

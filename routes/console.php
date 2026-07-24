@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Sprint 6 fulfillment schedulers (docs/firstmarket_Implementation_Plan.md):
+// Sprint 6 fulfillment schedulers (docs/FirstMaket_Implementation_Plan.md):
 // auto-confirm delivered orders after the confirmation window, and flag
 // vendor preparations that miss the packing SLA. Both are idempotent.
 Schedule::command(AutoConfirmDeliveredOrders::class)->hourly();

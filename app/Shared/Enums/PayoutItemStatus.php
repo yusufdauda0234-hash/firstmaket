@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Per-vendor line inside a payout batch (docs/firstmarket-Database_Schema.md
+ * Per-vendor line inside a payout batch (docs/FirstMaket-Database_Schema.md
  * section 9). A failed transfer keeps the ledger intact — the payout ledger
  * debit is written only when the item is marked paid.
  */

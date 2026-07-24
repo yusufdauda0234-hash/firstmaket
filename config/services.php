@@ -25,21 +25,8 @@ return [
         'base_url' => env('PAYSTACK_BASE_URL', 'https://api.paystack.co'),
     ],
 
-    'bvn_provider' => [
-        'driver' => env('BVN_PROVIDER_DRIVER', 'paystack'),
-        'key' => env('BVN_PROVIDER_KEY'),
-        'secret' => env('BVN_PROVIDER_SECRET'),
-    ],
-
-    'nin_provider' => [
-        'driver' => env('NIN_PROVIDER_DRIVER', 'youverify'),
-        'key' => env('NIN_PROVIDER_KEY'),
-        'secret' => env('NIN_PROVIDER_SECRET'),
-        'base_url' => env('NIN_PROVIDER_BASE_URL'),
-    ],
-
     'sms' => [
-        'driver' => env('SMS_PROVIDER_DRIVER', 'termii'),
+        'driver' => env('SMS_PROVIDER_DRIVER', 'smartsmssolutions'),
         'key' => env('SMS_PROVIDER_KEY'),
         'sender_id' => env('SMS_PROVIDER_SENDER_ID', 'FirstMkt'),
         'daily_budget_kobo' => (int) env('SMS_DAILY_BUDGET_KOBO', 0),

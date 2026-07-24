@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 // Routes for the Catalog module are registered here and auto-loaded on the
 // customer/vendor-facing domain by App\Providers\ModuleServiceProvider.
 // Keep controllers thin; delegate to Actions/Services (see
-// docs/firstmarket_Developer_Guidelines.md).
+// docs/FirstMaket_Developer_Guidelines.md).
 
 // Public storefront — no authentication.
 Route::get('/', HomeController::class)->name('home');

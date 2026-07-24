@@ -1,7 +1,7 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 
-const appName = import.meta.env.VITE_APP_NAME || 'FirstMarket';
+const appName = import.meta.env.VITE_APP_NAME || 'FirstMaket';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

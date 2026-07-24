@@ -14,7 +14,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Vendor Center "Orders to Prepare" (docs/firstmarket_Implementation_Plan.md
+ * Vendor Center "Orders to Prepare" (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 step 4): sold items with the packing SLA countdown, confirm
  * stock, mark Ready for Pickup, or reject with a reason. Customer identity
  * and delivery address are NEVER serialized here — vendors only ever see
@@ -66,7 +66,7 @@ class VendorOrderController extends Controller
     {
         $preparationService->markReadyForPickup($request->user(), $order);
 
-        return back()->with('success', 'Marked ready for pickup — FirstMarket logistics is on it.');
+        return back()->with('success', 'Marked ready for pickup — FirstMarketlogistics is on it.');
     }
 
     public function reject(Request $request, Order $order, PreparationService $preparationService): RedirectResponse
@@ -75,6 +75,6 @@ class VendorOrderController extends Controller
 
         $preparationService->reject($request->user(), $order, $validated['reason']);
 
-        return back()->with('success', 'Order rejected — FirstMarket will resolve it with the customer.');
+        return back()->with('success', 'Order rejected — FirstMarketwill resolve it with the customer.');
     }
 }

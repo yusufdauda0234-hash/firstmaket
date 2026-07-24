@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One vendor's line inside a payout batch
- * (docs/firstmarket-Database_Schema.md section 9). The amount equals the
+ * (docs/FirstMaket-Database_Schema.md section 9). The amount equals the
  * vendor's cleared earnings balance at generation. A failed transfer keeps
  * the ledger intact — the negative `payout` ledger row is written only when
  * the item is marked paid.

@@ -7,7 +7,7 @@ use Laravel\Pennant\Feature;
 /**
  * Central registry of feature flags gating Phase 2/3 modules so they can
  * ship dark and be enabled per environment/cohort without a deploy
- * (docs/firstmarket_Implementation_Plan.md section 1.2). Registered from
+ * (docs/FirstMaket_Implementation_Plan.md section 1.2). Registered from
  * App\Providers\AppServiceProvider::boot().
  */
 final class Features

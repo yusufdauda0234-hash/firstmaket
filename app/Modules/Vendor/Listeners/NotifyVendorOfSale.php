@@ -8,7 +8,7 @@ use App\Modules\Vendor\Notifications\ItemSoldNotification;
 use App\Shared\Utils\Money;
 
 /**
- * Vendor module reaction to a paid order (docs/firstmarket_Implementation_Plan.md
+ * Vendor module reaction to a paid order (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 step 2): email the vendor "item sold" with product and order
  * number — never customer identity. The vendor dashboard list reads the
  * orders table directly.

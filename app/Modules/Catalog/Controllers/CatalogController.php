@@ -11,7 +11,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Public catalog (docs/firstmarket_Implementation_Plan.md Sprint 3):
+ * Public catalog (docs/FirstMaket_Implementation_Plan.md Sprint 3):
  * approved products only, with search, category and price filters, and
  * sorting. No authentication required.
  */

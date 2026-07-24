@@ -4,7 +4,7 @@ import AccountLayout from '@/Layouts/AccountLayout';
 import { cn } from '@/Utils/cn';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, CalendarClock, Lock, PackageCheck, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowLeft, CalendarClock, Lock, PackageCheck, Zap } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 interface Props {
@@ -15,7 +15,6 @@ interface Props {
         priceKobo: number;
         image: string | null;
     };
-    identityVerified: boolean;
     walletBalanceKobo: number;
     openSavingsBalanceKobo: number;
     [key: string]: unknown;
@@ -28,7 +27,7 @@ const CADENCES = [
 ] as const;
 
 export default function StartPlan() {
-    const { product, identityVerified, walletBalanceKobo } = usePage<Props>().props;
+    const { product, walletBalanceKobo } = usePage<Props>().props;
 
     const form = useForm({
         product_uuid: product.uuid,
@@ -80,96 +79,79 @@ export default function StartPlan() {
                 </div>
             </div>
 
-            {!identityVerified ? (
-                <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
-                    <ShieldCheck className="mx-auto h-8 w-8 text-amber-500" />
-                    <p className="mt-3 text-sm font-bold text-amber-900">Identity verification required</p>
-                    <p className="mx-auto mt-1 max-w-sm text-sm text-amber-800">
-                        Product Target Plans need a verified BVN or NIN. It takes about a minute — then come back
-                        and lock this price.
-                    </p>
-                    <Link
-                        href={route('identity.status')}
-                        className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
-                    >
-                        Verify my identity
-                    </Link>
-                </div>
-            ) : (
-                <form onSubmit={submit} className="mt-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    {/* Cadence */}
-                    <p className="text-sm font-semibold text-gray-900">How often will you save?</p>
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                        {CADENCES.map((cadence) => (
-                            <button
-                                key={cadence.value}
-                                type="button"
-                                onClick={() => form.setData('cadence', cadence.value)}
+            <form onSubmit={submit} className="mt-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                {/* Cadence */}
+                <p className="text-sm font-semibold text-gray-900">How often will you save?</p>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                    {CADENCES.map((cadence) => (
+                        <button
+                            key={cadence.value}
+                            type="button"
+                            onClick={() => form.setData('cadence', cadence.value)}
+                            className={cn(
+                                'rounded-xl border px-3 py-3 text-center transition active:scale-95',
+                                form.data.cadence === cadence.value
+                                    ? 'border-brand-600 bg-brand-50'
+                                    : 'border-gray-200 hover:border-brand-300',
+                            )}
+                        >
+                            <span
                                 className={cn(
-                                    'rounded-xl border px-3 py-3 text-center transition active:scale-95',
-                                    form.data.cadence === cadence.value
-                                        ? 'border-brand-600 bg-brand-50'
-                                        : 'border-gray-200 hover:border-brand-300',
+                                    'block text-sm font-bold',
+                                    form.data.cadence === cadence.value ? 'text-brand-700' : 'text-gray-900',
                                 )}
                             >
-                                <span
-                                    className={cn(
-                                        'block text-sm font-bold',
-                                        form.data.cadence === cadence.value ? 'text-brand-700' : 'text-gray-900',
-                                    )}
-                                >
-                                    {cadence.label}
-                                </span>
-                                <span className="mt-0.5 block text-[11px] text-gray-400">{cadence.hint}</span>
-                            </button>
-                        ))}
-                    </div>
-                    <InputError message={form.errors.cadence} className="mt-1" />
+                                {cadence.label}
+                            </span>
+                            <span className="mt-0.5 block text-[11px] text-gray-400">{cadence.hint}</span>
+                        </button>
+                    ))}
+                </div>
+                <InputError message={form.errors.cadence} className="mt-1" />
 
-                    {/* Contribution amount */}
-                    <p className="mt-5 text-sm font-semibold text-gray-900">
-                        How much each time? <span className="font-normal text-gray-400">(you can always change pace)</span>
+                {/* Contribution amount */}
+                <p className="mt-5 text-sm font-semibold text-gray-900">
+                    How much each time? <span className="font-normal text-gray-400">(you can always change pace)</span>
+                </p>
+                <div className="mt-2 flex items-center rounded-2xl border border-gray-200 px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/15">
+                    <span className="text-lg font-bold text-gray-400">₦</span>
+                    <input
+                        type="number"
+                        min="100"
+                        step="1"
+                        inputMode="numeric"
+                        placeholder="e.g. 5,000"
+                        value={form.data.contribution_naira}
+                        onChange={(e) => form.setData('contribution_naira', e.target.value)}
+                        className="w-full border-0 bg-transparent px-2 py-3 text-xl font-extrabold text-gray-900 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                </div>
+                <InputError message={form.errors.contribution_naira} className="mt-1" />
+
+                {/* Projection */}
+                {cycles !== null && cycles > 0 && (
+                    <p className="mt-3 flex items-center gap-1.5 rounded-xl bg-brand-50/70 px-4 py-3 text-sm text-gray-600">
+                        <CalendarClock className="h-4 w-4 shrink-0 text-brand-600" />
+                        About <strong className="text-gray-900">{cycles}</strong>{' '}
+                        {form.data.cadence === 'daily' ? 'days' : form.data.cadence === 'weekly' ? 'weeks' : 'months'}{' '}
+                        to reach {formatNairaFromKobo(product.priceKobo)} — roughly{' '}
+                        {new Date(Date.now() + cycles * cycleDays * 86400000).toLocaleDateString('en-NG', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                        })}
+                        .
                     </p>
-                    <div className="mt-2 flex items-center rounded-2xl border border-gray-200 px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/15">
-                        <span className="text-lg font-bold text-gray-400">₦</span>
-                        <input
-                            type="number"
-                            min="100"
-                            step="1"
-                            inputMode="numeric"
-                            placeholder="e.g. 5,000"
-                            value={form.data.contribution_naira}
-                            onChange={(e) => form.setData('contribution_naira', e.target.value)}
-                            className="w-full border-0 bg-transparent px-2 py-3 text-xl font-extrabold text-gray-900 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                    </div>
-                    <InputError message={form.errors.contribution_naira} className="mt-1" />
+                )}
 
-                    {/* Projection */}
-                    {cycles !== null && cycles > 0 && (
-                        <p className="mt-3 flex items-center gap-1.5 rounded-xl bg-brand-50/70 px-4 py-3 text-sm text-gray-600">
-                            <CalendarClock className="h-4 w-4 shrink-0 text-brand-600" />
-                            About <strong className="text-gray-900">{cycles}</strong>{' '}
-                            {form.data.cadence === 'daily' ? 'days' : form.data.cadence === 'weekly' ? 'weeks' : 'months'}{' '}
-                            to reach {formatNairaFromKobo(product.priceKobo)} — roughly{' '}
-                            {new Date(Date.now() + cycles * cycleDays * 86400000).toLocaleDateString('en-NG', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                            })}
-                            .
-                        </p>
-                    )}
-
-                    <Button type="submit" disabled={form.processing} className="mt-5 w-full active:scale-[0.98]">
-                        {form.processing ? 'Locking price…' : 'Lock price and start my plan'}
-                    </Button>
-                    <p className="mt-3 text-center text-xs text-gray-400">
-                        Wallet balance: {formatNairaFromKobo(walletBalanceKobo)} — contributions come from your wallet
-                        or Open Savings whenever you choose.
-                    </p>
-                </form>
-            )}
+                <Button type="submit" disabled={form.processing} className="mt-5 w-full active:scale-[0.98]">
+                    {form.processing ? 'Locking price…' : 'Lock price and start my plan'}
+                </Button>
+                <p className="mt-3 text-center text-xs text-gray-400">
+                    Wallet balance: {formatNairaFromKobo(walletBalanceKobo)} — contributions come from your wallet or
+                    Open Savings whenever you choose.
+                </p>
+            </form>
 
             {/* Prefer to pay now? */}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">

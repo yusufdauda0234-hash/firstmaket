@@ -15,8 +15,6 @@ return new class extends Migration
             $table->string('business_name');
             $table->string('contact_name');
             // Encrypted at rest via the model's 'encrypted' casts.
-            $table->text('bvn')->nullable();
-            $table->text('nin')->nullable();
             $table->text('address')->nullable();
             $table->string('status')->default('pending');
             $table->text('rejection_reason')->nullable();

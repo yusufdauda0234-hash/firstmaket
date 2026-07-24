@@ -94,7 +94,7 @@ export default function AccountSettings() {
                 <Card>
                     <h2 className="mb-1 text-lg font-medium text-gray-900">Sign-in identifiers</h2>
                     <p className="mb-4 text-sm text-gray-500">
-                        A verified phone number is required before wallet funding.
+                        A phone number is optional — it's used for account recovery and notifications.
                     </p>
 
                     <div className="space-y-3">

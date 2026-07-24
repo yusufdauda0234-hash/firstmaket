@@ -9,7 +9,7 @@ use Spatie\Permission\Models\Role;
 
 /**
  * Core roles and permission groups from
- * docs/firstmarket_Developer_Guidelines.md section 8. Super Administrator
+ * docs/FirstMaket_Developer_Guidelines.md section 8. Super Administrator
  * is granted every ability via a Gate::before hook in AppServiceProvider
  * rather than an explicit permission list, so newly added permissions are
  * automatically covered without a reseed.
@@ -23,6 +23,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'vendors.approve',
         'vendors.suspend',
         'products.approve',
+        'identity.review',
         'wallet.view',
         'wallet.reconcile',
         'plans.view',
@@ -50,6 +51,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'vendors.approve',
             'vendors.suspend',
             'products.approve',
+            'identity.review',
             'wallet.view',
             'plans.view',
             'orders.manage',

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * A customer support ticket (docs/firstmarket-Database_Schema.md section
+ * A customer support ticket (docs/FirstMaket-Database_Schema.md section
  * 10) with its message thread. State changes go through SupportService.
  *
  * @property int $id

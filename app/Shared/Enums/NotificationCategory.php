@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Notification preference categories (docs/firstmarket-Database_Schema.md
+ * Notification preference categories (docs/FirstMaket-Database_Schema.md
  * section 10). Every outbound notification declares one; the dispatcher
  * checks the user's per-category channel toggles before sending. Security
  * notifications ignore the email toggle — account-safety mail always goes

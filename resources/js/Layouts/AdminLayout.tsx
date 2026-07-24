@@ -15,6 +15,7 @@ import {
     Search,
     ShieldCheck,
     SlidersHorizontal,
+    Smartphone,
     Store,
     Truck,
     X,
@@ -133,6 +134,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         active: path.startsWith('/support'),
                         show: can('support.manage'),
                     },
+                    {
+                        label: 'Phone numbers',
+                        href: route('admin.phone.index'),
+                        icon: Smartphone,
+                        active: path.startsWith('/phone-numbers'),
+                        show: can('identity.review'),
+                    },
                 ],
             },
             {
@@ -204,13 +212,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                 )}
             >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 shadow-sm">
-                    <img src="/images/brand/logo-mark-transparent.png" alt="FirstMarket" className="h-9 w-9 object-contain" />
+                    <img src="/images/brand/logo-mark-transparent.png" alt="FirstMaket" className="h-9 w-9 object-contain" />
                 </span>
                 {(!collapsed || mobile) && (
                     <span className="min-w-0">
                         <span className="flex items-center gap-2">
                             <span className="text-[15px] font-extrabold leading-none tracking-tight text-gray-900">
-                                FirstMarket
+                                FirstMaket
                             </span>
                             <span className="rounded-md bg-brand-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-900">
                                 Staff
@@ -373,7 +381,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
             {/* Mobile top bar */}
             <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur-md lg:hidden">
                 <Link href={route('admin.dashboard')} className="flex items-center gap-2">
-                    <img src="/images/brand/logo-mark-dark.png" alt="FirstMarket" className="h-8 w-auto" />
+                    <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-8 w-auto" />
                     <span className="rounded-full bg-brand-yellow px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-900">
                         Staff
                     </span>

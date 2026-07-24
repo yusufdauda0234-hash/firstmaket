@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * Vendor-side preparation trail for an order
- * (docs/firstmarket-Database_Schema.md section 9). Append-only events; the
+ * (docs/FirstMaket-Database_Schema.md section 9). Append-only events; the
  * SLA breach row is written once by the scheduler when packing runs past
  * the deadline.
  */

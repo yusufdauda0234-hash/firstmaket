@@ -27,7 +27,7 @@ return [
     // so the two surfaces never share a session cookie.
     'cookie' => env(
         'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'firstmarket'), '_').'_session'
+        Str::slug(env('APP_NAME', 'FirstMaket'), '_').'_session'
     ),
 
     'path' => '/',

@@ -20,7 +20,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Product Target Plan flows (docs/firstmarket_Implementation_Plan.md Sprint
+ * Product Target Plan flows (docs/FirstMaket_Implementation_Plan.md Sprint
  * 5): start a plan from a product, track progress, contribute from wallet or
  * Open Savings, pause/resume, and redirect. All money math lives in the
  * services; controllers stay thin.
@@ -38,7 +38,6 @@ class PlanController extends Controller
 
         return Inertia::render('Savings/StartPlan', [
             'product' => $this->productSummary($product),
-            'identityVerified' => $user->customerProfile?->canActivateTargetPlans() ?? false,
             'walletBalanceKobo' => $walletService->getOrCreate($user)->balance_kobo,
             'openSavingsBalanceKobo' => $openSavingsService->getOrCreate($user)->balance_kobo,
         ]);
@@ -69,10 +68,14 @@ class PlanController extends Controller
             ->with('success', 'Plan started — the price is locked in.');
     }
 
-    /** Product Tracker page. */
+    /** Product Tracker page — a bundled (multi-product) plan renders a dedicated page. */
     public function show(Request $request, ProductTargetPlan $plan): Response
     {
         abort_unless($plan->user_id === $request->user()->id, 403);
+
+        if ($plan->isBundle()) {
+            return $this->showBundle($request, $plan);
+        }
 
         $plan->load(['product:id,uuid,name,slug,price_kobo', 'product.images', 'contributions' => fn ($q) => $q->orderByDesc('id')->limit(20)]);
 
@@ -111,6 +114,45 @@ class PlanController extends Controller
             // shows either the address form or the tracking link (Sprint 6).
             'orderUuid' => Order::query()
                 ->where('plan_id', $plan->id)->value('uuid'),
+        ]);
+    }
+
+    /** Product Tracker page for a Sprint 8 bundled (multi-product) plan. */
+    private function showBundle(Request $request, ProductTargetPlan $plan): Response
+    {
+        $plan->load(['items.product:id,name,slug,price_kobo', 'items.product.images', 'items.vendor:id,business_name']);
+
+        $openSaving = app(OpenSavingsService::class)->getOrCreate($request->user());
+        $wallet = app(WalletService::class)->getOrCreate($request->user());
+
+        $orders = Order::query()->where('plan_id', $plan->id)->get(['uuid']);
+
+        return Inertia::render('Savings/BundlePlanShow', [
+            'plan' => [
+                'uuid' => $plan->uuid,
+                'targetPriceKobo' => $plan->target_price_kobo,
+                'amountSavedKobo' => $plan->amount_saved_kobo,
+                'remainingKobo' => $plan->remaining_balance_kobo,
+                'progress' => (float) $plan->progress_percentage,
+                'cadence' => $plan->cadence?->value,
+                'suggestedContributionKobo' => $plan->suggested_contribution_kobo,
+                'status' => $plan->status->value,
+                'pauseReason' => $plan->pause_reason,
+                'expectedCompletionDate' => $plan->expected_completion_date?->format('j M Y'),
+                'startedAt' => $plan->started_at?->format('j M Y'),
+                'readyForDeliveryAt' => $plan->ready_for_delivery_at?->format('j M Y'),
+                'items' => $plan->items->map(fn ($item) => [
+                    'id' => $item->id,
+                    'productName' => $item->product->name,
+                    'productImage' => $item->product->primaryImageUrl(),
+                    'vendorName' => $item->vendor->business_name,
+                    'lockedPriceKobo' => $item->locked_price_kobo,
+                    'quantity' => $item->quantity,
+                ]),
+            ],
+            'walletBalanceKobo' => $wallet->balance_kobo,
+            'openSavingsBalanceKobo' => $openSaving->balance_kobo,
+            'orderUuids' => $orders->pluck('uuid'),
         ]);
     }
 

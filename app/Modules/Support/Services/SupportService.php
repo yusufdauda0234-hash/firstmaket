@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Owns support ticket and hotline state (docs/firstmarket_Implementation_Plan.md
+ * Owns support ticket and hotline state (docs/FirstMaket_Implementation_Plan.md
  * Sprint 7). Agent replies flip a ticket to Pending (waiting on customer),
  * customer replies flip it back to Open; the customer is notified on every
  * agent reply through their Support preference channels.

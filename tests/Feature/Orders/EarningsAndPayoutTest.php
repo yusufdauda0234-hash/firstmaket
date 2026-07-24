@@ -15,7 +15,6 @@ use App\Modules\Vendor\Services\PayoutService;
 use App\Modules\Wallet\Models\Wallet;
 use App\Modules\Wallet\Services\WalletService;
 use App\Shared\Contracts\BankAccountResolverContract;
-use App\Shared\Enums\IdentityStatus;
 use App\Shared\Enums\OrderStatus;
 use App\Shared\Enums\PayoutBatchStatus;
 use App\Shared\Enums\PayoutItemStatus;
@@ -48,10 +47,7 @@ beforeEach(function () {
 
     $this->customer = User::factory()->create(['phone_verified_at' => now()]);
     $this->customer->assignRole('Customer');
-    CustomerProfile::query()->create([
-        'user_id' => $this->customer->id,
-        'identity_status' => IdentityStatus::Verified,
-    ]);
+    CustomerProfile::query()->create(['user_id' => $this->customer->id]);
 
     $this->admin = User::factory()->create();
     $this->admin->assignRole('Administrator');

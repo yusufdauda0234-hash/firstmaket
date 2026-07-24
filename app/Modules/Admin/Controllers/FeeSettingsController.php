@@ -11,7 +11,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Admin vendor posting-fee settings (docs/firstmarket_Implementation_Plan.md
+ * Admin vendor posting-fee settings (docs/FirstMaket_Implementation_Plan.md
  * Sprint 3): global Free/Paid posting mode and per-tier fees. Changes apply
  * only to newly submitted listings — already-submitted fee records keep the
  * amount they were created with.

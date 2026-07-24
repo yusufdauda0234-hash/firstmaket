@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
  * Creates the first Super Administrator so someone can log in on the admin
  * subdomain and configure roles/permissions for everyone else. Reads
  * credentials from env rather than a hardcoded default, so no real password
- * is ever committed (docs/firstmarket_Security_Compliance.md section 12).
+ * is ever committed (docs/FirstMaket_Security_Compliance.md section 12).
  */
 class SuperAdministratorSeeder extends Seeder
 {

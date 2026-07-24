@@ -8,7 +8,6 @@ use App\Modules\Savings\Models\ProductTargetPlan;
 use App\Modules\Savings\Services\OpenSavingsService;
 use App\Modules\Savings\Services\PlanService;
 use App\Modules\Wallet\Services\WalletService;
-use App\Shared\Enums\IdentityStatus;
 use App\Shared\Enums\PlanCadence;
 use App\Shared\Enums\PlanPaymentMode;
 use App\Shared\Enums\PlanStatus;
@@ -18,17 +17,15 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Sprint 5 QA: locked target price, contribution math, progress → Ready for
- * Delivery, identity gating, and pause/resume.
+ * Delivery, and pause/resume. There is no BVN/NIN identity verification
+ * feature — plan creation is never gated on identity.
  */
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $this->customer = User::factory()->create(['phone_verified_at' => now()]);
     $this->customer->assignRole('Customer');
-    CustomerProfile::query()->create([
-        'user_id' => $this->customer->id,
-        'identity_status' => IdentityStatus::Verified,
-    ]);
+    CustomerProfile::query()->create(['user_id' => $this->customer->id]);
 
     $this->product = Product::factory()->approved()->create(['price_kobo' => 200_000_00]);
 });
@@ -48,14 +45,6 @@ function startSchedulePlan(User $user, Product $product, ?int $suggestedKobo = 2
         suggestedContributionKobo: $suggestedKobo,
     );
 }
-
-it('blocks schedule plans until BVN/NIN identity is verified', function () {
-    $unverified = User::factory()->create(['phone_verified_at' => now()]);
-    $unverified->assignRole('Customer');
-    CustomerProfile::query()->create(['user_id' => $unverified->id]);
-
-    startSchedulePlan($unverified, $this->product);
-})->throws(ValidationException::class);
 
 it('refuses to start a plan on a non-approved product', function () {
     $pending = Product::factory()->pending()->create();

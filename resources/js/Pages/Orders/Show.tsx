@@ -145,7 +145,7 @@ export default function OrderShow() {
             {order.confirmedAt && (
                 <p className="mt-4 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800">
                     <CheckCircle2 className="h-4 w-4" /> Receipt confirmed {order.confirmedAt}. Thanks for shopping
-                    with FirstMarket!
+                    with FirstMaket!
                 </p>
             )}
 

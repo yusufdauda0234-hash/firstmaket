@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Vendor lifecycle from docs/firstmarket-Database_Schema.md: vendors cannot
+ * Vendor lifecycle from docs/FirstMaket-Database_Schema.md: vendors cannot
  * list products unless Approved (enforced from Sprint 3 onward).
  */
 enum VendorStatus: string

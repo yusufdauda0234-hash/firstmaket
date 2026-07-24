@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A receipt is issued in the same transaction as the ledger credit it belongs
- * to (docs/firstmarket_Implementation_Plan.md Sprint 4). Receipt rows are a
+ * to (docs/FirstMaket_Implementation_Plan.md Sprint 4). Receipt rows are a
  * financial audit artifact and are retained, never purged.
  *
  * @property int $id

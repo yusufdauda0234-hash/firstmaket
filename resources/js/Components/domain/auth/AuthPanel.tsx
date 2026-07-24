@@ -257,7 +257,7 @@ export default function AuthPanel({ initialStep = 'entry' }: { initialStep?: Ste
 
                     <p className="mt-5 text-center text-[11px] leading-relaxed text-gray-500">
                         By continuing, you confirm that you have read and accepted our Terms of Service and
-                        Privacy Policy. FirstMarket is not a loan app — no cash withdrawal.
+                        Privacy Policy. FirstMarketis not a loan app — no cash withdrawal.
                     </p>
                 </form>
             )}
@@ -314,7 +314,7 @@ export default function AuthPanel({ initialStep = 'entry' }: { initialStep?: Ste
                 <form onSubmit={(e) => { e.preventDefault(); submitRegisterCode(); }} className="mt-4">
                     <StepHeader
                         onBack={() => setStep('entry')}
-                        title={`New to FirstMarket! Enter the 6-digit code sent by ${channelLabel()} to ${masked}`}
+                        title={`New to FirstMaket! Enter the 6-digit code sent by ${channelLabel()} to ${masked}`}
                     />
                     <div className="mt-4">
                         <OtpInput

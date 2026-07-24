@@ -6,6 +6,7 @@ use App\Modules\Admin\Controllers\DocumentDownloadController;
 use App\Modules\Admin\Controllers\FeeSettingsController;
 use App\Modules\Admin\Controllers\LogisticsOrderController;
 use App\Modules\Admin\Controllers\OrderAdminController;
+use App\Modules\Admin\Controllers\PhoneReviewController;
 use App\Modules\Admin\Controllers\ProductApprovalController;
 use App\Modules\Admin\Controllers\ReconciliationController;
 use App\Modules\Admin\Controllers\SupportAdminController;
@@ -23,6 +24,12 @@ Route::middleware('permission:vendors.view')->group(function () {
     Route::get('vendors/{vendorProfile}', [VendorApprovalController::class, 'show'])->name('admin.vendors.show');
 
     Route::get('documents/{uploadedDocument}', DocumentDownloadController::class)->name('admin.documents.download');
+});
+
+Route::middleware('permission:identity.review')->group(function () {
+    Route::get('phone-numbers', [PhoneReviewController::class, 'index'])->name('admin.phone.index');
+    Route::post('phone-numbers/{user}/approve', [PhoneReviewController::class, 'approve'])->name('admin.phone.approve');
+    Route::post('phone-numbers/{user}/reject', [PhoneReviewController::class, 'reject'])->name('admin.phone.reject');
 });
 
 Route::middleware('permission:vendors.approve')->group(function () {

@@ -4,7 +4,7 @@ import PageHeader from '@/Components/ui/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Search, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { Search, User as UserIcon } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 interface ResultRow {
@@ -25,7 +25,6 @@ interface Props {
         phone: string | null;
         emailVerified: boolean;
         phoneVerified: boolean;
-        identityStatus: string;
         memberSince: string;
         walletBalanceKobo: number;
         orders: { uuid: string; productName: string; status: string; statusLabel: string; lockedPriceKobo: number; createdAt: string }[];
@@ -37,8 +36,7 @@ interface Props {
 
 /**
  * Read-only customer lookup for support agents. Shows order/plan/wallet
- * context only — card details are never stored, and BVN/NIN values are never
- * surfaced (only the aggregate identity status).
+ * context only — card details are never stored.
  */
 export default function CustomerLookup() {
     const { query, results, customer } = usePage<Props>().props;
@@ -56,7 +54,7 @@ export default function CustomerLookup() {
             <PageHeader
                 eyebrow="Support tools"
                 title="Customer lookup"
-                description="Read-only order, plan, and wallet context. No card data exists on FirstMarket and identity numbers are never shown."
+                description="Read-only order, plan, and wallet context. No card data exists on FirstMarketand identity numbers are never shown."
             />
 
             <form onSubmit={search} className="mb-4 flex max-w-xl items-center gap-2">
@@ -134,10 +132,6 @@ export default function CustomerLookup() {
                                     </Badge>
                                 </p>
                             )}
-                            <p className="flex items-center gap-2">
-                                <ShieldCheck className="h-4 w-4 text-brand-600" />
-                                Identity: <Badge tone={statusTone(customer.identityStatus)}>{customer.identityStatus}</Badge>
-                            </p>
                             <p className="text-xs text-gray-400">Member since {customer.memberSince}</p>
                         </div>
                     </Card>
@@ -148,7 +142,7 @@ export default function CustomerLookup() {
                             {formatNairaFromKobo(customer.walletBalanceKobo)}
                         </p>
                         <p className="mt-1 text-xs text-gray-400">
-                            Deposit-only balance · card details are held by Paystack, never FirstMarket.
+                            Deposit-only balance · card details are held by Paystack, never FirstMaket.
                         </p>
                     </Card>
 

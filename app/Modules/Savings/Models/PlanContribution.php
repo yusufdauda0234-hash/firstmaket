@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One application of money to a Product Target Plan
- * (docs/firstmarket-Database_Schema.md section 8). wallet_transaction_id
+ * (docs/FirstMaket-Database_Schema.md section 8). wallet_transaction_id
  * links the wallet ledger debit when money came straight from the wallet;
  * it is null for Open Savings allocations and redirections, which do not
  * touch the wallet balance.

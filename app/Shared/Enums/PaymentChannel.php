@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * Paystack funding channels offered for wallet deposits
- * (docs/firstmarket_Implementation_Plan.md Sprint 4). Paystack decides the
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 4). Paystack decides the
  * final channel at checkout; this is the set we request/track.
  */
 enum PaymentChannel: string

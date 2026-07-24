@@ -12,7 +12,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Customer savings dashboard (docs/firstmarket_Implementation_Plan.md Sprint
+ * Customer savings dashboard (docs/FirstMaket_Implementation_Plan.md Sprint
  * 5): Open Savings balance, all Product Target Plans with live progress, and
  * entry points into allocation and plan flows.
  */
@@ -29,15 +29,16 @@ class SavingsDashboardController extends Controller
 
         $plans = ProductTargetPlan::query()
             ->where('user_id', $user->id)
-            ->with(['product:id,name,slug,price_kobo', 'product.images'])
+            ->with(['product:id,name,slug,price_kobo', 'product.images', 'items'])
             ->orderByRaw("field(status, 'active', 'paused', 'ready_for_delivery', 'completed', 'cancelled')")
             ->orderByDesc('id')
             ->get()
             ->map(fn (ProductTargetPlan $plan) => [
                 'uuid' => $plan->uuid,
-                'productName' => $plan->product->name,
-                'productSlug' => $plan->product->slug,
-                'productImage' => $plan->product->primaryImageUrl(),
+                'isBundle' => $plan->isBundle(),
+                'productName' => $plan->isBundle() ? $plan->items->count().' products bundled' : $plan->product->name,
+                'productSlug' => $plan->product?->slug,
+                'productImage' => $plan->product?->primaryImageUrl(),
                 'targetPriceKobo' => $plan->target_price_kobo,
                 'amountSavedKobo' => $plan->amount_saved_kobo,
                 'remainingKobo' => $plan->remaining_balance_kobo,
@@ -54,7 +55,6 @@ class SavingsDashboardController extends Controller
             'walletBalanceKobo' => $wallet->balance_kobo,
             'plans' => $plans,
             'activePlanCount' => $plans->where('status', PlanStatus::Active->value)->count(),
-            'identityVerified' => $user->customerProfile?->canActivateTargetPlans() ?? false,
         ]);
     }
 }

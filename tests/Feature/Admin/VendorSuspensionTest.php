@@ -11,7 +11,7 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 
 /**
  * Sprint 3 QA: vendor suspension delists approved products
- * (docs/firstmarket_Implementation_Plan.md). Suspension travels through the
+ * (docs/FirstMaket_Implementation_Plan.md). Suspension travels through the
  * VendorSuspended domain event; the Catalog module reacts by delisting.
  */
 beforeEach(fn () => $this->seed(RolesAndPermissionsSeeder::class));

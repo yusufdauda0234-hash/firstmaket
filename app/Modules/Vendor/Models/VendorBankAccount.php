@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Vendor payout destination (docs/firstmarket-Database_Schema.md section 9).
+ * Vendor payout destination (docs/FirstMaket-Database_Schema.md section 9).
  * The account number is encrypted at rest; the account name is resolved via
  * Paystack before verification. Payouts only go to accounts with verified_at
  * set, and each vendor has exactly one active account.

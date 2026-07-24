@@ -104,13 +104,13 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                 )}
             >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 shadow-sm">
-                    <img src="/images/brand/logo-mark-transparent.png" alt="FirstMarket" className="h-9 w-9 object-contain" />
+                    <img src="/images/brand/logo-mark-transparent.png" alt="FirstMaket" className="h-9 w-9 object-contain" />
                 </span>
                 {(!collapsed || mobile) && (
                     <span className="min-w-0">
                         <span className="flex items-center gap-2">
                             <span className="text-[15px] font-extrabold leading-none tracking-tight text-gray-900">
-                                FirstMarket
+                                FirstMaket
                             </span>
                             <span className="rounded-md bg-brand-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-900">
                                 Vendor
@@ -233,7 +233,7 @@ export default function VendorLayout({ children }: PropsWithChildren) {
             <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur-md lg:hidden">
                 <Link href={route('vendor.dashboard')} className="flex items-center gap-2">
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-brand-900">
-                        <img src="/images/brand/logo-mark-transparent.png" alt="FirstMarket" className="h-5 w-5 object-contain" />
+                        <img src="/images/brand/logo-mark-transparent.png" alt="FirstMaket" className="h-5 w-5 object-contain" />
                     </span>
                     <span className="rounded-full bg-brand-yellow px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-900">
                         Vendor
@@ -295,7 +295,7 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                     <span className="flex items-center gap-1.5">
                         <ShieldCheck className="h-3.5 w-3.5 text-brand-500" /> Listings are reviewed before they go live.
                     </span>
-                    <span>Zero listing fees today · Instant Paystack payouts · FirstMarket delivers</span>
+                    <span>Zero listing fees today · Instant Paystack payouts · FirstMarketdelivers</span>
                 </div>
             </footer>
         </div>

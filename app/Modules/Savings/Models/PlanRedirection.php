@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Immutable record of a savings redirection
- * (docs/firstmarket-Database_Schema.md section 8): either the full Open
+ * (docs/FirstMaket-Database_Schema.md section 8): either the full Open
  * Savings balance moving into a plan (source_type = open_savings) or an
  * active plan switching to a different product carrying its full balance
  * (source_type = plan). Never a cash refund. Every row is also audit-logged.

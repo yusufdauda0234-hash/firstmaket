@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * Result of matching a Paystack settlement line against the internal ledger
- * (docs/firstmarket-Database_Schema.md section 7).
+ * (docs/FirstMaket-Database_Schema.md section 7).
  */
 enum ReconciliationStatus: string
 {

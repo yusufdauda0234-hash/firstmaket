@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Support ticket lifecycle (docs/firstmarket-Database_Schema.md section 10).
+ * Support ticket lifecycle (docs/FirstMaket-Database_Schema.md section 10).
  */
 enum TicketStatus: string
 {

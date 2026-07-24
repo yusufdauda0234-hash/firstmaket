@@ -31,7 +31,7 @@ export default function StaffAuthLayout({ title, subtitle, children }: PropsWith
 
                 <img
                     src="/images/brand/logo-light-transparent.png"
-                    alt="FirstMarket"
+                    alt="FirstMaket"
                     className="h-20 w-auto self-start"
                 />
 
@@ -44,7 +44,7 @@ export default function StaffAuthLayout({ title, subtitle, children }: PropsWith
                     </h1>
                     <p className="mt-3 max-w-md text-brand-100">
                         Approvals, payouts, support and logistics — everything staff need to keep
-                        FirstMarket moving, in one place.
+                        FirstMarketmoving, in one place.
                     </p>
                     <ul className="mt-6 space-y-2 text-sm text-brand-100">
                         {[
@@ -69,8 +69,8 @@ export default function StaffAuthLayout({ title, subtitle, children }: PropsWith
 
             {/* Form panel */}
             <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
-                <Link href={route('home')} className="lg:hidden" aria-label="FirstMarket">
-                    <img src="/images/brand/logo-mark-dark.png" alt="FirstMarket" className="h-10 w-auto" />
+                <Link href={route('home')} className="lg:hidden" aria-label="FirstMaket">
+                    <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
                 </Link>
 
                 <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-8">

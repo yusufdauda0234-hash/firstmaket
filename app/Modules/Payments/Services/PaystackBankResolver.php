@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 
 /**
  * Paystack implementation of bank account verification for vendor payouts
- * (docs/firstmarket_Implementation_Plan.md Sprint 6): account name
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 6): account name
  * resolution and transfer recipient registration. Tests bind an in-memory
  * fake to the contract instead.
  */

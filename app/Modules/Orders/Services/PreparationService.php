@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Vendor-side preparation workflow (docs/firstmarket_Implementation_Plan.md
+ * Vendor-side preparation workflow (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 step 4): confirm stock, mark Ready for Pickup within the SLA, or
  * reject with a reason. Rejection routes to an admin-managed resolution —
  * refund-to-savings (Open Savings credit) or plan redirection — never cash.

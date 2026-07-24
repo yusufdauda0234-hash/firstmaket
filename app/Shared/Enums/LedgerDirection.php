@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * Direction of a ledger entry relative to the wallet balance
- * (docs/firstmarket-Database_Schema.md section 7).
+ * (docs/FirstMaket-Database_Schema.md section 7).
  */
 enum LedgerDirection: string
 {

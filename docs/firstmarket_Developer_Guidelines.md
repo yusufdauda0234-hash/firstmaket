@@ -1,4 +1,4 @@
-# FirstMarket Developer Guidelines
+# FirstMarketDeveloper Guidelines
 
 Version: 1.0
 
@@ -8,7 +8,7 @@ Version: 1.0
 
 Decision (revised 2026-07-17): MySQL family — MySQL 8 in production, MariaDB 10.4+ locally (XAMPP).
 
-FirstMarket is a wallet, direct purchase, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, which InnoDB covers: real transactions, row locking, foreign keys, unique constraints, and (MySQL 8.0.16+) enforced CHECK constraints. Keep every money value in integer kobo columns, wrap ledger writes in transactions, and never rely on engine-specific SQL — stick to Laravel's schema and query builders so both mysql and mariadb drivers work.
+FirstMarketis a wallet, direct purchase, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, which InnoDB covers: real transactions, row locking, foreign keys, unique constraints, and (MySQL 8.0.16+) enforced CHECK constraints. Keep every money value in integer kobo columns, wrap ledger writes in transactions, and never rely on engine-specific SQL — stick to Laravel's schema and query builders so both mysql and mariadb drivers work.
 
 ### React vs Vue
 
@@ -237,8 +237,7 @@ Critical architecture tests:
 - Vendor price edit after approval returns listing to Pending Approval.
 - Vendor suspension unlists all approved products.
 - User suspension revokes active sessions.
-- Product Target Plan cannot activate without required BVN/NIN verification.
-- Pay At Once purchase follows the configured identity verification policy before delivery.
+- Product Target Plan and Pay At Once both activate without requiring phone verification, which is optional and informational only. There is no BVN/NIN identity verification feature.
 - Pausing a plan stops reminders and automatic debit without changing target price or saved amount.
 - Referral reward is credited only after the referred customer's first plan is completed.
 - Affiliate commission is not payable for click or signup alone.

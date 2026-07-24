@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notification;
 
 /**
  * Email-channel OTP. The plaintext code exists only in this message — the
- * database stores a hash (docs/firstmarket_Security_Compliance.md).
+ * database stores a hash (docs/FirstMaket_Security_Compliance.md).
  */
 class OtpCodeNotification extends Notification
 {
@@ -28,7 +28,7 @@ class OtpCodeNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Your FirstMarket code: {$this->code}")
+            ->subject("Your FirstMarketcode: {$this->code}")
             ->view('emails.otp', [
                 'code' => $this->code,
                 'ttlMinutes' => $this->ttlMinutes,

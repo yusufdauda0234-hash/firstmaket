@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 /**
  * Customer alert when a support agent replies to their ticket
- * (docs/firstmarket_Implementation_Plan.md Sprint 7).
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 7).
  */
 class TicketReplyNotification extends PreferenceAwareNotification implements ShouldQueue
 {
@@ -28,7 +28,7 @@ class TicketReplyNotification extends PreferenceAwareNotification implements Sho
         return (new MailMessage)
             ->subject("Support replied: {$this->subject}")
             ->line("Our support team replied to your ticket \"{$this->subject}\".")
-            ->line('Open the Support Center in your FirstMarket account to read and respond.');
+            ->line('Open the Support Center in your FirstMarketaccount to read and respond.');
     }
 
     public function toDatabase(object $notifiable): array

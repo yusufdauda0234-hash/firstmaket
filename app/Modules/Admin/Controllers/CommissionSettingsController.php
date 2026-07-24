@@ -13,7 +13,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Per-category commission rates (docs/firstmarket_Implementation_Plan.md
+ * Per-category commission rates (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6). Rate history is append-only — saving writes a new row with
  * effective_from = now; existing orders keep their snapshots.
  */

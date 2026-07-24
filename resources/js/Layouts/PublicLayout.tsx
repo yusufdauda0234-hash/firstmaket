@@ -19,6 +19,7 @@ interface PublicLayoutProps {
 export default function PublicLayout({ categories: categoriesProp, children }: PropsWithChildren<PublicLayoutProps>) {
     const { auth, flash, supportHotline, categories: sharedCategories } = usePage<PageProps>().props;
     const categories = categoriesProp ?? sharedCategories ?? [];
+    const hotline = supportHotline ?? '';
     const [authOpen, setAuthOpen] = useState(false);
     // Only one of the two big header dropdowns (Categories mega menu /
     // search suggestions) may be open at a time.
@@ -64,9 +65,9 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                     <div className="flex flex-wrap items-center gap-4 text-slate-200">
                         <span className="hidden sm:inline">Limited-time offer</span>
                         <Link href={route('vendor.register')} className="font-medium text-brand-yellow hover:text-white">
-                            Sell on FirstMarket
+                            Sell on FirstMaket
                         </Link>
-                        <HelpMenu hotline={supportHotline} />
+                        <HelpMenu hotline={hotline} />
                         <GetAppPopover />
                     </div>
                 </div>
@@ -79,8 +80,8 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 horizontal overflow is already guarded on html/body. */}
             <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white shadow-sm">
                 <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-4 px-4 py-3 min-w-0">
-                    <Link href={route('home')} className="shrink-0" aria-label="FirstMarket home">
-                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMarket" className="h-10 w-auto" />
+                    <Link href={route('home')} className="shrink-0" aria-label="FirstMarkethome">
+                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
                     </Link>
 
                     <div className="flex flex-1 min-w-0 items-center gap-2">
@@ -127,7 +128,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                         <CheckBadgeIcon /> Verified vendors only
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
-                        <TruckIcon /> FirstMarket delivery guarantee
+                        <TruckIcon /> FirstMarketdelivery guarantee
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 lg:flex">
                         <ReturnIcon /> 30-day returns
@@ -186,18 +187,18 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                     <Reveal>
                         <img
                             src="/images/brand/logo-light-transparent.png"
-                            alt="FirstMarket — Just Order. We Deliver"
+                            alt="FirstMarket— Just Order. We Deliver"
                             className="h-16 w-auto"
                         />
                         <p className="mt-3 max-w-xs text-sm leading-relaxed text-brand-100">
-                            Pay small small or pay at once — FirstMarket delivers. No loans, no cash
+                            Pay small small or pay at once — FirstMarketdelivers. No loans, no cash
                             withdrawal, just planned ownership.
                         </p>
                         <a
-                            href={`tel:${supportHotline.replace(/[^+\d]/g, '')}`}
+                            href={`tel:${hotline.replace(/[^+\d]/g, '')}`}
                             className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-brand-yellow/50 hover:bg-white/10 active:scale-95"
                         >
-                            📞 {supportHotline}
+                            📞 {hotline}
                         </a>
                         <div className="mt-4 flex items-center gap-2" aria-label="Social media — coming soon">
                             {['Facebook', 'Instagram', 'X', 'WhatsApp'].map((network) => (
@@ -273,7 +274,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                         <ul className="mt-4 space-y-2.5 text-sm">
                             <li>
                                 <a
-                                    href={`tel:${supportHotline.replace(/[^+\d]/g, '')}`}
+                                    href={`tel:${hotline.replace(/[^+\d]/g, '')}`}
                                     className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                 >
                                     Call to order
@@ -392,11 +393,11 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 {/* Bottom bar */}
                 <div className="border-t border-white/10">
                     <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs text-brand-200">
-                        <span>© {new Date().getFullYear()} FirstMarket. All rights reserved.</span>
+                        <span>© {new Date().getFullYear()} FirstMaket. All rights reserved.</span>
                         <span>
-                            FirstMarket is not a loan app, bank, or BNPL service. No cash withdrawal.
+                            FirstMarketis not a loan app, bank, or BNPL service. No cash withdrawal.
                         </span>
-                        <span>Secure payments by Paystack · Verified vendors · FirstMarket delivery</span>
+                        <span>Secure payments by Paystack · Verified vendors · FirstMarketdelivery</span>
                     </div>
                 </div>
             </footer>

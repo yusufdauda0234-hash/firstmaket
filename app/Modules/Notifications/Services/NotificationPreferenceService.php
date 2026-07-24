@@ -8,7 +8,7 @@ use App\Shared\Enums\NotificationCategory;
 
 /**
  * Resolves which Laravel notification channels a user gets for a category
- * (docs/firstmarket_Implementation_Plan.md Sprint 7). Missing preference
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 7). Missing preference
  * rows fall back to defaults: email + in-app on, SMS off. Security email is
  * locked on, and SMS only fires for verified phone numbers.
  */

@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * IVR reason categories for hotline calls
- * (docs/firstmarket_Implementation_Plan.md Sprint 7).
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 7).
  */
 enum IvrReason: string
 {

@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Assignment of an order to a Logistics Personnel user for pickup and
- * delivery (docs/firstmarket-Database_Schema.md section 9).
+ * delivery (docs/FirstMaket-Database_Schema.md section 9).
  *
  * @property int $id
  * @property int $order_id

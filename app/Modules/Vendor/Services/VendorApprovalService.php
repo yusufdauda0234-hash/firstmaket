@@ -79,7 +79,7 @@ class VendorApprovalService
     /**
      * Suspend an approved vendor. The Catalog module listens for
      * VendorSuspended and delists the vendor's approved products
-     * (docs/firstmarket_Implementation_Plan.md Sprint 3 QA).
+     * (docs/FirstMaket_Implementation_Plan.md Sprint 3 QA).
      */
     public function suspend(VendorProfile $profile, User $actor, string $reason): VendorProfile
     {

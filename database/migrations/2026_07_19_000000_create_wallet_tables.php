@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Sprint 4: wallet and Paystack (docs/firstmarket-Database_Schema.md section 7).
+ * Sprint 4: wallet and Paystack (docs/FirstMaket-Database_Schema.md section 7).
  * Money is integer kobo throughout — never floats. The wallet is deposit-only:
  * there is no withdrawal table, column, or path anywhere. The ledger
  * (wallet_transactions) is immutable and only ever credited by a verified

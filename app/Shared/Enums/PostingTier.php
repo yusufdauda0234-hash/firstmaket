@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Vendor listing fee tiers (docs/firstmarket_PRD_Laravel.md "Vendor fee
+ * Vendor listing fee tiers (docs/FirstMaket_PRD_Laravel.md "Vendor fee
  * settings"). Fee amounts and the free/paid switch live in
  * vendor_fee_settings, admin-managed.
  */

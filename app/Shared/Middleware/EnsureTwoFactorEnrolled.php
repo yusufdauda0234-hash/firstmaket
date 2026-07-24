@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  * reach any other admin-subdomain route until 2FA is enrolled. Support
  * Agent and Logistics Personnel are excluded deliberately — only roles that
  * touch money, permissions, or platform-wide settings carry the mandatory
- * requirement (docs/firstmarket_Security_Compliance.md section 3).
+ * requirement (docs/FirstMaket_Security_Compliance.md section 3).
  */
 class EnsureTwoFactorEnrolled
 {

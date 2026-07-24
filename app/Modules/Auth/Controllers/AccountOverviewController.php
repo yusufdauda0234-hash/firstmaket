@@ -33,13 +33,15 @@ class AccountOverviewController extends Controller
                 'memberSince' => $user->created_at?->format('F Y'),
             ],
             'walletBalanceKobo' => $wallet->balance_kobo,
-            'identityStatus' => $user->customerProfile?->identity_status->value ?? 'unverified',
             // AliExpress-style order tracker counts (Sprint 6).
             'orderCounts' => [
+                // whereNotNull matters here: plan_id is null on Sprint 8 cart
+                // checkout orders, and a NULL inside a NOT IN subquery would
+                // make the whole condition match nothing.
                 'awaitingAddress' => ProductTargetPlan::query()
                     ->where('user_id', $user->id)
                     ->where('status', PlanStatus::ReadyForDelivery)
-                    ->whereNotIn('id', Order::query()->select('plan_id'))
+                    ->whereNotIn('id', Order::query()->whereNotNull('plan_id')->select('plan_id'))
                     ->count(),
                 'processing' => Order::query()
                     ->where('customer_id', $user->id)

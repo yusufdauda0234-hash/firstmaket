@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * FirstMarket-controlled logistics (docs/firstmarket_Implementation_Plan.md
+ * FirstMaket-controlled logistics (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 steps 5–6): admin assigns a Logistics Personnel user; that user
  * walks the order through pickup and delivery. Every step notifies the
  * customer via OrderStatusChanged (fired inside OrderService).

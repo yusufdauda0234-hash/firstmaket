@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * Immutable ledger row (docs/firstmarket-Database_Schema.md section 7). Rows
+ * Immutable ledger row (docs/FirstMaket-Database_Schema.md section 7). Rows
  * are append-only: created once with balance_before/after captured, never
  * updated or deleted. `reference` is unique — for deposits it is the Paystack
  * reference, which is what makes webhook crediting idempotent.

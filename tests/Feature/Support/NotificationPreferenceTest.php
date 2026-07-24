@@ -8,7 +8,7 @@ use App\Shared\Enums\NotificationCategory;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
 /**
- * Sprint 7 QA (docs/firstmarket_Implementation_Plan.md): notification
+ * Sprint 7 QA (docs/FirstMaket_Implementation_Plan.md): notification
  * preferences are respected per category, the in-app inbox works, and the
  * security email toggle is locked on.
  */

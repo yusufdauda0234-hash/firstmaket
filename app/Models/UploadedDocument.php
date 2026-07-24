@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
  * verification, and admin review — hence a core model rather than a module
  * one. Files live on a non-public disk and are only ever served through
  * permission-checked streamed responses, never public URLs
- * (docs/firstmarket_Security_Compliance.md).
+ * (docs/FirstMaket_Security_Compliance.md).
  */
 /**
  * @property int $id

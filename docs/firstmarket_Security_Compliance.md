@@ -1,10 +1,10 @@
-# FirstMarket Security and Compliance
+# FirstMarketSecurity and Compliance
 
 Version: 1.0
 
 ## 1. Security Position
 
-FirstMarket handles identity data, customer savings records, payment references, vendor documents, and delivery addresses. Even though it is not a bank, lender, or BNPL product, it must be engineered with financial-grade care because customers trust the platform with paid-in funds and identity documents.
+FirstMarkethandles identity data, customer savings records, payment references, vendor documents, and delivery addresses. Even though it is not a bank, lender, or BNPL product, it must be engineered with financial-grade care because customers trust the platform with paid-in funds and identity documents.
 
 ## 2. Compliance Context
 
@@ -13,10 +13,9 @@ Primary Nigerian considerations:
 - Nigeria Data Protection Act 2023
 - NDPR principles
 - Consumer protection expectations
-- Standard KYC/identity verification practices for BVN and NIN
 - Payment-provider compliance through Paystack
 
-FirstMarket should avoid language and behavior that makes it look like a lender, deposit-taking bank, or investment product.
+FirstMarketshould avoid language and behavior that makes it look like a lender, deposit-taking bank, or investment product.
 
 ### 2.1 Regulatory Classification Sign-Off (pre-build gate)
 
@@ -25,12 +24,13 @@ A deposit-only wallet that holds customer pre-payment for future product deliver
 Before Sprint 1 starts:
 
 - Obtain a written opinion from a Nigerian fintech/payments lawyer confirming the wallet + Product Target Plan + Pay At Once model does not require a CBN license (PSP, PSSP, MMO, or similar) as designed.
-- Confirm the "no withdrawal, redirection only" model and the affiliate/customer-fund separation are sufficient to keep FirstMarket outside deposit-taking classification.
+- Confirm the "no withdrawal, redirection only" model and the affiliate/customer-fund separation are sufficient to keep FirstMarketoutside deposit-taking classification.
 - Revisit this opinion before Phase 2 (automatic debit) and Phase 3 (agent network, cooperative savings) launch, since each expands the regulatory surface.
+- **Note:** BVN/NIN identity verification was built and then removed entirely by product decision — there is no customer or vendor KYC beyond phone/email OTP (optional) and vendor CAC document review. This removes a control that would otherwise have supported the "not deposit-taking" argument above; flag this explicitly to the lawyer providing the opinion.
 
 ### 2.2 Fund Safeguarding
 
-- Customer funds held between deposit and product delivery must sit in a settlement account that is operationally separate from FirstMarket's operating/expense account, so a cash-flow event at the company cannot strand customer balances.
+- Customer funds held between deposit and product delivery must sit in a settlement account that is operationally separate from FirstMaket's operating/expense account, so a cash-flow event at the company cannot strand customer balances.
 - Document, before launch, whether Paystack settlement flows directly into a segregated account or into a shared account with internal sub-ledger separation, and reconcile the internal wallet ledger against that account's real balance as part of the finance reconciliation job (Section 7).
 - The wallet ledger sum (`SUM(wallet_transactions.direction = credit) - SUM(debit)`) must reconcile to actual settled funds at all times; alert Finance if it drifts.
 
@@ -75,8 +75,6 @@ Rules:
 
 Encrypt at application level:
 
-- BVN
-- NIN
 - Phone number
 - CAC document references
 - Delivery address
@@ -216,7 +214,7 @@ Affiliate payout rules:
 Affiliate link protection:
 
 - Use random non-sequential codes or signed/HMAC tracking tokens.
-- Never place database IDs, email, phone, BVN, NIN, wallet references, or personal data in affiliate URLs.
+- Never place database IDs, email, phone, wallet references, or personal data in affiliate URLs.
 - Validate every affiliate link server-side before attribution.
 - Stop tracking immediately for suspended or expired links.
 - Rate-limit clicks and signup attempts from the same IP, device, or user agent pattern.
@@ -225,7 +223,7 @@ Affiliate link protection:
 - Store attribution cookies as HttpOnly, Secure, SameSite=Lax, with a clear expiry such as 30 days.
 - A click must never grant permissions, wallet balance, product access, or commission by itself.
 - Allow only one valid affiliate attribution per customer unless an administrator explicitly resolves a dispute.
-- Block self-referral and flag repeated phone, email, BVN, NIN, or device reuse across related accounts.
+- Block self-referral and flag repeated phone, email, or device reuse across related accounts.
 
 ## 11. Security Headers
 
@@ -240,16 +238,16 @@ Set:
 
 ### 11.1 Admin Surface Isolation
 
-- Serve the Admin, Support, Logistics, and Finance dashboards from an isolated subdomain (`admin.firstmarket.ng`), not a path (`/admin`) on the same origin as the customer app. A path-based split shares cookies and origin with the highest-traffic, most public surface, so any XSS in the customer app has a direct path to admin sessions.
-- Scope admin session cookies to the admin subdomain only (`Domain=admin.firstmarket.ng`, not the parent domain).
+- Serve the Admin, Support, Logistics, and Finance dashboards from an isolated subdomain (`admin.FirstMaket.ng`), not a path (`/admin`) on the same origin as the customer app. A path-based split shares cookies and origin with the highest-traffic, most public surface, so any XSS in the customer app has a direct path to admin sessions.
+- Scope admin session cookies to the admin subdomain only (`Domain=admin.FirstMaket.ng`, not the parent domain).
 - Apply a stricter `Content-Security-Policy` on the admin subdomain than on public/customer surfaces.
 - Consider IP allowlisting or VPN-gating the admin subdomain for Super Administrator routes once operational usage patterns are known.
 
 ## 12. Secrets Management And Key Rotation
 
 - Use a secrets manager (AWS Secrets Manager, HashiCorp Vault, or the hosting provider's equivalent) for production secrets rather than relying solely on a server-side `.env` file. `.env` remains acceptable for local/staging but production secrets should be injected at deploy/runtime from the manager.
-- Rotate `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET`, `AFFILIATE_TRACKING_SIGNING_KEY`, BVN/NIN provider keys, and SMS/mail provider keys on a defined schedule (at minimum annually, immediately on suspected compromise, and on staff offboarding for anyone with access).
-- Rotate `APP_KEY` only with a documented plan for re-encrypting existing encrypted-at-rest fields (BVN, NIN, CAC references, addresses), since naive rotation breaks decryption of existing rows.
+- Rotate `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET`, `AFFILIATE_TRACKING_SIGNING_KEY`, and SMS/mail provider keys on a defined schedule (at minimum annually, immediately on suspected compromise, and on staff offboarding for anyone with access).
+- Rotate `APP_KEY` only with a documented plan for re-encrypting existing encrypted-at-rest fields (CAC references, addresses), since naive rotation breaks decryption of existing rows.
 - Never let staging or local environments share production secrets, including provider API keys and the encryption key.
 
 ## 13. Independent Security Review

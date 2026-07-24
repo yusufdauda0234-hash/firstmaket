@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Append-only order status history (docs/firstmarket-Database_Schema.md
+ * Append-only order status history (docs/FirstMaket-Database_Schema.md
  * section 9), mirroring the product/plan status event pattern.
  *
  * @property int $id

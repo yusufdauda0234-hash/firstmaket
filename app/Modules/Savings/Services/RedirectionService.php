@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Owns savings redirections (docs/firstmarket_Implementation_Plan.md Sprint
+ * Owns savings redirections (docs/FirstMaket_Implementation_Plan.md Sprint
  * 5, PRD Product Tracker rules): moving the full Open Savings balance into a
  * plan, or switching an active plan to a different product carrying its full
  * balance to a freshly locked price. Allowed only while the target/source
@@ -48,6 +48,10 @@ class RedirectionService
 
             if ($plan->status !== PlanStatus::Active) {
                 throw ValidationException::withMessages(['plan' => 'Redirection is only allowed while the plan is active.']);
+            }
+
+            if ($plan->isBundle()) {
+                throw ValidationException::withMessages(['plan' => 'A bundled plan does not target a single product to redirect toward.']);
             }
 
             $openSaving = OpenSaving::query()
@@ -117,6 +121,10 @@ class RedirectionService
 
             if ($plan->status !== PlanStatus::Active) {
                 throw ValidationException::withMessages(['plan' => 'Redirection is only allowed while the plan is active.']);
+            }
+
+            if ($plan->isBundle()) {
+                throw ValidationException::withMessages(['plan' => 'A bundled plan cannot be switched to a single product.']);
             }
 
             if ($newProduct->id === $plan->product_id) {

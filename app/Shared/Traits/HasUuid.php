@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 /**
  * Public identifier convention: integer ids stay internal, uuid is what
- * appears in URLs and route model binding (docs/firstmarket-Database_Schema.md).
+ * appears in URLs and route model binding (docs/FirstMaket-Database_Schema.md).
  *
  * @property string $uuid
  */

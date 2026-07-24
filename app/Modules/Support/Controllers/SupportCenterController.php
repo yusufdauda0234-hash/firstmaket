@@ -15,7 +15,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Customer Support Center (docs/firstmarket_Implementation_Plan.md Sprint
+ * Customer Support Center (docs/FirstMaket_Implementation_Plan.md Sprint
  * 7): FAQ, WhatsApp entry, hotline/callback request, complaint tickets, and
  * the customer's own ticket threads.
  */
@@ -90,7 +90,7 @@ class SupportCenterController extends Controller
                     'mine' => $message->sender_id === $request->user()->id,
                     'senderName' => $message->sender_id === $request->user()->id
                         ? 'You'
-                        : 'FirstMarket Support',
+                        : 'FirstMarketSupport',
                     'at' => $message->created_at?->format('j M Y, g:ia'),
                 ]),
             ],

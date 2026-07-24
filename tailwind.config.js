@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
     // Class-based dark mode: `dark:` variants only apply when a `.dark` class
-    // is present on the tree. FirstMarket ships a single light design across
+    // is present on the tree. FirstMarketships a single light design across
     // the public site, admin portal, Vendor Center and customer pages, so
     // without that class every `dark:` utility stays inert — the app no longer
     // flips to dark just because the visitor's OS is in dark mode.
@@ -13,7 +13,7 @@ export default {
     theme: {
         extend: {
             colors: {
-                // FirstMarket brand palette — see docs/firstmarket_Brand_Assets.md
+                // FirstMarketbrand palette — see docs/FirstMaket_Brand_Assets.md
                 brand: {
                     50: '#eef4fc',
                     100: '#d9e6f8',

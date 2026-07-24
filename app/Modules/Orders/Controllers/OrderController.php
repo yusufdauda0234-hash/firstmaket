@@ -13,13 +13,18 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Customer order flows (docs/firstmarket_Implementation_Plan.md Sprint 6):
+ * Customer order flows (docs/FirstMaket_Implementation_Plan.md Sprint 6):
  * provide the delivery address for a fully funded plan (creating the order),
  * list orders, track the delivery chain, and confirm receipt.
  */
 class OrderController extends Controller
 {
-    /** Create the order from a Ready for Delivery plan + delivery address. */
+    /**
+     * Create the order(s) from a Ready for Delivery plan + delivery
+     * address. A single-product plan creates one order (unchanged Sprint 6
+     * behavior); a Sprint 8 bundled multi-product plan creates one order per
+     * bundled product in the same transaction.
+     */
     public function store(Request $request, OrderService $orderService): RedirectResponse
     {
         $validated = $request->validate([
@@ -30,6 +35,20 @@ class OrderController extends Controller
         ]);
 
         $plan = ProductTargetPlan::query()->where('uuid', $validated['plan_uuid'])->firstOrFail();
+
+        if ($plan->isBundle()) {
+            $orderService->createFromBundledPlan(
+                customer: $request->user(),
+                plan: $plan,
+                deliveryAddress: $validated['delivery_address'],
+                state: $validated['state'],
+                lga: $validated['lga'],
+            );
+
+            return redirect()
+                ->route('savings.plans.show', $plan->uuid)
+                ->with('success', 'Order placed — every vendor in your bundle has been notified.');
+        }
 
         $order = $orderService->createFromPlan(
             customer: $request->user(),

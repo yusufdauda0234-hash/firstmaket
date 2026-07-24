@@ -34,8 +34,8 @@ return [
     ],
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'no-reply@firstmarket.ng'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'FirstMarket')),
+        'address' => env('MAIL_FROM_ADDRESS', 'no-reply@FirstMaket.ng'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'FirstMaket')),
     ],
 
 ];

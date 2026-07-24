@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * Contribution schedule for a Product Target Plan in schedule mode
- * (docs/firstmarket-Database_Schema.md section 8). Null on Pay At Once plans.
+ * (docs/FirstMaket-Database_Schema.md section 8). Null on Pay At Once plans.
  */
 enum PlanCadence: string
 {

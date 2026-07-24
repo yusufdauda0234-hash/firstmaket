@@ -9,7 +9,7 @@ use App\Shared\Enums\OrderStatus;
 use Illuminate\Console\Command;
 
 /**
- * Delivery confirmation window (docs/firstmarket_Implementation_Plan.md
+ * Delivery confirmation window (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 step 7): delivered orders auto-confirm after N days (default 3)
  * without a customer complaint, which releases the vendor earning credit.
  * Scheduled hourly in routes/console.php.

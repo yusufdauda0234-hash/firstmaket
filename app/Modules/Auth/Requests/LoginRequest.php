@@ -71,7 +71,7 @@ class LoginRequest extends FormRequest
         if ($isAdminPortal && ! $isStaff) {
             Auth::guard('web')->logout();
 
-            $message = 'This sign-in page is for FirstMarket staff only. Customer and vendor accounts sign in on the main FirstMarket site.';
+            $message = 'This sign-in page is for FirstMarketstaff only. Customer and vendor accounts sign in on the main FirstMarketsite.';
 
             throw ValidationException::withMessages(['identifier' => $message, 'email' => $message]);
         }
@@ -79,7 +79,7 @@ class LoginRequest extends FormRequest
         if ($isVendorPortal && ! $isVendor) {
             Auth::guard('web')->logout();
 
-            $message = 'This sign-in page is for FirstMarket vendors only. Shoppers sign in on the main FirstMarket site — or apply there to become a vendor.';
+            $message = 'This sign-in page is for FirstMarketvendors only. Shoppers sign in on the main FirstMarketsite — or apply there to become a vendor.';
 
             throw ValidationException::withMessages(['identifier' => $message, 'email' => $message]);
         }

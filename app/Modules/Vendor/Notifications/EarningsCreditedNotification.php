@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
- * Vendor earnings credit alert (docs/firstmarket_Implementation_Plan.md
+ * Vendor earnings credit alert (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6 step 8): sent when a confirmed delivery credits the earnings
  * ledger. Preference-aware since Sprint 7.
  */

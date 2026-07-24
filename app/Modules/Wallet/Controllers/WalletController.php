@@ -36,7 +36,7 @@ class WalletController extends Controller
                 'status' => $wallet->status->value,
             ],
             'recentTransactions' => $recent,
-            'phoneVerified' => $user->hasVerifiedPhone(),
+            'openAddMoney' => $request->boolean('add_money'),
         ]);
     }
 

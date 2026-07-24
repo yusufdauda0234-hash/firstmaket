@@ -14,7 +14,7 @@
     <meta name="x-apple-disable-message-reformatting">
     <meta name="color-scheme" content="light dark">
     <meta name="supported-color-schemes" content="light dark">
-    <title>{{ $title ?? 'FirstMarket' }}</title>
+    <title>{{ $title ?? 'FirstMaket' }}</title>
     <!--[if mso]>
     <style>* { font-family: Arial, sans-serif !important; }</style>
     <![endif]-->
@@ -47,7 +47,7 @@
 <body class="fm-body" style="margin:0; padding:0; background-color:#eef2f8; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
     <!-- Preheader (hidden preview text) -->
     <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#eef2f8; opacity:0;">
-        {{ $preheader ?? 'FirstMarket — Just Order. We Deliver.' }}
+        {{ $preheader ?? 'FirstMarket— Just Order. We Deliver.' }}
         &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
     </div>
 
@@ -101,17 +101,17 @@
                         <td class="fm-card fm-px" style="background-color:#ffffff; padding:0 40px 36px; border-left:1px solid #e6ebf3; border-right:1px solid #e6ebf3; border-radius:0 0 24px 24px;">
                             <hr class="fm-divider" style="border:none; border-top:1px solid #eef2f8; margin:0 0 20px;">
                             <p class="fm-footer" style="margin:0 0 4px; font-size:12px; line-height:18px; color:#98a6bf;">
-                                FirstMarket — Just Order. We Deliver.
+                                FirstMarket— Just Order. We Deliver.
                             </p>
                             <p class="fm-footer" style="margin:0 0 12px; font-size:12px; line-height:18px; color:#98a6bf;">
                                 Verified vendors · Secure Paystack checkout · Nationwide delivery.
                             </p>
                             <p class="fm-footer" style="margin:0; font-size:11px; line-height:17px; color:#b4c0d6;">
-                                You received this email because someone used this address on FirstMarket.
+                                You received this email because someone used this address on FirstMaket.
                                 If this wasn't you, you can safely ignore it.
                             </p>
                             <p class="fm-footer" style="margin:12px 0 0; font-size:11px; line-height:17px; color:#b4c0d6;">
-                                &copy; {{ date('Y') }} FirstMarket. All rights reserved.
+                                &copy; {{ date('Y') }} FirstMaket. All rights reserved.
                             </p>
                         </td>
                     </tr>

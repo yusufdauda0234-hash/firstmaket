@@ -14,7 +14,7 @@ return new class extends Migration
             $table->morphs('owner');
             $table->string('document_type');
             // Always a private disk; CAC and identity documents must never be
-            // publicly reachable (docs/firstmarket_Security_Compliance.md).
+            // publicly reachable (docs/FirstMaket_Security_Compliance.md).
             $table->string('disk');
             $table->string('path');
             $table->string('original_name');

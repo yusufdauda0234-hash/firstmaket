@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Admin-managed commission percentage per category
- * (docs/firstmarket-Database_Schema.md section 9). Append-only history —
+ * (docs/FirstMaket-Database_Schema.md section 9). Append-only history —
  * the active rate is the latest effective_from in the past. Orders snapshot
  * the active rate at creation and are never altered by later changes.
  *

@@ -9,11 +9,11 @@ it('stores and retrieves a core setting', function () {
 });
 
 it('overwrites an existing setting instead of duplicating the key', function () {
-    Setting::set('platform.support_email', 'old@firstmarket.ng');
-    Setting::set('platform.support_email', 'support@firstmarket.ng');
+    Setting::set('platform.support_email', 'old@FirstMaket.ng');
+    Setting::set('platform.support_email', 'support@FirstMaket.ng');
 
     expect(Setting::query()->where('key', 'platform.support_email')->count())->toBe(1)
-        ->and(Setting::get('platform.support_email'))->toBe('support@firstmarket.ng');
+        ->and(Setting::get('platform.support_email'))->toBe('support@FirstMaket.ng');
 });
 
 it('returns the default when a setting is missing', function () {

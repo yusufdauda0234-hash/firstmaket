@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notification;
 /**
  * Base class for every user-facing notification: declares a preference
  * category and resolves its channels from the user's per-category toggles
- * (docs/firstmarket_Implementation_Plan.md Sprint 7). Subclasses implement
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 7). Subclasses implement
  * toMail(), toDatabase() (the in-app inbox payload), and optionally
  * toSms(): string.
  */

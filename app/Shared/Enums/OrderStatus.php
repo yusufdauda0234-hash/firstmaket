@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Order fulfillment state machine (docs/firstmarket_Implementation_Plan.md
+ * Order fulfillment state machine (docs/FirstMaket_Implementation_Plan.md
  * Sprint 6, modeled on Jumia's dropship flow): the marketplace controls
  * delivery end to end. Pending → admin confirms → Processing → vendor packs →
  * ReadyForPickup → logistics Packed → Shipped → OutForDelivery → Delivered.
@@ -29,7 +29,7 @@ enum OrderStatus: string
             self::Pending => 'Order placed',
             self::Processing => 'Confirmed — vendor preparing',
             self::ReadyForPickup => 'Ready for pickup',
-            self::Packed => 'Picked up by FirstMarket',
+            self::Packed => 'Picked up by FirstMaket',
             self::Shipped => 'Shipped',
             self::OutForDelivery => 'Out for delivery',
             self::Delivered => 'Delivered',

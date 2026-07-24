@@ -1,8 +1,10 @@
+import AddMoneyModal from '@/Components/domain/wallet/AddMoneyModal';
 import { Card } from '@/Components/ui/Card';
 import AccountLayout from '@/Layouts/AccountLayout';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowDownLeft, ArrowUpRight, Plus, Receipt, ShieldCheck, Wallet as WalletIcon } from 'lucide-react';
+import { useState } from 'react';
 
 interface TransactionRow {
     uuid: string;
@@ -18,7 +20,7 @@ interface TransactionRow {
 interface Props {
     wallet: { balanceKobo: number; currency: string; status: string };
     recentTransactions: TransactionRow[];
-    phoneVerified: boolean;
+    openAddMoney: boolean;
     [key: string]: unknown;
 }
 
@@ -31,10 +33,14 @@ export const txnLabel: Record<string, string> = {
     adjustment: 'Adjustment',
 };
 
-export default function WalletIndex({ wallet, recentTransactions, phoneVerified }: Props) {
+export default function WalletIndex({ wallet, recentTransactions, openAddMoney }: Props) {
+    const [showAddMoney, setShowAddMoney] = useState(openAddMoney);
+
     return (
         <AccountLayout title="My Wallet">
             <Head title="Wallet" />
+
+            <AddMoneyModal open={showAddMoney} onClose={() => setShowAddMoney(false)} />
 
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -43,22 +49,14 @@ export default function WalletIndex({ wallet, recentTransactions, phoneVerified 
                         Fund your wallet to pay at once or save toward a product.
                     </p>
                 </div>
-                <Link
-                    href={route('wallet.add-money')}
+                <button
+                    type="button"
+                    onClick={() => setShowAddMoney(true)}
                     className="flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg active:scale-95"
                 >
                     <Plus className="h-4 w-4" /> Add money
-                </Link>
+                </button>
             </div>
-
-            {!phoneVerified && (
-                <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-                    Verify your phone number to fund your wallet.{' '}
-                    <Link href={route('identity.status')} className="font-semibold underline">
-                        Verify now
-                    </Link>
-                </div>
-            )}
 
             {/* Balance card */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-900 p-6 text-white shadow-lg sm:p-8">

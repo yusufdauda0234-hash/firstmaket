@@ -1,4 +1,4 @@
-# FirstMarket Brand Assets
+# FirstMarketBrand Assets
 
 Version: 1.0
 Source file: `logo-1.PNG` (project root, 2000×2000, blue background master).

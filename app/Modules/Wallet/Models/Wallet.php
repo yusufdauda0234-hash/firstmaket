@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * Deposit-only customer wallet (docs/firstmarket-Database_Schema.md section 7).
+ * Deposit-only customer wallet (docs/FirstMaket-Database_Schema.md section 7).
  * The balance is stored in kobo and is only ever mutated through
  * WalletService inside a row-locked database transaction — never written
  * directly. There is no withdrawal path.

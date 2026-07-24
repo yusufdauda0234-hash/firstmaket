@@ -19,8 +19,6 @@ use Illuminate\Support\Carbon;
  * @property int $user_id
  * @property string $business_name
  * @property string $contact_name
- * @property string|null $bvn
- * @property string|null $nin
  * @property string|null $address
  * @property VendorStatus $status
  * @property string|null $rejection_reason
@@ -47,8 +45,6 @@ class VendorProfile extends Model
         'user_id',
         'business_name',
         'contact_name',
-        'bvn',
-        'nin',
         'address',
         'status',
     ];
@@ -56,8 +52,6 @@ class VendorProfile extends Model
     protected function casts(): array
     {
         return [
-            'bvn' => 'encrypted',
-            'nin' => 'encrypted',
             'address' => 'encrypted',
             'status' => VendorStatus::class,
             'approved_at' => 'datetime',

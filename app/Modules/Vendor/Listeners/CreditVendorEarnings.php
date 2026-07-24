@@ -10,7 +10,7 @@ use App\Shared\Utils\Money;
 
 /**
  * Vendor module reaction to a confirmed delivery
- * (docs/firstmarket_Implementation_Plan.md Sprint 6 step 8): credit the
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 6 step 8): credit the
  * earnings ledger exactly once (EarningsService is idempotent per order),
  * stamp the order, and tell the vendor.
  */

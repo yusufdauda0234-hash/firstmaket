@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Owns the Open Savings pot (docs/firstmarket_Implementation_Plan.md Sprint
+ * Owns the Open Savings pot (docs/FirstMaket_Implementation_Plan.md Sprint
  * 5): exactly one per customer, funded only from the wallet through a ledger
  * debit, spendable only into Product Target Plans. There is no withdrawal —
  * money that enters savings can only ever move toward a product.

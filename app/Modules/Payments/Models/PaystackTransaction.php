@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One Paystack charge for a wallet deposit (docs/firstmarket-Database_Schema.md
+ * One Paystack charge for a wallet deposit (docs/FirstMaket-Database_Schema.md
  * section 7). Created as Pending at initialization; only moved to Success and
  * linked to a ledger row by a signature-verified webhook.
  *

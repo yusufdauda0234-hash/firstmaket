@@ -14,7 +14,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Support Agent workspace (docs/firstmarket_Implementation_Plan.md Sprint
+ * Support Agent workspace (docs/FirstMaket_Implementation_Plan.md Sprint
  * 7): ticket queue, hotline queue, ticket thread with replies and status
  * changes. Guarded by permission:support.manage on the admin subdomain.
  */

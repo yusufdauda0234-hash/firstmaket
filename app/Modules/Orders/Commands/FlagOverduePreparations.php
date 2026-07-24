@@ -6,7 +6,7 @@ use App\Modules\Orders\Services\PreparationService;
 use Illuminate\Console\Command;
 
 /**
- * Preparation SLA watchdog (docs/firstmarket_Implementation_Plan.md Sprint
+ * Preparation SLA watchdog (docs/FirstMaket_Implementation_Plan.md Sprint
  * 6): flags Processing orders past prepare_due_at to admin exactly once.
  * Scheduled hourly in routes/console.php.
  */

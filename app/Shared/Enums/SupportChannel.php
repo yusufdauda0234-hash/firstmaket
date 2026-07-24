@@ -3,8 +3,8 @@
 namespace App\Shared\Enums;
 
 /**
- * How a support contact reached FirstMarket
- * (docs/firstmarket-Database_Schema.md section 10).
+ * How a support contact reached FirstMaket
+ * (docs/FirstMaket-Database_Schema.md section 10).
  */
 enum SupportChannel: string
 {

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * The single Open Savings pot per customer (docs/firstmarket-Database_Schema.md
+ * The single Open Savings pot per customer (docs/FirstMaket-Database_Schema.md
  * section 8): a no-target savings balance funded only from the wallet, which
  * can be allocated or redirected into Product Target Plans but never
  * withdrawn as cash. Balance changes go through OpenSavingsService only.

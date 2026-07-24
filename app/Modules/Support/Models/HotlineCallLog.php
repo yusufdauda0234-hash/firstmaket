@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A hotline call/callback request attached to a customer account
- * (docs/firstmarket-Database_Schema.md section 10), with the IVR reason
+ * (docs/FirstMaket-Database_Schema.md section 10), with the IVR reason
  * category routing it to the right queue.
  *
  * @property int $id

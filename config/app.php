@@ -2,7 +2,7 @@
 
 return [
 
-    'name' => env('APP_NAME', 'FirstMarket'),
+    'name' => env('APP_NAME', 'FirstMaket'),
 
     'env' => env('APP_ENV', 'production'),
 
@@ -12,7 +12,7 @@ return [
 
     // Admin, Support, Logistics, and Finance dashboards are served from this
     // subdomain, isolated from the customer app's origin and session cookie.
-    // See docs/firstmarket_Security_Compliance.md section 11.1.
+    // See docs/FirstMaket_Security_Compliance.md section 11.1.
     'admin_domain' => env('ADMIN_DOMAIN', 'admin.localhost'),
 
     // Vendor Center (dashboard + listing management) lives on its own

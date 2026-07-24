@@ -44,7 +44,7 @@ export default function WalletReceipt({ receipt }: Props) {
                 <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-200 dark:bg-white">
                     {/* Header */}
                     <div className="bg-gradient-to-br from-brand-700 to-brand-900 px-8 py-7 text-center text-white">
-                        <img src="/images/brand/logo-light-transparent.png" alt="FirstMarket" className="mx-auto h-12 w-auto" />
+                        <img src="/images/brand/logo-light-transparent.png" alt="FirstMaket" className="mx-auto h-12 w-auto" />
                         <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
                             <CheckCircle2 className="h-3.5 w-3.5" /> Payment received
                         </p>
@@ -63,7 +63,7 @@ export default function WalletReceipt({ receipt }: Props) {
                     </dl>
 
                     <p className="border-t border-gray-100 px-8 py-5 text-center text-xs leading-relaxed text-gray-400">
-                        This is an official FirstMarket receipt for a wallet deposit. Deposits are non-withdrawable
+                        This is an official FirstMarketreceipt for a wallet deposit. Deposits are non-withdrawable
                         and can be used to pay at once or save toward a product. Secured by Paystack.
                     </p>
                 </div>

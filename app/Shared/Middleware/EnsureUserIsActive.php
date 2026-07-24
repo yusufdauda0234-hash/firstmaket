@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Enforces "revoke active sessions on user suspension or ban"
- * (docs/firstmarket_Implementation_Plan.md Sprint 2): any request carrying a
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 2): any request carrying a
  * session for a Suspended/Banned user is logged out and the session
  * destroyed, so existing sessions die the moment the status changes,
  * regardless of session driver. Also cancels Sanctum tokens for the /api

@@ -14,7 +14,6 @@ use App\Modules\Savings\Models\ProductTargetPlan;
 use App\Modules\Savings\Services\PlanService;
 use App\Modules\Vendor\Notifications\ItemSoldNotification;
 use App\Modules\Wallet\Services\WalletService;
-use App\Shared\Enums\IdentityStatus;
 use App\Shared\Enums\OrderStatus;
 use App\Shared\Enums\PlanCadence;
 use App\Shared\Enums\PlanPaymentMode;
@@ -24,7 +23,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Sprint 6 QA (docs/firstmarket_Implementation_Plan.md): address capture
+ * Sprint 6 QA (docs/FirstMaket_Implementation_Plan.md): address capture
  * only after full funding, vendor notified without customer identity, admin
  * confirmation gate, the delivery chain, SLA flagging, and the
  * refund-to-savings rejection path.
@@ -35,10 +34,7 @@ beforeEach(function () {
 
     $this->customer = User::factory()->create(['phone_verified_at' => now()]);
     $this->customer->assignRole('Customer');
-    CustomerProfile::query()->create([
-        'user_id' => $this->customer->id,
-        'identity_status' => IdentityStatus::Verified,
-    ]);
+    CustomerProfile::query()->create(['user_id' => $this->customer->id]);
 
     $this->admin = User::factory()->create();
     $this->admin->assignRole('Administrator');

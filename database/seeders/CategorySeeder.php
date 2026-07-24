@@ -7,8 +7,8 @@ use Illuminate\Database\Seeder;
 
 /**
  * The six launch categories. Slugs must stay in sync with
- * config/firstmarket.php so public URLs remain stable
- * (docs/firstmarket_Implementation_Plan.md Sprint 0/3).
+ * config/FirstMaket.php so public URLs remain stable
+ * (docs/FirstMaket_Implementation_Plan.md Sprint 0/3).
  */
 class CategorySeeder extends Seeder
 {

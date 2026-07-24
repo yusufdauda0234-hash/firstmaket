@@ -1,11 +1,11 @@
-# FirstMarket PRD Laravel
+# FirstMarketPRD Laravel
 
 Version: 1.0  
 Product type: Goal-based commerce, direct purchase, and savings marketplace
 
 ## 1. Product Summary
 
-FirstMarket lets customers either save toward products over time or pay the full product price at once. It is not a loan, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate funds to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the full target price is paid.
+FirstMarketlets customers either save toward products over time or pay the full product price at once. It is not a loan, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate funds to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the full target price is paid.
 
 ## 2. Core Promise
 
@@ -15,7 +15,7 @@ The platform should make product ownership feel planned, transparent, and safe:
 
 - Customers know exactly what they are buying, whether they pay at once or save gradually.
 - Vendors list products and set prices.
-- FirstMarket controls approval, customer relationship, payment tracking, and delivery.
+- FirstMarketcontrols approval, customer relationship, payment tracking, and delivery.
 - Vendors never receive customer identity or delivery details.
 
 ## 3. User Roles
@@ -49,12 +49,10 @@ The platform should make product ownership feel planned, transparent, and safe:
 - OTP verification through the channel that matches the identifier: SMS OTP for phone signups, email OTP for email signups
 - Social login: **Continue with Google** and **Continue with Facebook** (register or login)
 - Passwordless OTP login option alongside password login
-- BVN check through Paystack Identity Verification
-- NIN check through a dedicated Nigerian identity provider such as Youverify, Smile Identity, or Prembly
 - Login alerts
 - Password reset by email link or phone OTP, matching the surveyed marketplace pattern (Jumia, Temu, Shopee, AliExpress all offer email/phone alternatives plus social sign-in)
 
-Product Target Plans require successful BVN and NIN verification. Open Savings can begin earlier to reduce signup friction.
+There is no BVN/NIN identity verification feature. Phone verification is optional and does not gate Product Target Plans, Open Savings, or wallet funding — both are available immediately after signup.
 
 Functional requirements:
 
@@ -103,18 +101,31 @@ Open Savings:
 
 Product Target Plan:
 
-- One product target.
-- Locked target price.
+- One or more product targets (multi-product bundling is Sprint 8 — see below).
+- Locked target price per product; combined target price for a bundled plan.
 - Schedule mode: daily, weekly, monthly.
 - Pay-at-once mode.
 - Status: active, completed, ready for delivery.
+- A bundled (multi-product) plan delivers all of its products together, only once the combined target is fully funded — never a partial delivery of whichever product happened to be funded first.
+
+Cart (Sprint 8):
+
+- Customer adds one or more approved products to a persistent cart, from any vendor, with a quantity per item.
+- From the cart, the customer either pays the full cart total at once, or sends selected items to start a Product Target Plan — one item (quantity of 1) starts a normal single-product plan; several selected items (possibly from different vendors) start one bundled plan with a combined target, subject to the eligibility check below.
+- Cart-based full payment still creates one order per unit purchased, exactly as a single-product Pay At Once purchase would — a lightweight checkout session only groups those orders for the customer's receipt/history. Each order is fulfilled independently by its own vendor with no change to the delivery chain.
+
+Multi-product plan eligibility (Sprint 8, rule-based; Sprint 9 upgrades to AI-scored):
+
+- Bundling more than one product into a single plan requires the customer to meet a track-record check: account at least 30 days old, at least one prior completed plan or two delivered Pay At Once orders, and no more than one currently cancelled plan.
+- This check applies only to bundling multiple products into one plan — starting any number of ordinary single-product plans is never gated.
+- An ineligible customer sees a clear, human-readable reason and can still pay for the same products individually or in full.
 
 Pay At Once / direct full purchase:
 
-- Customer selects an approved product.
-- Customer pays the full locked product price in one transaction.
+- Customer selects an approved product, either directly or from the cart.
+- Customer pays the full locked product price (or, from the cart, the full cart total) in one transaction.
 - System may represent this internally as a Pay At Once Product Target Plan or a direct order checkout, but the user experience should feel like a normal full purchase.
-- Once Paystack confirms full payment, the item moves to Ready for Delivery / order creation.
+- Once Paystack confirms full payment, each item moves to Ready for Delivery / order creation.
 
 Requirements:
 
@@ -158,7 +169,7 @@ The full fulfillment chain, end to end (modeled on Jumia's dropship flow — ven
 2. **Vendor notified** — vendor instantly gets an "item sold" notification (dashboard + email/SMS) with product and order number, never customer identity.
 3. **Admin confirms** the order and moves it to Processing.
 4. **Vendor prepares** — confirms stock and packs within a 48-hour SLA (configurable), then marks Ready for Pickup; out-of-stock triggers vendor rejection with reason and an admin-managed resolution (plan redirection or refund-to-savings, never cash).
-5. **Handover** — FirstMarket logistics picks up from the vendor or the vendor drops off at a FirstMarket hub.
+5. **Handover** — FirstMarketlogistics picks up from the vendor or the vendor drops off at a FirstMarkethub.
 6. **Delivery** — logistics updates status through to Delivered; customer is notified at each step.
 7. **Confirmation** — customer confirms receipt, or the order auto-confirms after 3 days (configurable) with no dispute.
 8. **Vendor earnings** — per-category commission is deducted and the remainder credited to the vendor earnings ledger.
@@ -326,15 +337,15 @@ The marketplace **home page ships first, in Sprint 0**, because every surveyed m
 
 Home page structure (Sprint 0, common anatomy from the survey):
 
-- Top utility bar: location/language, Sell on FirstMarket, Help, app links
+- Top utility bar: location/language, Sell on FirstMaket, Help, app links
 - Header: logo, dominant search bar with category scope, account and cart
 - Category navigation menu (six launch categories)
 - Hero promo carousel plus static promo tiles
 - Featured/flash product strip
 - Category grid blocks
 - "For You" / Top Selling product feed (approved products only)
-- How-it-works strip: Pay At Once, Save Small Small, FirstMarket Delivers
-- Trust strip: Paystack payments, verified vendors, FirstMarket delivery, hotline
+- How-it-works strip: Pay At Once, Save Small Small, FirstMarketDelivers
+- Trust strip: Paystack payments, verified vendors, FirstMarketdelivery, hotline
 - SEO footer
 
 Phase 4 pages:
@@ -361,7 +372,7 @@ Requirements:
 
 Security:
 
-- Encrypt BVN, NIN, phone number, address, identity provider payloads, and other sensitive personal data where required.
+- Encrypt phone number, address, and other sensitive personal data where required.
 - Never write sensitive identity values to plaintext logs.
 - Enforce RBAC on backend.
 - Verify Paystack webhooks.
@@ -461,13 +472,13 @@ Affiliate admin dashboard:
 
 ## 11. Competitive Positioning
 
-FirstMarket should borrow proven marketplace patterns while preserving its unique savings model:
+FirstMarketshould borrow proven marketplace patterns while preserving its unique savings model:
 
 - Jumia: marketplace plus first-party payment and logistics control.
-- AliExpress: payment protection before product release; FirstMarket applies this more strongly through pay-before-release savings.
+- AliExpress: payment protection before product release; FirstMarketapplies this more strongly through pay-before-release savings.
 - CDK Global: avoid disconnected tools by keeping catalog, payment, delivery, support, fraud, and audit workflows unified.
 
-FirstMarket stands out through goal-based product savings, vendor pricing freedom, AI-assisted moderation, and free customer support including hotline access.
+FirstMarketstands out through goal-based product savings, vendor pricing freedom, AI-assisted moderation, and free customer support including hotline access.
 
 ## 12. Recommended Laravel Architecture
 

@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Support ticket priority (docs/firstmarket-Database_Schema.md section 10).
+ * Support ticket priority (docs/FirstMaket-Database_Schema.md section 10).
  */
 enum TicketPriority: string
 {

@@ -16,7 +16,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Admin order management (docs/firstmarket_Implementation_Plan.md Sprint 6):
+ * Admin order management (docs/FirstMaket_Implementation_Plan.md Sprint 6):
  * the confirmation queue (payment check → Processing), the SLA watchlist,
  * logistics assignment, and the vendor-rejection resolution path
  * (refund-to-savings — never cash).
@@ -83,7 +83,7 @@ class OrderAdminController extends Controller
                 'productName' => $order->product->name,
                 'vendorName' => $order->vendor->business_name,
                 'customerName' => $order->customer->name,
-                'planUuid' => $order->plan->uuid,
+                'planUuid' => $order->plan?->uuid,
                 'status' => $order->status->value,
                 'statusLabel' => $order->status->label(),
                 'lockedPriceKobo' => $order->locked_price_kobo,

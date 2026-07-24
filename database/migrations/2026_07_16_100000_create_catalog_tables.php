@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Sprint 3: catalog and vendor listing
- * (docs/firstmarket-Database_Schema.md section 6). Money is integer kobo
- * throughout — never floats (docs/firstmarket_Implementation_Plan.md
+ * (docs/FirstMaket-Database_Schema.md section 6). Money is integer kobo
+ * throughout — never floats (docs/FirstMaket_Implementation_Plan.md
  * "Key Engineering Rules").
  */
 return new class extends Migration
@@ -109,7 +109,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             // pending, passed, flagged, failed — advisory only; humans decide
-            // (Sprint 8 fills this in; the structure ships with Sprint 3).
+            // (Sprint 9 fills this in; the structure ships with Sprint 3).
             $table->string('status')->default('pending');
             $table->json('flags')->nullable();
             $table->text('summary')->nullable();

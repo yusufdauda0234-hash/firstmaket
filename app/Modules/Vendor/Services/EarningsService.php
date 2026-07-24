@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * The single gateway for the vendor earnings ledger
- * (docs/firstmarket-Database_Schema.md section 9) — append-only, fully
+ * (docs/FirstMaket-Database_Schema.md section 9) — append-only, fully
  * separate from customer wallets and savings. Earnings credit exactly once
  * per delivered order (unique order_id+type index backs the idempotency);
  * payouts are negative rows written only when a transfer is marked paid.

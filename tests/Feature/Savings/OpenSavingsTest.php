@@ -10,7 +10,7 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Route;
 
 /**
- * Sprint 5 QA (docs/firstmarket_Implementation_Plan.md): one Open Savings pot
+ * Sprint 5 QA (docs/FirstMaket_Implementation_Plan.md): one Open Savings pot
  * per customer, funded only from webhook-verified wallet money, and no cash
  * exit anywhere in the savings engine.
  */

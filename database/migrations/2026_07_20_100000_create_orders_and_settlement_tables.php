@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Sprint 6 Orders, Logistics, and Vendor Settlement
- * (docs/firstmarket-Database_Schema.md section 9). Money is integer kobo.
+ * (docs/FirstMaket-Database_Schema.md section 9). Money is integer kobo.
  * Commission fields on orders are snapshots frozen at creation. The vendor
  * earnings ledger is append-only and fully separate from customer wallets
  * and savings — there is no path from it back to a customer balance.
@@ -18,7 +18,12 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('plan_id')->unique()->constrained('product_target_plans');
+            // Null for an order created directly from a cart checkout
+            // (Sprint 8) rather than a plan. Not unique: a bundled
+            // multi-product plan (Sprint 8) creates several orders — one per
+            // plan_item unit — sharing the same plan_id; the app layer still
+            // enforces "one order per single-product plan".
+            $table->foreignId('plan_id')->nullable()->constrained('product_target_plans');
             $table->foreignId('customer_id')->constrained('users');
             $table->foreignId('vendor_id')->constrained('vendor_profiles');
             $table->foreignId('product_id')->constrained();

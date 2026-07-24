@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamp('last_login_at')->nullable();
 
             // Mandatory 2FA for Super Administrator, Administrator, and
-            // Finance Officer (docs/firstmarket_Security_Compliance.md
+            // Finance Officer (docs/FirstMaket_Security_Compliance.md
             // section 3). Secret is encrypted at the application layer via
             // Illuminate\Support\Facades\Crypt before being stored here.
             $table->text('two_factor_secret')->nullable();

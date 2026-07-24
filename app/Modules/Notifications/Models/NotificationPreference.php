@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Per-user, per-category channel toggles
- * (docs/firstmarket-Database_Schema.md section 10). Missing rows fall back
+ * (docs/FirstMaket-Database_Schema.md section 10). Missing rows fall back
  * to the category defaults in NotificationPreferenceService.
  *
  * @property int $id

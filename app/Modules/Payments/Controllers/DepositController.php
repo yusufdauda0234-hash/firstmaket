@@ -4,10 +4,9 @@ namespace App\Modules\Payments\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Payments\Actions\InitializeDepositAction;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
-use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -25,9 +24,13 @@ class DepositController extends Controller
     /** Maximum single top-up in kobo (₦5,000,000) — a sanity guardrail. */
     private const MAX_KOBO = 500000000;
 
-    public function create(): InertiaResponse
+    /**
+     * "Add money" is a modal on the wallet page rather than its own route —
+     * this just gets any old/external link to that modal open.
+     */
+    public function create(): RedirectResponse
     {
-        return Inertia::render('Wallet/AddMoney');
+        return redirect()->route('wallet.index', ['add_money' => 1]);
     }
 
     public function store(Request $request): Response
@@ -38,15 +41,10 @@ class DepositController extends Controller
 
         $user = $request->user();
 
-        // A verified phone is mandatory before any money movement, regardless
-        // of signup method (docs/firstmarket_Implementation_Plan.md Sprint 2
-        // Addendum / Security & Compliance).
-        if (! $user->hasVerifiedPhone()) {
-            throw ValidationException::withMessages([
-                'amount_naira' => 'Please verify your phone number before funding your wallet.',
-            ]);
-        }
-
+        // Phone verification is not required to fund the wallet for now —
+        // SMS OTP delivery isn't reliable yet (SmartSMSSolutions
+        // transactional route pending). Phone is a secondary/optional
+        // identifier until that's back.
         $amountKobo = (int) round(((float) $validated['amount_naira']) * 100);
         $amountKobo = max(self::MIN_KOBO, min(self::MAX_KOBO, $amountKobo));
 

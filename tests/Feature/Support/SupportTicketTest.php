@@ -5,7 +5,6 @@ use App\Modules\Customer\Models\CustomerProfile;
 use App\Modules\Support\Models\HotlineCallLog;
 use App\Modules\Support\Models\SupportTicket;
 use App\Modules\Support\Notifications\TicketReplyNotification;
-use App\Shared\Enums\IdentityStatus;
 use App\Shared\Enums\TicketStatus;
 use App\Shared\Enums\UserType;
 use Database\Seeders\FaqSeeder;
@@ -22,11 +21,7 @@ beforeEach(function () {
 
     $this->customer = User::factory()->create(['phone_verified_at' => now()]);
     $this->customer->assignRole('Customer');
-    CustomerProfile::query()->create([
-        'user_id' => $this->customer->id,
-        'identity_status' => IdentityStatus::Verified,
-        'bvn' => '12345678901',
-    ]);
+    CustomerProfile::query()->create(['user_id' => $this->customer->id]);
 
     $this->agent = User::factory()->create(['user_type' => UserType::Staff]);
     $this->agent->forceFill(['two_factor_confirmed_at' => now()])->save();
@@ -107,7 +102,7 @@ it('lets an agent reply (notifying the customer), change status, and auto-assign
         ->and($ticket->resolved_at)->not->toBeNull();
 });
 
-it('gives support agents order/plan context but never BVN/NIN or card fields', function () {
+it('gives support agents order/plan context but never card fields', function () {
     $response = $this->actingAs($this->agent)
         ->get(adminUrl('/support/lookup?q='.urlencode((string) $this->customer->email).'&customer='.$this->customer->id))
         ->assertOk();
@@ -116,10 +111,6 @@ it('gives support agents order/plan context but never BVN/NIN or card fields', f
     $serialized = json_encode($props['customer']);
 
     expect($props['customer']['name'])->toBe($this->customer->name)
-        ->and($props['customer']['identityStatus'])->toBe('verified')
-        // The raw BVN value never appears anywhere in the payload.
-        ->and($serialized)->not->toContain('12345678901')
-        ->and($serialized)->not->toContain('bvn')
         ->and($serialized)->not->toContain('card');
 });
 
