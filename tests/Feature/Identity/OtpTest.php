@@ -36,23 +36,31 @@ beforeEach(function () {
     app()->instance(SmsSenderContract::class, $this->sms);
 });
 
-it('sends a code when an unverified user opens the phone verification screen', function () {
+it('sends a code when an unverified user requests one', function () {
     $user = User::factory()->unverified()->create();
 
-    $this->actingAs($user)->get(route('phone.verify.notice'))->assertOk();
+    $this->actingAs($user)->post(route('phone.send'))->assertRedirect();
 
     expect($this->sms->sent)->toHaveCount(1)
         ->and($this->sms->sent[0]['phone'])->toBe($user->phone);
 });
 
+it('does not send a code for an already-verified phone', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('phone.send'));
+
+    expect($this->sms->sent)->toHaveCount(0);
+});
+
 it('verifies the phone with the correct code', function () {
     $user = User::factory()->unverified()->create();
 
-    $this->actingAs($user)->get(route('phone.verify.notice'));
+    $this->actingAs($user)->post(route('phone.send'));
 
     $this->actingAs($user)
         ->post(route('phone.verify'), ['code' => $this->sms->lastCode()])
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect();
 
     expect($user->refresh()->hasVerifiedPhone())->toBeTrue();
 });
@@ -60,13 +68,25 @@ it('verifies the phone with the correct code', function () {
 it('rejects a wrong code', function () {
     $user = User::factory()->unverified()->create();
 
-    $this->actingAs($user)->get(route('phone.verify.notice'));
+    $this->actingAs($user)->post(route('phone.send'));
 
     $this->actingAs($user)
         ->post(route('phone.verify'), ['code' => '000000'])
         ->assertSessionHasErrors('code');
 
     expect($user->refresh()->hasVerifiedPhone())->toBeFalse();
+});
+
+it('exposes the plaintext code for local/debug display but never in production', function () {
+    $user = User::factory()->unverified()->create();
+
+    config(['app.debug' => true]);
+    $this->actingAs($user)->post(route('phone.send'));
+    expect(session('devOtpCode'))->toBe($this->sms->lastCode());
+
+    config(['app.debug' => false]);
+    $this->actingAs($user)->post(route('phone.send'));
+    expect(session('devOtpCode'))->toBeNull();
 });
 
 it('rejects an expired code', function () {

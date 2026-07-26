@@ -10,13 +10,17 @@ import { FormEventHandler } from 'react';
 const lightInput = 'dark:border-gray-300 dark:bg-white dark:text-gray-900';
 const lightLabel = 'dark:text-gray-700';
 
+interface Props extends PageProps {
+    registered: boolean;
+}
+
 /**
  * Vendor Center sign-in on the vendors subdomain — split-panel like the
  * customer /login and staff portal pages, with seller-focused messaging.
  * Only vendor accounts may sign in here (LoginRequest portal guard).
  */
 export default function VendorLogin() {
-    const { mainSiteUrl } = usePage<PageProps>().props;
+    const { mainSiteUrl, registered } = usePage<Props>().props;
 
     const { data, setData, post, processing, errors } = useForm({
         identifier: '',
@@ -94,6 +98,12 @@ export default function VendorLogin() {
                         <p className="mt-2 text-center text-sm text-gray-500">
                             Sign in with the email or phone number on your vendor account.
                         </p>
+
+                        {registered && (
+                            <p className="mt-4 rounded-md bg-emerald-50 p-3 text-center text-sm text-emerald-800">
+                                Application submitted — sign in to reach your Vendor Center dashboard.
+                            </p>
+                        )}
 
                         <form onSubmit={submit} className="mt-8 space-y-4">
                             <div>

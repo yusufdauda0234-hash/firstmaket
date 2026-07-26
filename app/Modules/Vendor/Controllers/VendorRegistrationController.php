@@ -78,6 +78,10 @@ class VendorRegistrationController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('phone.verify.notice');
+        // The Vendor Center lives on its own subdomain with a scoped session
+        // cookie (App\Shared\Security\VendorDomain) — this main-site session
+        // does not carry over, so send them to sign in there rather than
+        // straight to vendor.dashboard.
+        return redirect()->route('vendor.login', ['registered' => 1]);
     }
 }

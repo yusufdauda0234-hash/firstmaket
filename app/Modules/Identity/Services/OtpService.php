@@ -97,6 +97,8 @@ class OtpService
             ]);
         }
 
+        $otp->plainCode = $code;
+
         return $otp;
     }
 

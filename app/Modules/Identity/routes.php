@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Route;
 // App\Providers\ModuleServiceProvider.
 
 Route::middleware('auth')->group(function () {
-    Route::get('phone/verify', [PhoneVerificationController::class, 'show'])->name('phone.verify.notice');
     Route::post('phone/verify', [PhoneVerificationController::class, 'verify'])->name('phone.verify');
-    Route::post('phone/resend', [PhoneVerificationController::class, 'resend'])
+    Route::post('phone/send', [PhoneVerificationController::class, 'send'])
         ->middleware('throttle:6,1')
-        ->name('phone.resend');
+        ->name('phone.send');
 });

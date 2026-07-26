@@ -3,6 +3,7 @@ export interface AuthenticatedUser {
     name: string;
     email: string;
     phone: string;
+    phoneVerified: boolean;
     roles: string[];
     permissions: string[];
 }
@@ -45,6 +46,8 @@ export interface PageProps {
     flash: {
         success?: string;
         error?: string;
+        /** Local/debug builds only — see PhoneVerificationController. */
+        devOtpCode?: string | null;
     };
     supportHotline: string;
     /** Absolute URL of the main marketplace, for links from portal subdomains. */

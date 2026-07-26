@@ -30,6 +30,14 @@ class OtpCode extends Model
 {
     const UPDATED_AT = null;
 
+    /**
+     * Never persisted (see class docblock) — OtpService::request() stashes
+     * the plaintext code here purely so a local/debug caller can surface it
+     * on screen without a real SMS gateway; unset on every other instance,
+     * including this same row once reloaded from the database.
+     */
+    public ?string $plainCode = null;
+
     protected $fillable = [
         'user_id',
         'channel',

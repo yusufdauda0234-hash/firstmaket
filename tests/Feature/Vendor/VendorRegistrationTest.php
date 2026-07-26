@@ -38,7 +38,7 @@ it('registers a vendor with a pending profile', function () {
         ->and($user->vendorProfile->business_name)->toBe('Ada Electronics Ltd');
 
     $this->assertAuthenticatedAs($user);
-    $response->assertRedirect(route('phone.verify.notice'));
+    $response->assertRedirect(route('vendor.login', ['registered' => 1]));
 });
 
 it('stores the CAC document on the private disk', function () {

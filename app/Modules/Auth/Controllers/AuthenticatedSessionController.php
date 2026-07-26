@@ -20,7 +20,9 @@ class AuthenticatedSessionController extends Controller
     {
         return match (true) {
             AdminDomain::matches($request) => Inertia::render('Admin/Auth/Login'),
-            VendorDomain::matches($request) => Inertia::render('Auth/VendorLogin'),
+            VendorDomain::matches($request) => Inertia::render('Auth/VendorLogin', [
+                'registered' => $request->boolean('registered'),
+            ]),
             // Customers have no standalone login page — the storefront opens
             // the sign-in/register modal instead (?auth=login is picked up by
             // PublicLayout). The intended URL stays in the session, so the

@@ -1,10 +1,13 @@
 import StatCard from '@/Components/domain/admin/StatCard';
+import VerifyPhoneModal from '@/Components/domain/auth/VerifyPhoneModal';
 import { Badge, statusTone } from '@/Components/ui/Badge';
+import { Button } from '@/Components/ui/Button';
 import Reveal from '@/Components/ui/Reveal';
 import VendorLayout from '@/Layouts/VendorLayout';
 import { PageProps } from '@/Types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Banknote, CheckCircle2, Clock4 } from 'lucide-react';
+import { Banknote, CheckCircle2, Clock4, ShieldCheck, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface Props extends PageProps {
     businessName: string | null;
@@ -31,6 +34,9 @@ export default function VendorDashboard() {
     const { auth, businessName, vendorStatus, rejectionReason, productCounts } = usePage<Props>().props;
     const firstName = (auth.user?.name ?? '').split(/\s+/)[0];
     const isApproved = vendorStatus === 'approved';
+    const [verifyModalOpen, setVerifyModalOpen] = useState(false);
+    const [phonePromptDismissed, setPhonePromptDismissed] = useState(false);
+    const showPhonePrompt = auth.user && !auth.user.phoneVerified && !phonePromptDismissed;
 
     // Three wide cards so big numbers (and ₦ amounts) never get squeezed;
     // secondary counts live in the footer line of the listings card.
@@ -112,6 +118,37 @@ export default function VendorDashboard() {
                 </div>
             </Reveal>
 
+            {showPhonePrompt && (
+                <Reveal delay={100}>
+                    <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4">
+                        <div className="flex items-center gap-3">
+                            <ShieldCheck className="h-5 w-5 shrink-0 text-brand-600" />
+                            <p className="text-sm text-brand-800">
+                                Your phone number isn't verified yet — optional, but it helps us reach you about
+                                orders.
+                            </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                className="text-sm text-brand-700 hover:bg-brand-100"
+                                onClick={() => setVerifyModalOpen(true)}
+                            >
+                                Verify phone
+                            </Button>
+                            <button
+                                type="button"
+                                aria-label="Dismiss"
+                                onClick={() => setPhonePromptDismissed(true)}
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-brand-400 hover:bg-brand-100 hover:text-brand-700"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                </Reveal>
+            )}
+
             {vendorStatus && statusMessages[vendorStatus] && !isApproved && (
                 <Reveal delay={100}>
                     <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
@@ -137,6 +174,14 @@ export default function VendorDashboard() {
                     focus for now.
                 </p>
             </Reveal>
+
+            {auth.user && (
+                <VerifyPhoneModal
+                    open={verifyModalOpen}
+                    onClose={() => setVerifyModalOpen(false)}
+                    phone={auth.user.phone}
+                />
+            )}
         </VendorLayout>
     );
 }

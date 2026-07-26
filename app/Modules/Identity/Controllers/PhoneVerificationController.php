@@ -3,46 +3,38 @@
 namespace App\Modules\Identity\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Identity\Models\OtpCode;
 use App\Modules\Identity\Services\OtpService;
 use App\Shared\Contracts\AuditLoggerContract;
 use App\Shared\Enums\OtpPurpose;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 
+/**
+ * Phone verification is optional and self-service (docs/FirstMaket_Implementation_Plan.md
+ * Sprint 2 Addendum) — there is no dedicated page or forced redirect. Any
+ * page can open the shared VerifyPhoneModal (currently: the vendor
+ * dashboard) and post here; both actions just redirect back to wherever
+ * the modal was opened from.
+ */
 class PhoneVerificationController extends Controller
 {
     public function __construct(private readonly OtpService $otp) {}
 
-    /**
-     * OTP entry screen. Sends a fresh code on first visit so the user
-     * arriving from registration already has one in their inbox; refreshing
-     * the page does not resend while a code is still active.
-     */
-    public function show(Request $request): Response|RedirectResponse
+    public function send(Request $request): RedirectResponse
     {
         $user = $request->user();
 
         if ($user->hasVerifiedPhone()) {
-            return redirect()->route('dashboard');
+            return back();
         }
 
-        $codeSendFailed = false;
+        $otp = $this->otp->request($user->phone, OtpPurpose::Registration, $user, $request->ip());
 
-        if (! $this->hasActiveCode($user->phone)) {
-            try {
-                $this->otp->request($user->phone, OtpPurpose::Registration, $user, $request->ip());
-            } catch (ValidationException) {
-                $codeSendFailed = true;
-            }
-        }
-
-        return Inertia::render('Auth/VerifyPhone', [
-            'phone' => $user->phone,
-            'codeSendFailed' => $codeSendFailed,
+        return back()->with([
+            'success' => 'Verification code sent.',
+            // Local/debug only — see OtpCode::$plainCode. Never set in
+            // production, so the real code never reaches the browser.
+            'devOtpCode' => app()->hasDebugModeEnabled() ? $otp->plainCode : null,
         ]);
     }
 
@@ -58,27 +50,6 @@ class PhoneVerificationController extends Controller
 
         $auditLogger->log(actor: $user, subject: $user, action: 'identity.phone_verified');
 
-        return redirect()->route('dashboard')->with('status', 'phone-verified');
-    }
-
-    public function resend(Request $request): RedirectResponse
-    {
-        $user = $request->user();
-
-        if (! $user->hasVerifiedPhone()) {
-            $this->otp->request($user->phone, OtpPurpose::Registration, $user, $request->ip());
-        }
-
-        return back()->with('status', 'otp-sent');
-    }
-
-    private function hasActiveCode(string $phone): bool
-    {
-        return OtpCode::query()
-            ->where('destination', $phone)
-            ->where('purpose', OtpPurpose::Registration)
-            ->whereNull('verified_at')
-            ->where('expires_at', '>', now())
-            ->exists();
+        return back()->with('success', 'Phone number verified.');
     }
 }

@@ -31,6 +31,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone' => $user->phone,
+                    'phoneVerified' => $user->hasVerifiedPhone(),
                     'roles' => $user->getRoleNames(),
                     'permissions' => $user->getAllPermissions()->pluck('name'),
                 ] : null,
@@ -38,6 +39,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                // Local/debug only — App\Modules\Identity\Controllers\PhoneVerificationController.
+                'devOtpCode' => fn () => $request->session()->get('devOtpCode'),
             ],
             'supportHotline' => config('firstmarket.support.hotline'),
             // Absolute URL of the main marketplace — portal pages (Vendor
