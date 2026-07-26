@@ -88,7 +88,7 @@ export default function PayAtOnce() {
                         <div className="flex items-center justify-between">
                             <dt className="text-gray-500">Delivery</dt>
                             <dd className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                                <Truck className="h-3.5 w-3.5" /> FirstMarketdelivers
+                                <Truck className="h-3.5 w-3.5" /> FirstMaket delivers
                             </dd>
                         </div>
                         <div className="flex items-center justify-between border-t border-gray-100 pt-2 text-base">

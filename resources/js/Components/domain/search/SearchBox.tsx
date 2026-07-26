@@ -94,7 +94,7 @@ interface SearchBoxProps {
  * Header search: pill input with a suggestions dropdown — recent searches
  * and category chips when empty, debounced live approved-product results
  * with keyboard navigation once the visitor types, plus a search-by-image
- * panel (AliExpress/Temu interaction, FirstMarketstyling).
+ * panel (AliExpress/Temu interaction, FirstMaket styling).
  */
 export default function SearchBox({ categories, forceClose = false, onOpen }: SearchBoxProps) {
     const [query, setQuery] = useState('');

@@ -1,4 +1,4 @@
-# FirstMarketDeveloper Guidelines
+# FirstMaket Developer Guidelines
 
 Version: 1.0
 
@@ -8,7 +8,7 @@ Version: 1.0
 
 Decision (revised 2026-07-17): MySQL family — MySQL 8 in production, MariaDB 10.4+ locally (XAMPP).
 
-FirstMarketis a wallet, direct purchase, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, which InnoDB covers: real transactions, row locking, foreign keys, unique constraints, and (MySQL 8.0.16+) enforced CHECK constraints. Keep every money value in integer kobo columns, wrap ledger writes in transactions, and never rely on engine-specific SQL — stick to Laravel's schema and query builders so both mysql and mariadb drivers work.
+FirstMaket is a wallet, direct purchase, savings, order, and vendor marketplace platform. The most important technical risk is money integrity, which InnoDB covers: real transactions, row locking, foreign keys, unique constraints, and (MySQL 8.0.16+) enforced CHECK constraints. Keep every money value in integer kobo columns, wrap ledger writes in transactions, and never rely on engine-specific SQL — stick to Laravel's schema and query builders so both mysql and mariadb drivers work.
 
 ### React vs Vue
 

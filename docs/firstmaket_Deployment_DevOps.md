@@ -1,4 +1,4 @@
-# FirstMarketDeployment and DevOps
+# FirstMaket Deployment and DevOps
 
 Version: 1.0
 

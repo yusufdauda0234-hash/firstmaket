@@ -2,7 +2,7 @@
 
 Pay small small, collect with peace of mind.
 
-FirstMarketis a commerce platform for customers who want either to save gradually toward products or pay the full product price at once. It is not a loan app, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate money to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the target price is fully paid.
+FirstMaket is a commerce platform for customers who want either to save gradually toward products or pay the full product price at once. It is not a loan app, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate money to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the target price is fully paid.
 
 ## Product Surfaces
 

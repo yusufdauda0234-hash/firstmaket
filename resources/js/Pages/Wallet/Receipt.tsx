@@ -63,7 +63,7 @@ export default function WalletReceipt({ receipt }: Props) {
                     </dl>
 
                     <p className="border-t border-gray-100 px-8 py-5 text-center text-xs leading-relaxed text-gray-400">
-                        This is an official FirstMarketreceipt for a wallet deposit. Deposits are non-withdrawable
+                        This is an official FirstMaket receipt for a wallet deposit. Deposits are non-withdrawable
                         and can be used to pay at once or save toward a product. Secured by Paystack.
                     </p>
                 </div>

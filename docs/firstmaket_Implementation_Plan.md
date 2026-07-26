@@ -1,4 +1,4 @@
-# FirstMarketImplementation Plan
+# FirstMaket Implementation Plan
 
 Version: 1.0  
 Date: July 2026  
@@ -6,7 +6,7 @@ Source: `documentation.docx`, reviewed against IHMS Laravel documentation and fo
 
 ## 1. Recommended Architecture
 
-Build FirstMarketas a Laravel modular monolith with Inertia and a typed frontend. This follows the strongest IHMS pattern: one backend, one database, domain modules under `app/Modules`, shared cross-cutting code under `app/Shared`, and role-specific web surfaces served by the same Laravel application.
+Build FirstMaket as a Laravel modular monolith with Inertia and a typed frontend. This follows the strongest IHMS pattern: one backend, one database, domain modules under `app/Modules`, shared cross-cutting code under `app/Shared`, and role-specific web surfaces served by the same Laravel application.
 
 Recommended stack:
 
@@ -83,7 +83,7 @@ Common home page anatomy found in the survey (adopt this structure):
 5. **Flash/featured strip**: horizontally scrolling product row ("Featured", later "Flash Sales" with countdown) — Featured posting-fee tier products surface here.
 6. **Category grid blocks**: image tiles per category linking into the catalog.
 7. **Product feed**: paginated/infinite "For You"/"Top Selling" grid of approved products.
-8. **How-it-works strip** (FirstMaket-specific): three cards — Pay At Once, Save Small Small (Product Target Plans), FirstMarketDelivers — since goal-based savings is the differentiator none of the surveyed sites have.
+8. **How-it-works strip** (FirstMaket-specific): three cards — Pay At Once, Save Small Small (Product Target Plans), FirstMaket Delivers — since goal-based savings is the differentiator none of the surveyed sites have.
 9. **Trust strip**: secure Paystack payments, verified vendors, FirstMaket-controlled delivery, support hotline.
 10. **SEO footer**: category links, help/FAQ, About, Become a Vendor, Terms, Privacy, contact channels, social links, payment method logos.
 
@@ -416,7 +416,7 @@ The complete fulfillment chain (modeled on Jumia's dropship flow, where the mark
 2. **Vendor notified** — vendor instantly receives an "item sold" notification (dashboard + email/SMS) with product, quantity, and order number — never customer identity or address.
 3. **Admin confirmation** — admin confirms the order (checks payment/ledger match) and moves it to Processing.
 4. **Vendor prepares** — vendor confirms stock and packs within the preparation SLA (48 hours, configurable). Vendor marks the order **Ready for Pickup**. If the vendor cannot fulfil (out of stock), the vendor rejects with a reason and admin triggers the resolution path (redirect plan to another product or admin-managed refund-to-savings — never cash out).
-5. **Handover to logistics** — FirstMarketlogistics picks up from the vendor, or the vendor drops off at a FirstMarkethub. Logistics scans/accepts the package: status Packed → Shipped.
+5. **Handover to logistics** — FirstMaket logistics picks up from the vendor, or the vendor drops off at a FirstMaket hub. Logistics scans/accepts the package: status Packed → Shipped.
 6. **Delivery** — logistics is assigned, status moves Out for Delivery → Delivered. Customer is notified at every step.
 7. **Delivery confirmation window** — customer confirms receipt, or the order auto-confirms after N days (default 3) without a complaint/dispute.
 8. **Vendor earnings credited** — on confirmed delivery, commission (per-category percentage set by admin) is deducted from the locked product price and the remainder is credited to the vendor's **earnings ledger** (separate from customer wallets).
@@ -533,7 +533,7 @@ Exit criteria:
 
 Scope: replace the single-product-at-a-time Pay At Once/Save Small Small entry points with a standard product → cart → checkout flow. Cart items can come from any vendor. Checkout offers two branches: pay the full cart total now, or send selected items into a Product Target Plan — which can now, for eligible customers, bundle multiple products (from different vendors) into one plan with one combined target. This sprint does not change how an individual order is fulfilled once a plan/checkout is paid (Sprint 6's chain is untouched) — it changes how a customer assembles and pays for one or more products, and what a "plan" is allowed to contain.
 
-**Build note (2026-07-24):** cart CRUD shipped first; checkout stalled on a delivery-address-timing conflict — `PlanService::payAtOnce()` only reaches Ready-for-Delivery, and the actual `Order` needs a separately-submitted address, which didn't fit a multi-item cart's "one address at checkout" expectation. Resolved as: **address timing follows payment timing.** Pay-in-full checkout collects the address once, upfront, on the checkout screen, before the single wallet debit — it never creates a plan at all, going straight from `checkout_sessions` to `Order` rows via `OrderService::createFromCheckoutSession()`. A plan (single- or multi-product) keeps the existing "ask once fully funded" pattern — a bundled plan's address form creates every bundled order in one transaction via `OrderService::createFromBundledPlan()`, never a subset early. `orders.plan_id` is now nullable and no longer unique (a bundle's orders share one `plan_id`); `orders.checkout_session_id`, `orders.plan_item_id`, and `orders.plan_delivery_group_id` were added for grouping/display. See `docs/firstmarket-Database_Schema.md` section 8a for the final table shapes.
+**Build note (2026-07-24):** cart CRUD shipped first; checkout stalled on a delivery-address-timing conflict — `PlanService::payAtOnce()` only reaches Ready-for-Delivery, and the actual `Order` needs a separately-submitted address, which didn't fit a multi-item cart's "one address at checkout" expectation. Resolved as: **address timing follows payment timing.** Pay-in-full checkout collects the address once, upfront, on the checkout screen, before the single wallet debit — it never creates a plan at all, going straight from `checkout_sessions` to `Order` rows via `OrderService::createFromCheckoutSession()`. A plan (single- or multi-product) keeps the existing "ask once fully funded" pattern — a bundled plan's address form creates every bundled order in one transaction via `OrderService::createFromBundledPlan()`, never a subset early. `orders.plan_id` is now nullable and no longer unique (a bundle's orders share one `plan_id`); `orders.checkout_session_id`, `orders.plan_item_id`, and `orders.plan_delivery_group_id` were added for grouping/display. See `docs/firstmaket-Database_Schema.md` section 8a for the final table shapes.
 
 Design decisions (confirm before building):
 
@@ -869,7 +869,7 @@ Exit criteria:
 
 ### Phase 3: Scale
 
-Goal: extend FirstMarketinto new channels, new savings models, and mobile access after real usage data proves the MVP and growth features.
+Goal: extend FirstMaket into new channels, new savings models, and mobile access after real usage data proves the MVP and growth features.
 
 #### Phase 3A: Agent Network
 
@@ -901,7 +901,7 @@ QA and security:
 
 Exit criteria:
 
-- FirstMarketcan support offline/community-assisted acquisition and deposits without weakening ledger controls.
+- FirstMaket can support offline/community-assisted acquisition and deposits without weakening ledger controls.
 
 #### Phase 3B: Advanced Affiliate Program
 
@@ -1073,7 +1073,7 @@ Content and brand:
 
 - Use real product screenshots and completed workflows.
 - Explain Pay At Once, Open Savings, and Product Target Plans clearly.
-- State that FirstMarketis not a loan app, bank, BNPL product, or withdrawal wallet.
+- State that FirstMaket is not a loan app, bank, BNPL product, or withdrawal wallet.
 - Highlight trust pillars: Paystack payments, verified vendors, FirstMaket-controlled delivery, support hotline, and no vendor access to customer identity.
 
 QA and security:
@@ -1093,7 +1093,7 @@ DevOps and launch:
 Exit criteria:
 
 - Website is live on production domain.
-- Core copy explains that FirstMarketsupports Pay At Once and savings-based purchases, but is not loans or BNPL.
+- Core copy explains that FirstMaket supports Pay At Once and savings-based purchases, but is not loans or BNPL.
 - Marketing content reflects the completed application, not planned features.
 - Contact form, hotline, and vendor interest form are working.
 

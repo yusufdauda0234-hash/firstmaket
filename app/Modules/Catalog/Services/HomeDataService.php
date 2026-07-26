@@ -32,7 +32,7 @@ class HomeDataService
 
             // Before the CategorySeeder has run (fresh install), fall back to
             // the config list so navigation never renders empty.
-            return $fromDatabase !== [] ? $fromDatabase : config('firstmarket.categories');
+            return $fromDatabase !== [] ? $fromDatabase : config('firstmaket.categories');
         });
     }
 

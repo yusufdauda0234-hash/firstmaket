@@ -31,7 +31,7 @@ class OrderStatusNotification extends PreferenceAwareNotification implements Sho
             ->subject("Order {$this->orderNumber}: {$this->statusLabel}")
             ->line("Update on your order for \"{$this->productName}\":")
             ->line("Status: {$this->statusLabel}")
-            ->line('Track every step from My Orders in your FirstMarketaccount.');
+            ->line('Track every step from My Orders in your FirstMaket account.');
     }
 
     public function toSms(object $notifiable): string

@@ -66,7 +66,7 @@ class VendorOrderController extends Controller
     {
         $preparationService->markReadyForPickup($request->user(), $order);
 
-        return back()->with('success', 'Marked ready for pickup — FirstMarketlogistics is on it.');
+        return back()->with('success', 'Marked ready for pickup — FirstMaket logistics is on it.');
     }
 
     public function reject(Request $request, Order $order, PreparationService $preparationService): RedirectResponse
@@ -75,6 +75,6 @@ class VendorOrderController extends Controller
 
         $preparationService->reject($request->user(), $order, $validated['reason']);
 
-        return back()->with('success', 'Order rejected — FirstMarketwill resolve it with the customer.');
+        return back()->with('success', 'Order rejected — FirstMaket will resolve it with the customer.');
     }
 }

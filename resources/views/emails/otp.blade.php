@@ -1,4 +1,4 @@
-@extends('emails.layout', ['title' => 'Your verification code', 'preheader' => 'Your FirstMarketverification code — expires in '.$ttlMinutes.' minutes.'])
+@extends('emails.layout', ['title' => 'Your verification code', 'preheader' => 'Your FirstMaket verification code — expires in '.$ttlMinutes.' minutes.'])
 
 @section('content')
     @php
@@ -48,7 +48,7 @@
     <hr class="fm-divider" style="border:none; border-top:1px solid #eef2f8; margin:0 0 20px;">
 
     <p class="fm-muted" style="margin:0; font-size:13px; line-height:20px; color:#8493ad;">
-        🛡️ For your security, never share this code with anyone — not even FirstMarketstaff.
+        🛡️ For your security, never share this code with anyone — not even FirstMaket staff.
         We will never call, text, or email you asking for it.
     </p>
 @endsection

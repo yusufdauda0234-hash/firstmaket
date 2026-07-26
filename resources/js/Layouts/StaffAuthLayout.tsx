@@ -44,7 +44,7 @@ export default function StaffAuthLayout({ title, subtitle, children }: PropsWith
                     </h1>
                     <p className="mt-3 max-w-md text-brand-100">
                         Approvals, payouts, support and logistics — everything staff need to keep
-                        FirstMarketmoving, in one place.
+                        FirstMaket moving, in one place.
                     </p>
                     <ul className="mt-6 space-y-2 text-sm text-brand-100">
                         {[

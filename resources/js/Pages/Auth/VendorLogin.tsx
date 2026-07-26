@@ -70,7 +70,7 @@ export default function VendorLogin() {
                             {[
                                 'Zero listing fees — keep more of every sale',
                                 'Instant payouts through Paystack',
-                                'FirstMarketdelivers; you focus on selling',
+                                'FirstMaket delivers; you focus on selling',
                             ].map((item) => (
                                 <li key={item} className="flex items-center gap-2">
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-yellow text-[11px] font-bold text-brand-900">
@@ -83,7 +83,7 @@ export default function VendorLogin() {
                     </div>
 
                     <p className="relative z-[1] text-xs text-brand-200">
-                        Vendor accounts only. Shoppers sign in on the main FirstMarketsite.
+                        Vendor accounts only. Shoppers sign in on the main FirstMaket site.
                     </p>
                 </div>
 

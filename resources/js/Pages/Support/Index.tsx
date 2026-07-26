@@ -69,7 +69,7 @@ export default function SupportIndex() {
         });
     };
 
-    const whatsappHref = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Hello FirstMarketsupport!')}`;
+    const whatsappHref = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Hello FirstMaket support!')}`;
 
     return (
         <AccountLayout title="Support">

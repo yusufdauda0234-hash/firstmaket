@@ -1,11 +1,11 @@
-# FirstMarketDatabase Schema
+# FirstMaket Database Schema
 
 Version: 1.0  
 Database recommendation: MySQL
 
 ## 1. Database Recommendation
 
-Use MySQL for FirstMarket(decision revised 2026-07-17: MySQL 8 in production, MariaDB 10.4+ for local development via XAMPP — same SQL family, both supported by Laravel's mysql/mariadb drivers).
+Use MySQL for FirstMaket(decision revised 2026-07-17: MySQL 8 in production, MariaDB 10.4+ for local development via XAMPP — same SQL family, both supported by Laravel's mysql/mariadb drivers).
 
 What matters for money integrity is fully preserved on MySQL/InnoDB:
 

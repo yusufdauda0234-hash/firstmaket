@@ -1,11 +1,11 @@
-# FirstMarketPRD Laravel
+# FirstMaket PRD Laravel
 
 Version: 1.0  
 Product type: Goal-based commerce, direct purchase, and savings marketplace
 
 ## 1. Product Summary
 
-FirstMarketlets customers either save toward products over time or pay the full product price at once. It is not a loan, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate funds to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the full target price is paid.
+FirstMaket lets customers either save toward products over time or pay the full product price at once. It is not a loan, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate funds to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the full target price is paid.
 
 ## 2. Core Promise
 
@@ -15,7 +15,7 @@ The platform should make product ownership feel planned, transparent, and safe:
 
 - Customers know exactly what they are buying, whether they pay at once or save gradually.
 - Vendors list products and set prices.
-- FirstMarketcontrols approval, customer relationship, payment tracking, and delivery.
+- FirstMaket controls approval, customer relationship, payment tracking, and delivery.
 - Vendors never receive customer identity or delivery details.
 
 ## 3. User Roles
@@ -169,7 +169,7 @@ The full fulfillment chain, end to end (modeled on Jumia's dropship flow — ven
 2. **Vendor notified** — vendor instantly gets an "item sold" notification (dashboard + email/SMS) with product and order number, never customer identity.
 3. **Admin confirms** the order and moves it to Processing.
 4. **Vendor prepares** — confirms stock and packs within a 48-hour SLA (configurable), then marks Ready for Pickup; out-of-stock triggers vendor rejection with reason and an admin-managed resolution (plan redirection or refund-to-savings, never cash).
-5. **Handover** — FirstMarketlogistics picks up from the vendor or the vendor drops off at a FirstMarkethub.
+5. **Handover** — FirstMaket logistics picks up from the vendor or the vendor drops off at a FirstMaket hub.
 6. **Delivery** — logistics updates status through to Delivered; customer is notified at each step.
 7. **Confirmation** — customer confirms receipt, or the order auto-confirms after 3 days (configurable) with no dispute.
 8. **Vendor earnings** — per-category commission is deducted and the remainder credited to the vendor earnings ledger.
@@ -344,8 +344,8 @@ Home page structure (Sprint 0, common anatomy from the survey):
 - Featured/flash product strip
 - Category grid blocks
 - "For You" / Top Selling product feed (approved products only)
-- How-it-works strip: Pay At Once, Save Small Small, FirstMarketDelivers
-- Trust strip: Paystack payments, verified vendors, FirstMarketdelivery, hotline
+- How-it-works strip: Pay At Once, Save Small Small, FirstMaket Delivers
+- Trust strip: Paystack payments, verified vendors, FirstMaket delivery, hotline
 - SEO footer
 
 Phase 4 pages:
@@ -472,13 +472,13 @@ Affiliate admin dashboard:
 
 ## 11. Competitive Positioning
 
-FirstMarketshould borrow proven marketplace patterns while preserving its unique savings model:
+FirstMaket should borrow proven marketplace patterns while preserving its unique savings model:
 
 - Jumia: marketplace plus first-party payment and logistics control.
-- AliExpress: payment protection before product release; FirstMarketapplies this more strongly through pay-before-release savings.
+- AliExpress: payment protection before product release; FirstMaket applies this more strongly through pay-before-release savings.
 - CDK Global: avoid disconnected tools by keeping catalog, payment, delivery, support, fraud, and audit workflows unified.
 
-FirstMarketstands out through goal-based product savings, vendor pricing freedom, AI-assisted moderation, and free customer support including hotline access.
+FirstMaket stands out through goal-based product savings, vendor pricing freedom, AI-assisted moderation, and free customer support including hotline access.
 
 ## 12. Recommended Laravel Architecture
 

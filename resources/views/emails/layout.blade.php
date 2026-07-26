@@ -47,7 +47,7 @@
 <body class="fm-body" style="margin:0; padding:0; background-color:#eef2f8; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
     <!-- Preheader (hidden preview text) -->
     <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#eef2f8; opacity:0;">
-        {{ $preheader ?? 'FirstMarket— Just Order. We Deliver.' }}
+        {{ $preheader ?? 'FirstMaket— Just Order. We Deliver.' }}
         &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
     </div>
 
@@ -101,7 +101,7 @@
                         <td class="fm-card fm-px" style="background-color:#ffffff; padding:0 40px 36px; border-left:1px solid #e6ebf3; border-right:1px solid #e6ebf3; border-radius:0 0 24px 24px;">
                             <hr class="fm-divider" style="border:none; border-top:1px solid #eef2f8; margin:0 0 20px;">
                             <p class="fm-footer" style="margin:0 0 4px; font-size:12px; line-height:18px; color:#98a6bf;">
-                                FirstMarket— Just Order. We Deliver.
+                                FirstMaket— Just Order. We Deliver.
                             </p>
                             <p class="fm-footer" style="margin:0 0 12px; font-size:12px; line-height:18px; color:#98a6bf;">
                                 Verified vendors · Secure Paystack checkout · Nationwide delivery.

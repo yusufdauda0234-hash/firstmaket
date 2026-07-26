@@ -206,7 +206,7 @@ export default function QuickViewModal({
                                 <span className="text-green-600">✓</span> Verified vendor
                             </li>
                             <li className="flex items-center gap-2">
-                                <span className="text-green-600">✓</span> FirstMarketdelivery — vendors never see your details
+                                <span className="text-green-600">✓</span> FirstMaket delivery — vendors never see your details
                             </li>
                             <li className="flex items-center gap-2">
                                 <span className="text-green-600">✓</span> Secure Paystack checkout
@@ -220,7 +220,7 @@ export default function QuickViewModal({
                             {/* Price band */}
                             <div className="rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 px-4 py-2.5">
                                 <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">
-                                    FirstMarketprice
+                                    FirstMaket price
                                 </p>
                                 <p className="flex flex-wrap items-baseline gap-x-2.5">
                                     <span className="text-2xl font-extrabold tracking-tight text-brand-700">

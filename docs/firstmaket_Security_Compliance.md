@@ -1,10 +1,10 @@
-# FirstMarketSecurity and Compliance
+# FirstMaket Security and Compliance
 
 Version: 1.0
 
 ## 1. Security Position
 
-FirstMarkethandles identity data, customer savings records, payment references, vendor documents, and delivery addresses. Even though it is not a bank, lender, or BNPL product, it must be engineered with financial-grade care because customers trust the platform with paid-in funds and identity documents.
+FirstMaket handles identity data, customer savings records, payment references, vendor documents, and delivery addresses. Even though it is not a bank, lender, or BNPL product, it must be engineered with financial-grade care because customers trust the platform with paid-in funds and identity documents.
 
 ## 2. Compliance Context
 
@@ -15,7 +15,7 @@ Primary Nigerian considerations:
 - Consumer protection expectations
 - Payment-provider compliance through Paystack
 
-FirstMarketshould avoid language and behavior that makes it look like a lender, deposit-taking bank, or investment product.
+FirstMaket should avoid language and behavior that makes it look like a lender, deposit-taking bank, or investment product.
 
 ### 2.1 Regulatory Classification Sign-Off (pre-build gate)
 
@@ -24,7 +24,7 @@ A deposit-only wallet that holds customer pre-payment for future product deliver
 Before Sprint 1 starts:
 
 - Obtain a written opinion from a Nigerian fintech/payments lawyer confirming the wallet + Product Target Plan + Pay At Once model does not require a CBN license (PSP, PSSP, MMO, or similar) as designed.
-- Confirm the "no withdrawal, redirection only" model and the affiliate/customer-fund separation are sufficient to keep FirstMarketoutside deposit-taking classification.
+- Confirm the "no withdrawal, redirection only" model and the affiliate/customer-fund separation are sufficient to keep FirstMaket outside deposit-taking classification.
 - Revisit this opinion before Phase 2 (automatic debit) and Phase 3 (agent network, cooperative savings) launch, since each expands the regulatory surface.
 - **Note:** BVN/NIN identity verification was built and then removed entirely by product decision — there is no customer or vendor KYC beyond phone/email OTP (optional) and vendor CAC document review. This removes a control that would otherwise have supported the "not deposit-taking" argument above; flag this explicitly to the lawyer providing the opinion.
 

@@ -42,7 +42,7 @@ class HandleInertiaRequests extends Middleware
                 // Local/debug only — App\Modules\Identity\Controllers\PhoneVerificationController.
                 'devOtpCode' => fn () => $request->session()->get('devOtpCode'),
             ],
-            'supportHotline' => config('firstmarket.support.hotline'),
+            'supportHotline' => config('firstmaket.support.hotline'),
             // Absolute URL of the main marketplace — portal pages (Vendor
             // Center, admin) need it because routes without a domain
             // constraint generate on the current origin.

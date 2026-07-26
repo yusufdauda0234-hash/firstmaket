@@ -91,7 +91,7 @@ class SocialAuthController extends Controller
                 }
 
                 $user = User::query()->create([
-                    'name' => $oauthUser->getName() ?: 'FirstMarketCustomer',
+                    'name' => $oauthUser->getName() ?: 'FirstMaket Customer',
                     'email' => mb_strtolower($email),
                     'phone' => null,
                     'password' => null,

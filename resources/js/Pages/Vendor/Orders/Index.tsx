@@ -61,7 +61,7 @@ export default function VendorOrdersIndex() {
                 <div>
                     <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">Orders</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Sold items to prepare — pack within the deadline and FirstMarkethandles the delivery.
+                        Sold items to prepare — pack within the deadline and FirstMaket handles the delivery.
                         Buyer details are never shared.
                     </p>
                 </div>

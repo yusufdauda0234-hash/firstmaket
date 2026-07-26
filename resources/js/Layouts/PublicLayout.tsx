@@ -80,7 +80,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 horizontal overflow is already guarded on html/body. */}
             <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white shadow-sm">
                 <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-4 px-4 py-3 min-w-0">
-                    <Link href={route('home')} className="shrink-0" aria-label="FirstMarkethome">
+                    <Link href={route('home')} className="shrink-0" aria-label="FirstMaket home">
                         <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
                     </Link>
 
@@ -128,7 +128,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                         <CheckBadgeIcon /> Verified vendors only
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
-                        <TruckIcon /> FirstMarketdelivery guarantee
+                        <TruckIcon /> FirstMaket delivery guarantee
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 lg:flex">
                         <ReturnIcon /> 30-day returns
@@ -187,11 +187,11 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                     <Reveal>
                         <img
                             src="/images/brand/logo-light-transparent.png"
-                            alt="FirstMarket— Just Order. We Deliver"
+                            alt="FirstMaket— Just Order. We Deliver"
                             className="h-16 w-auto"
                         />
                         <p className="mt-3 max-w-xs text-sm leading-relaxed text-brand-100">
-                            Pay small small or pay at once — FirstMarketdelivers. No loans, no cash
+                            Pay small small or pay at once — FirstMaket delivers. No loans, no cash
                             withdrawal, just planned ownership.
                         </p>
                         <a
@@ -395,9 +395,9 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                     <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs text-brand-200">
                         <span>© {new Date().getFullYear()} FirstMaket. All rights reserved.</span>
                         <span>
-                            FirstMarketis not a loan app, bank, or BNPL service. No cash withdrawal.
+                            FirstMaket is not a loan app, bank, or BNPL service. No cash withdrawal.
                         </span>
-                        <span>Secure payments by Paystack · Verified vendors · FirstMarketdelivery</span>
+                        <span>Secure payments by Paystack · Verified vendors · FirstMaket delivery</span>
                     </div>
                 </div>
             </footer>

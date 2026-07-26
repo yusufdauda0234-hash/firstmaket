@@ -28,8 +28,8 @@ class NewDeviceLoginNotification extends PreferenceAwareNotification implements 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New device sign-in to your FirstMarketaccount')
-            ->line('Your FirstMarketaccount was just signed in to from a device we have not seen before.')
+            ->subject('New device sign-in to your FirstMaket account')
+            ->line('Your FirstMaket account was just signed in to from a device we have not seen before.')
             ->line("IP address: {$this->ipAddress}")
             ->line("Device: {$this->userAgent}")
             ->line('If this was you, no action is needed. If not, change your password immediately and contact support.');

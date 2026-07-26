@@ -244,7 +244,7 @@ function PromoPopup({ products }: { products: ProductSummary[] }) {
 
                 <div className="px-6 pb-6 pt-4 text-center">
                     <p className="text-sm text-gray-600">
-                        Verified vendors, locked prices, FirstMarketdelivery nationwide.
+                        Verified vendors, locked prices, FirstMaket delivery nationwide.
                     </p>
                     <Link
                         href={route('catalog.index')}
@@ -387,7 +387,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                         } ${i === current ? 'z-[1] opacity-100' : 'pointer-events-none opacity-0'}`}
                         aria-hidden={i !== current}
                     >
-                        {/* Soft brand glow — FirstMarketsignature, not a stock template */}
+                        {/* Soft brand glow — FirstMaket signature, not a stock template */}
                         <span
                             className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-brand-yellow/10 blur-3xl"
                             aria-hidden="true"
@@ -714,10 +714,10 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
     return (
         <PublicLayout categories={categories}>
             <Head>
-                <title>FirstMarket- Just Order. We Deliver</title>
+                <title>FirstMaket- Just Order. We Deliver</title>
                 <meta
                     name="description"
-                    content="Nigeria's goal-based marketplace. Pay at once or save small small toward electronics, appliances, solar, furniture, fashion and business equipment - verified vendors, locked prices, FirstMarketdelivery."
+                    content="Nigeria's goal-based marketplace. Pay at once or save small small toward electronics, appliances, solar, furniture, fashion and business equipment - verified vendors, locked prices, FirstMaket delivery."
                 />
             </Head>
 
@@ -737,7 +737,7 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                     <p className="flex min-w-0 items-center gap-2">
                         <span aria-hidden="true">🔔</span>
                         <span className="truncate sm:whitespace-normal">
-                            Security reminder: FirstMarketwill never ask for extra fees by SMS or email —
+                            Security reminder: FirstMaket will never ask for extra fees by SMS or email —
                             pay only through Paystack checkout.
                         </span>
                     </p>
@@ -946,7 +946,7 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                                     Sell to customers across Nigeria
                                 </h2>
                                 <p className="mt-4 max-w-xl text-base leading-relaxed text-white/80">
-                                    Zero listing fees, instant Paystack payouts, and FirstMarkethandles the
+                                    Zero listing fees, instant Paystack payouts, and FirstMaket handles the
                                     delivery. Verified vendors only — your store, our logistics.
                                 </p>
                             </Reveal>
@@ -969,13 +969,13 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                 </section>
 
                 {/* -- How it works -- */}
-                <section aria-label="How FirstMarketworks" className="mt-10">
+                <section aria-label="How FirstMaket works" className="mt-10">
                     <Reveal className="mx-auto max-w-2xl text-center">
                         <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
                             How It Works
                         </h2>
                         <p className="mt-3 text-sm leading-relaxed text-gray-500 sm:text-base">
-                            FirstMarketbrings you a modern, trusted shopping experience with verified
+                            FirstMaket brings you a modern, trusted shopping experience with verified
                             vendors, secure checkout, and delivery across Nigeria.
                         </p>
                     </Reveal>
@@ -1025,7 +1025,7 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                             {[
                                 { icon: '🔒', title: 'Secure payments', text: 'Every kobo goes through Paystack.' },
                                 { icon: '✅', title: 'Verified vendors', text: 'CAC business registration checked before selling.' },
-                                { icon: '🚚', title: 'FirstMarketdelivery', text: 'We deliver; vendors never see your details.' },
+                                { icon: '🚚', title: 'FirstMaket delivery', text: 'We deliver; vendors never see your details.' },
                                 { icon: '💬', title: 'Real support', text: `Hotline ${supportHotline}, tickets and WhatsApp.` },
                             ].map((item, index) => (
                                 <Reveal key={item.title} delay={index * 120}>

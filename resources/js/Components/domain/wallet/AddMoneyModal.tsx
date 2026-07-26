@@ -100,7 +100,7 @@ export default function AddMoneyModal({ open, onClose }: { open: boolean; onClos
                     </div>
                 </div>
                 <p className="mt-3 text-center text-xs text-gray-400">
-                    🔒 Payments are processed by Paystack. FirstMarketnever stores your full card details.
+                    🔒 Payments are processed by Paystack. FirstMaket never stores your full card details.
                 </p>
             </form>
         </Modal>

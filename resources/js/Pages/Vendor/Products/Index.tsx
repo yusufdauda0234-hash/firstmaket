@@ -211,7 +211,7 @@ export default function VendorProductsIndex() {
                 title="Submit for approval?"
                 description={
                     submitTarget
-                        ? `"${submitTarget.name}" will be sent to the FirstMarketteam for review. You can’t edit it while it’s pending.`
+                        ? `"${submitTarget.name}" will be sent to the FirstMaket team for review. You can’t edit it while it’s pending.`
                         : ''
                 }
                 footer={

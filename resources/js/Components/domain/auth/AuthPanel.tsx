@@ -257,7 +257,7 @@ export default function AuthPanel({ initialStep = 'entry' }: { initialStep?: Ste
 
                     <p className="mt-5 text-center text-[11px] leading-relaxed text-gray-500">
                         By continuing, you confirm that you have read and accepted our Terms of Service and
-                        Privacy Policy. FirstMarketis not a loan app — no cash withdrawal.
+                        Privacy Policy. FirstMaket is not a loan app — no cash withdrawal.
                     </p>
                 </form>
             )}

@@ -31,7 +31,7 @@ class ItemSoldNotification extends PreferenceAwareNotification implements Should
             ->subject("You made a sale — order {$this->orderNumber}")
             ->line("Great news: your product \"{$this->productName}\" just sold for {$this->amountNaira}.")
             ->line("Order number: {$this->orderNumber}")
-            ->line('Sign in to your Vendor Center to confirm stock and pack the item within the preparation window. FirstMarkethandles the delivery.')
+            ->line('Sign in to your Vendor Center to confirm stock and pack the item within the preparation window. FirstMaket handles the delivery.')
             ->line('For customer privacy, buyer details are never shared with vendors.');
     }
 

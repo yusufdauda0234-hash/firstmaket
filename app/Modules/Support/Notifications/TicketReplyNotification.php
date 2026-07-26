@@ -28,7 +28,7 @@ class TicketReplyNotification extends PreferenceAwareNotification implements Sho
         return (new MailMessage)
             ->subject("Support replied: {$this->subject}")
             ->line("Our support team replied to your ticket \"{$this->subject}\".")
-            ->line('Open the Support Center in your FirstMarketaccount to read and respond.');
+            ->line('Open the Support Center in your FirstMaket account to read and respond.');
     }
 
     public function toDatabase(object $notifiable): array

@@ -135,7 +135,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 404 => ['Page not found', "We couldn't find the page you're looking for. It may have been moved or no longer exists."],
                 419 => ['Page expired', 'Your session expired. Please go back and try again.'],
                 500 => ['Something went wrong', 'An unexpected error occurred on our side. Please try again shortly.'],
-                503 => ['Briefly unavailable', 'FirstMarketis undergoing maintenance. Please check back in a few minutes.'],
+                503 => ['Briefly unavailable', 'FirstMaket is undergoing maintenance. Please check back in a few minutes.'],
             ];
 
             if (! isset($pages[$status]) || $request->expectsJson()) {
@@ -149,11 +149,11 @@ return Application::configure(basePath: dirname(__DIR__))
             [$title, $message] = $pages[$status];
 
             if ($status === 403 && AdminDomain::matches($request) && $request->user()?->user_type !== UserType::Staff) {
-                $message = 'This area is for FirstMarketstaff only. If you are a customer or vendor, please use the main FirstMarketsite.';
+                $message = 'This area is for FirstMaket staff only. If you are a customer or vendor, please use the main FirstMaket site.';
             }
 
             if ($status === 403 && VendorDomain::matches($request) && $request->user()?->user_type !== UserType::Vendor) {
-                $message = 'This area is the FirstMarketVendor Center, for approved vendor accounts only. Apply to sell from the main FirstMarketsite.';
+                $message = 'This area is the FirstMaket Vendor Center, for approved vendor accounts only. Apply to sell from the main FirstMaket site.';
             }
 
             // On the portal subdomains "/" is not the marketplace — send

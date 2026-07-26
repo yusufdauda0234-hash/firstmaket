@@ -295,7 +295,7 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                     <span className="flex items-center gap-1.5">
                         <ShieldCheck className="h-3.5 w-3.5 text-brand-500" /> Listings are reviewed before they go live.
                     </span>
-                    <span>Zero listing fees today · Instant Paystack payouts · FirstMarketdelivers</span>
+                    <span>Zero listing fees today · Instant Paystack payouts · FirstMaket delivers</span>
                 </div>
             </footer>
         </div>

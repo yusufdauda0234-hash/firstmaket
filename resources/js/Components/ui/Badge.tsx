@@ -3,7 +3,7 @@ import { PropsWithChildren } from 'react';
 
 type Tone = 'neutral' | 'success' | 'warning' | 'danger';
 
-// FirstMarketships a single light design everywhere, so badge tones are
+// FirstMaket ships a single light design everywhere, so badge tones are
 // solid light-surface colors — no dark-mode variants that would wash out
 // on a white card when the OS theme is dark.
 const toneClasses: Record<Tone, string> = {

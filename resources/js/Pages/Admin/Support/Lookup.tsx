@@ -54,7 +54,7 @@ export default function CustomerLookup() {
             <PageHeader
                 eyebrow="Support tools"
                 title="Customer lookup"
-                description="Read-only order, plan, and wallet context. No card data exists on FirstMarketand identity numbers are never shown."
+                description="Read-only order, plan, and wallet context. No card data exists on FirstMaket and identity numbers are never shown."
             />
 
             <form onSubmit={search} className="mb-4 flex max-w-xl items-center gap-2">

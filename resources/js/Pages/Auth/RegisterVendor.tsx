@@ -57,7 +57,7 @@ export default function RegisterVendor() {
                         🏪
                     </span>
 
-                    <Link href={route('home')} aria-label="Back to FirstMarkethome">
+                    <Link href={route('home')} aria-label="Back to FirstMaket home">
                         <img
                             src="/images/brand/logo-light-transparent.png"
                             alt="FirstMaket"
@@ -73,14 +73,14 @@ export default function RegisterVendor() {
                             Sell to customers across Nigeria.
                         </h1>
                         <p className="mt-3 max-w-md text-brand-100">
-                            Zero listing fees, instant Paystack payouts, and FirstMarkethandles the
+                            Zero listing fees, instant Paystack payouts, and FirstMaket handles the
                             delivery. Verified vendors only — your store, our logistics.
                         </p>
                         <ul className="mt-6 space-y-2 text-sm text-brand-100">
                             {[
                                 'Zero listing fees — keep more of every sale',
                                 'Instant payouts through Paystack',
-                                'FirstMarketdelivers; you focus on selling',
+                                'FirstMaket delivers; you focus on selling',
                                 'Verified marketplace — CAC-checked vendors only',
                             ].map((item) => (
                                 <li key={item} className="flex items-center gap-2">
@@ -100,7 +100,7 @@ export default function RegisterVendor() {
 
                 {/* Form panel */}
                 <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
-                    <Link href={route('home')} className="lg:hidden" aria-label="Back to FirstMarkethome">
+                    <Link href={route('home')} className="lg:hidden" aria-label="Back to FirstMaket home">
                         <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
                     </Link>
 

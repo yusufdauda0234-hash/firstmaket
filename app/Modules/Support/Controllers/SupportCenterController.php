@@ -90,7 +90,7 @@ class SupportCenterController extends Controller
                     'mine' => $message->sender_id === $request->user()->id,
                     'senderName' => $message->sender_id === $request->user()->id
                         ? 'You'
-                        : 'FirstMarketSupport',
+                        : 'FirstMaket Support',
                     'at' => $message->created_at?->format('j M Y, g:ia'),
                 ]),
             ],

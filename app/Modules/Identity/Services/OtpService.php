@@ -78,7 +78,7 @@ class OtpService
             match ($channel) {
                 OtpChannel::Sms => $this->sms->send(
                     $destination,
-                    "Your FirstMarketverification code is {$code}. It expires in ".self::CODE_TTL_MINUTES.' minutes. Never share this code.'
+                    "Your FirstMaket verification code is {$code}. It expires in ".self::CODE_TTL_MINUTES.' minutes. Never share this code.'
                 ),
                 OtpChannel::Email => Notification::route('mail', $destination)
                     ->notify(new OtpCodeNotification($code, self::CODE_TTL_MINUTES)),

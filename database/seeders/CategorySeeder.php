@@ -14,7 +14,7 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (config('firstmarket.categories') as $index => $category) {
+        foreach (config('firstmaket.categories') as $index => $category) {
             Category::query()->updateOrCreate(
                 ['slug' => $category['slug']],
                 ['name' => $category['name'], 'sort_order' => $index, 'is_active' => true],

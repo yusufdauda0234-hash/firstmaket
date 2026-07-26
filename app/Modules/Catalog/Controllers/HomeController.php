@@ -14,7 +14,7 @@ class HomeController
             'categories' => $home->categories(),
             'featuredProducts' => $home->featuredProducts(),
             'newestProducts' => $home->newestProducts(),
-            'supportHotline' => config('firstmarket.support.hotline'),
+            'supportHotline' => config('firstmaket.support.hotline'),
         ]);
     }
 }

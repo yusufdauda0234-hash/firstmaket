@@ -121,7 +121,7 @@ export default function ProductShow({ product, relatedProducts, categories }: Pr
                 <title>{`${product.name} — FirstMaket`}</title>
                 <meta
                     name="description"
-                    content={`Buy ${product.name} on FirstMarket— pay at once or save small small at a locked price. ${formatNairaFromKobo(product.priceKobo)}.`}
+                    content={`Buy ${product.name} on FirstMaket— pay at once or save small small at a locked price. ${formatNairaFromKobo(product.priceKobo)}.`}
                 />
             </Head>
 
@@ -248,7 +248,7 @@ export default function ProductShow({ product, relatedProducts, categories }: Pr
                         <div className="mt-6 grid gap-3 border-t border-gray-100 pt-5 sm:grid-cols-2">
                             {[
                                 { icon: ShieldCheck, text: 'Paystack-secured payments' },
-                                { icon: Truck, text: 'FirstMarketdelivery nationwide' },
+                                { icon: Truck, text: 'FirstMaket delivery nationwide' },
                                 { icon: Store, text: 'Verified vendor' },
                                 { icon: Undo2, text: '30-day returns on eligible items' },
                             ].map((item) => (
@@ -268,7 +268,7 @@ export default function ProductShow({ product, relatedProducts, categories }: Pr
                             {/* Price */}
                             <div className="rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 px-4 py-3">
                                 <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">
-                                    FirstMarketprice
+                                    FirstMaket price
                                 </p>
                                 <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2.5">
                                     <span className="text-3xl font-extrabold tracking-tight text-brand-700">

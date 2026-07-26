@@ -51,8 +51,8 @@ class EnsureCorrectPortal
         }
 
         [$loginRoute, $message] = match (true) {
-            $isAdminPortal => ['admin.login', 'This area is for FirstMarketstaff only. Customer and vendor accounts sign in on the main FirstMarketsite.'],
-            $isVendorPortal => ['vendor.login', 'The Vendor Center is for approved vendor accounts only. Shoppers sign in on the main FirstMarketsite.'],
+            $isAdminPortal => ['admin.login', 'This area is for FirstMaket staff only. Customer and vendor accounts sign in on the main FirstMaket site.'],
+            $isVendorPortal => ['vendor.login', 'The Vendor Center is for approved vendor accounts only. Shoppers sign in on the main FirstMaket site.'],
             default => ['login', 'Staff accounts sign in through the staff portal, not the customer site. Please use your admin portal address.'],
         };
 

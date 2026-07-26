@@ -58,7 +58,7 @@ export default function VendorDashboard() {
             accent: 'bg-amber-100 text-amber-600',
             tone: 'amber' as const,
             href: route('vendor.products.index', { status: 'pending_approval' }),
-            hint: 'Reviewed by the FirstMarketteam.',
+            hint: 'Reviewed by the FirstMaket team.',
         },
         {
             label: 'Earnings',
