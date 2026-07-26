@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Modules\Catalog\Listeners\DelistSuspendedVendorProducts;
+use App\Modules\Catalog\Services\RuleBasedListingAnalyzer;
 use App\Modules\Notifications\Listeners\RecordNotificationDelivery;
 use App\Modules\Notifications\Services\SmsChannel;
 use App\Modules\Orders\Events\OrderDeliveryConfirmed;
@@ -12,10 +13,11 @@ use App\Modules\Orders\Events\OrderStatusChanged;
 use App\Modules\Orders\Listeners\NotifyCustomerOfOrderStatus;
 use App\Modules\Payments\Services\PaystackBankResolver;
 use App\Modules\Payments\Services\PaystackGateway;
-use App\Modules\Savings\Services\RuleBasedPlanEligibilityChecker;
+use App\Modules\Savings\Services\AiScoredPlanEligibilityChecker;
 use App\Modules\Vendor\Events\VendorSuspended;
 use App\Modules\Vendor\Listeners\CreditVendorEarnings;
 use App\Modules\Vendor\Listeners\NotifyVendorOfSale;
+use App\Shared\Contracts\AiListingAnalyzerContract;
 use App\Shared\Contracts\AuditLoggerContract;
 use App\Shared\Contracts\BankAccountResolverContract;
 use App\Shared\Contracts\PaymentGatewayContract;
@@ -53,10 +55,20 @@ class AppServiceProvider extends ServiceProvider
             PaystackBankResolver::class,
         );
 
-        // Multi-product plan bundling eligibility (Sprint 8). Rule-based for
-        // now; Sprint 9 swaps this for an AI-scored implementation behind the
-        // same contract.
-        $this->app->bind(PlanEligibilityContract::class, RuleBasedPlanEligibilityChecker::class);
+        // Multi-product plan bundling eligibility (Sprint 8, swapped Sprint
+        // 9 for an AI-scored implementation that keeps the rule-based
+        // checker as its explicit fallback/floor — see
+        // AiScoredPlanEligibilityChecker).
+        $this->app->bind(PlanEligibilityContract::class, AiScoredPlanEligibilityChecker::class);
+
+        // Listing Review Assistant (Sprint 9) — advisory only, never
+        // approves/rejects. No real provider is configured by default, so
+        // this resolves to the deterministic rule-based driver; a future
+        // AI_PROVIDER_DRIVER value adds a case here without touching the job
+        // or admin UI that consume the contract.
+        $this->app->bind(AiListingAnalyzerContract::class, fn () => match (config('services.ai.driver')) {
+            default => new RuleBasedListingAnalyzer,
+        });
     }
 
     public function boot(): void

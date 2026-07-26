@@ -116,6 +116,19 @@ it('cannot suspend a vendor who is not approved', function () {
     expect($vendor->refresh()->status)->toBe(VendorStatus::Pending);
 });
 
+it('previews how many approved products a suspension would delist', function () {
+    $vendor = approvedVendorWithProducts();
+
+    $response = $this->actingAs(suspensionStaff('Administrator'))
+        ->get('http://'.config('app.admin_domain').'/vendors/'.$vendor->uuid)
+        ->assertOk();
+
+    $props = $response->viewData('page')['props']['vendor'];
+
+    // Two approved products from the fixture; the draft is never delisted.
+    expect($props['approvedProductCount'])->toBe(2);
+});
+
 it('reinstates a suspended vendor without relisting products', function () {
     $vendor = approvedVendorWithProducts();
     $admin = suspensionStaff('Administrator');

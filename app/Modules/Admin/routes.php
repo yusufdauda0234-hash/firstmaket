@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Admin\Controllers\AiSettingsController;
 use App\Modules\Admin\Controllers\CommissionSettingsController;
 use App\Modules\Admin\Controllers\CustomerLookupController;
 use App\Modules\Admin\Controllers\DocumentDownloadController;
@@ -9,7 +10,9 @@ use App\Modules\Admin\Controllers\OrderAdminController;
 use App\Modules\Admin\Controllers\PhoneReviewController;
 use App\Modules\Admin\Controllers\ProductApprovalController;
 use App\Modules\Admin\Controllers\ReconciliationController;
+use App\Modules\Admin\Controllers\ReportingController;
 use App\Modules\Admin\Controllers\SupportAdminController;
+use App\Modules\Admin\Controllers\UserManagementController;
 use App\Modules\Admin\Controllers\VendorApprovalController;
 use App\Modules\Admin\Controllers\VendorPayoutController;
 use Illuminate\Support\Facades\Route;
@@ -98,4 +101,24 @@ Route::middleware('permission:support.manage')->group(function () {
     Route::get('support/{ticket:uuid}', [SupportAdminController::class, 'show'])->name('admin.support.show');
     Route::post('support/{ticket:uuid}/reply', [SupportAdminController::class, 'reply'])->name('admin.support.reply');
     Route::post('support/{ticket:uuid}/status', [SupportAdminController::class, 'updateStatus'])->name('admin.support.status');
+});
+
+// ── Sprint 9: AI, reporting, and operational controls ──
+
+Route::middleware('permission:customers.suspend')->group(function () {
+    Route::get('customers', [UserManagementController::class, 'index'])->name('admin.users.index');
+    Route::get('customers/{user:uuid}', [UserManagementController::class, 'show'])->name('admin.users.show');
+    Route::post('customers/{user:uuid}/suspend', [UserManagementController::class, 'suspend'])->name('admin.users.suspend');
+    Route::post('customers/{user:uuid}/ban', [UserManagementController::class, 'ban'])->name('admin.users.ban');
+    Route::post('customers/{user:uuid}/reactivate', [UserManagementController::class, 'reactivate'])->name('admin.users.reactivate');
+});
+
+Route::middleware('permission:ai_settings.manage')->group(function () {
+    Route::get('settings/ai', [AiSettingsController::class, 'edit'])->name('admin.settings.ai');
+    Route::post('settings/ai', [AiSettingsController::class, 'update'])->name('admin.settings.ai.update');
+});
+
+Route::middleware('permission:reports.view')->group(function () {
+    Route::get('reports', [ReportingController::class, 'index'])->name('admin.reports.index');
+    Route::get('reports/export/{report}', [ReportingController::class, 'export'])->name('admin.reports.export');
 });

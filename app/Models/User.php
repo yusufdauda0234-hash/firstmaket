@@ -12,6 +12,7 @@ use App\Shared\Traits\HasUuid;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -27,6 +28,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $phone
  * @property UserType $user_type
  * @property UserStatus $status
+ * @property string|null $status_reason
+ * @property int|null $status_changed_by
+ * @property Carbon|null $status_changed_at
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $phone_verified_at
  * @property Carbon|null $last_login_at
@@ -35,6 +39,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read VendorProfile|null $vendorProfile
  * @property-read Wallet|null $wallet
  * @property-read Collection<int, SocialAccount> $socialAccounts
+ * @property-read User|null $statusChangedBy
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -66,6 +71,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'user_type' => UserType::class,
             'status' => UserStatus::class,
+            'status_changed_at' => 'datetime',
         ];
     }
 
@@ -87,6 +93,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function socialAccounts(): HasMany
     {
         return $this->hasMany(SocialAccount::class);
+    }
+
+    public function statusChangedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'status_changed_by');
     }
 
     public function hasVerifiedPhone(): bool

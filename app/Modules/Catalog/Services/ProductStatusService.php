@@ -5,6 +5,7 @@ namespace App\Modules\Catalog\Services;
 use App\Models\User;
 use App\Modules\Catalog\Events\ProductApproved;
 use App\Modules\Catalog\Events\ProductRejected;
+use App\Modules\Catalog\Jobs\AnalyzeListingJob;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductPostingFee;
 use App\Modules\Catalog\Models\VendorFeeSetting;
@@ -44,6 +45,10 @@ class ProductStatusService
                 'submitted_at' => now(),
                 'rejection_reason' => null,
             ]);
+
+            // Advisory only — dispatched after commit so the queue never
+            // sees a product row that then rolls back (Sprint 9).
+            DB::afterCommit(fn () => AnalyzeListingJob::dispatch($product));
         });
     }
 
@@ -98,6 +103,8 @@ class ProductStatusService
         $this->transition($product, ProductStatus::PendingApproval, $vendorUser, 'Price changed after approval', [
             'submitted_at' => now(),
         ]);
+
+        DB::afterCommit(fn () => AnalyzeListingJob::dispatch($product));
     }
 
     /**

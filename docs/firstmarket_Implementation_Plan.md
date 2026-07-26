@@ -592,11 +592,11 @@ Exit criteria:
 - Every resulting order still follows the exact Sprint 6 fulfillment chain with no vendor ever seeing another vendor's items in the same checkout or plan.
 - A multi-product plan never delivers a subset of its bundled products early.
 
-#### Sprint 9: AI, Reporting, and Operational Controls
+#### Sprint 9: AI, Reporting, and Operational Controls — COMPLETE
 
 Scope: AI-assisted listing review, configurable thresholds, operational reports, vendor suspension, user suspension, admin controls, and swapping the Sprint 8 rule-based multi-product plan eligibility checker for an AI-scored one.
 
-Additional backend item carried over from Sprint 8:
+**Build note (2026-07-25):** an audit before building found vendor suspend→auto-delist and the session-revocation/login-block plumbing for `UserStatus::Suspended`/`Banned` already fully working from earlier ad-hoc sessions (Sprint 2/3) — neither was rebuilt. Everything else here was net-new. The "AI-assisted" pieces (Listing Review Assistant, the multi-product plan eligibility scorer) are built behind swappable contracts — `AiListingAnalyzerContract` and `PlanEligibilityContract` — with **no real external AI provider wired in** (`config('services.ai')` has the driver/key scaffold, but nothing consumes a key yet): `RuleBasedListingAnalyzer` runs deterministic, zero-cost checks only (price-outlier vs. category average, description length, image count, a prohibited-keyword scan) and is the default/fallback driver; `AiScoredPlanEligibilityChecker` currently just delegates to `RuleBasedPlanEligibilityChecker` verbatim. Both are real, tested, and swappable — a future session can add a real provider case to the `match()` in `AppServiceProvider` without touching the job, the admin UI, or the eligibility call sites. Reports are always live source-table reads (no snapshot table) so "reports match source tables" holds by construction. User moderation reuses the vendor pattern (a reason field + the existing generic `audit_logs` table) rather than a dedicated status-events table.
 
 - Bind `PlanEligibilityContract` to a new AI-scored checker (in place of `RuleBasedPlanEligibilityChecker`), using the customer's contribution reliability and purchase history as model input. Keep the rule-based checker available as a fallback/override — the AI output is advisory input to the same eligibility decision, not a black box the customer can't get an explanation from; a blocked customer still sees a clear, human-readable reason.
 

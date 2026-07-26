@@ -38,6 +38,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'affiliate_payouts.approve',
         'vendor_fees.manage',
         'ai_settings.manage',
+        'reports.view',
         'settings.manage',
         'roles.manage',
     ];
@@ -60,6 +61,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'support.manage',
             'vendor_fees.manage',
             'ai_settings.manage',
+            'reports.view',
             'affiliates.manage',
             'affiliate_conversions.review',
         ],
@@ -76,6 +78,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'finance.reconcile',
             'affiliate_payouts.approve',
             'vendor_payouts.approve',
+            'reports.view',
         ],
         'Vendor' => [],
         'Customer' => [],

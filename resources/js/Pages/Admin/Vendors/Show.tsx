@@ -32,6 +32,7 @@ interface Props extends PageProps {
         approvedAt: string | null;
         registeredAt: string;
         documents: DocumentRow[];
+        approvedProductCount: number;
     };
 }
 
@@ -100,6 +101,11 @@ export default function VendorShow() {
         approveForm.processing || rejectForm.processing || suspendForm.processing || reinstateForm.processing;
     const config = action ? actionConfig[action] : null;
     const reasonForm = action === 'reject' ? rejectForm : suspendForm;
+    const suspendBlurb =
+        vendor.approvedProductCount > 0
+            ? `Suspending immediately delists ${vendor.approvedProductCount} approved product${vendor.approvedProductCount === 1 ? '' : 's'} from the catalog — the vendor must resubmit each one after reinstatement.`
+            : config?.blurb;
+    const modalDescription = action === 'suspend' ? suspendBlurb : config?.blurb;
 
     const confirmAction = () => {
         if (!action) return;
@@ -263,7 +269,7 @@ export default function VendorShow() {
                 icon={config ? <config.icon className="h-6 w-6" /> : undefined}
                 iconAccent={config?.accent}
                 title={config?.title}
-                description={config?.blurb}
+                description={modalDescription}
                 footer={
                     <>
                         <Button variant="ghost" onClick={() => setAction(null)}>

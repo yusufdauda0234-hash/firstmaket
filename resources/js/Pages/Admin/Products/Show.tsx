@@ -194,9 +194,7 @@ export default function AdminProductShow() {
                             <Sparkles className="h-4 w-4 text-violet-500" /> AI listing review
                         </h2>
                         {product.aiReview === null ? (
-                            <p className="text-sm text-gray-500">
-                                No AI review yet — automated checks arrive in Sprint 8. Review manually.
-                            </p>
+                            <p className="text-sm text-gray-500">No AI review yet — it queues automatically on submission. Review manually for now.</p>
                         ) : (
                             <div className="space-y-2 text-sm">
                                 <p className="flex items-center gap-2">

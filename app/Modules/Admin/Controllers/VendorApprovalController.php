@@ -3,8 +3,10 @@
 namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Vendor\Models\VendorProfile;
 use App\Modules\Vendor\Services\VendorApprovalService;
+use App\Shared\Enums\ProductStatus;
 use App\Shared\Enums\VendorStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -80,6 +82,11 @@ class VendorApprovalController extends Controller
                 'originalName' => $document->original_name,
                 'uploadedAt' => $document->created_at->toDayDateTimeString(),
             ]),
+            // Sprint 9 delisting preview: shown before an admin confirms a
+            // suspension, since VendorSuspended auto-delists every one of these.
+            'approvedProductCount' => $vendorProfile->status === VendorStatus::Approved
+                ? Product::query()->where('vendor_id', $vendorProfile->id)->where('status', ProductStatus::Approved)->count()
+                : 0,
         ];
     }
 

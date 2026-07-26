@@ -3,6 +3,7 @@ import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     Banknote,
+    BarChart3,
     ChevronLeft,
     ClipboardList,
     LayoutDashboard,
@@ -16,8 +17,10 @@ import {
     ShieldCheck,
     SlidersHorizontal,
     Smartphone,
+    Sparkles,
     Store,
     Truck,
+    Users,
     X,
 } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
@@ -141,6 +144,25 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         active: path.startsWith('/phone-numbers'),
                         show: can('identity.review'),
                     },
+                    {
+                        label: 'Customers',
+                        href: route('admin.users.index'),
+                        icon: Users,
+                        active: path.startsWith('/customers'),
+                        show: can('customers.suspend'),
+                    },
+                ],
+            },
+            {
+                label: 'Insights',
+                items: [
+                    {
+                        label: 'Reports',
+                        href: route('admin.reports.index'),
+                        icon: BarChart3,
+                        active: path.startsWith('/reports'),
+                        show: can('reports.view'),
+                    },
                 ],
             },
             {
@@ -178,6 +200,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         icon: Percent,
                         active: path.startsWith('/settings/commissions'),
                         show: can('commissions.manage'),
+                    },
+                    {
+                        label: 'AI settings',
+                        href: route('admin.settings.ai'),
+                        icon: Sparkles,
+                        active: path.startsWith('/settings/ai'),
+                        show: can('ai_settings.manage'),
                     },
                 ],
             },
