@@ -2,6 +2,7 @@ import { Button } from '@/Components/ui/Button';
 import { Input } from '@/Components/ui/Input';
 import { InputError } from '@/Components/ui/InputError';
 import { Label } from '@/Components/ui/Label';
+import { PasswordInput } from '@/Components/ui/PasswordInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
@@ -217,10 +218,9 @@ export default function RegisterVendor() {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="password" className={lightLabel}>Password</Label>
-                                    <Input
+                                    <PasswordInput
                                         className={lightInput}
                                         id="password"
-                                        type="password"
                                         autoComplete="new-password"
                                         value={data.password}
                                         onChange={(e) => setData('password', e.target.value)}
@@ -231,10 +231,9 @@ export default function RegisterVendor() {
 
                                 <div>
                                     <Label htmlFor="password_confirmation" className={lightLabel}>Confirm password</Label>
-                                    <Input
+                                    <PasswordInput
                                         className={lightInput}
                                         id="password_confirmation"
-                                        type="password"
                                         autoComplete="new-password"
                                         value={data.password_confirmation}
                                         onChange={(e) => setData('password_confirmation', e.target.value)}

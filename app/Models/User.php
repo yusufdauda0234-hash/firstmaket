@@ -9,6 +9,7 @@ use App\Modules\Wallet\Models\Wallet;
 use App\Shared\Enums\UserStatus;
 use App\Shared\Enums\UserType;
 use App\Shared\Traits\HasUuid;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +21,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Throwable;
 
 /**
  * @property int $id
@@ -103,5 +105,20 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasVerifiedPhone(): bool
     {
         return $this->phone_verified_at !== null;
+    }
+
+    /**
+     * Overrides the MustVerifyEmail trait default to swallow send failures:
+     * the verification link is a resend-able side effect, not part of the
+     * registration transaction, so a mail-provider hiccup must never fail
+     * (or, worse, hang and fatal-error) the request that creates the account.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        try {
+            $this->notify(new VerifyEmail);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 }

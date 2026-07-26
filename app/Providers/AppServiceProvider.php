@@ -27,13 +27,21 @@ use App\Shared\Features;
 use App\Shared\Services\AuditLogger;
 use App\Shared\Services\Sms\LogSmsSender;
 use App\Shared\Services\Sms\SmartSmsSolutionsSender;
+use GuzzleHttp\Client as GuzzleClient;
+use Illuminate\Mail\Transport\ResendTransport;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Resend\Client as ResendClient;
+use Resend\Transporters\HttpTransporter;
+use Resend\ValueObjects\ApiKey;
+use Resend\ValueObjects\Transporter\BaseUri;
+use Resend\ValueObjects\Transporter\Headers;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -86,6 +94,22 @@ class AppServiceProvider extends ServiceProvider
         Notification::extend('sms', fn ($app) => new SmsChannel($app->make(SmsSenderContract::class)));
         Event::listen(NotificationSent::class, [RecordNotificationDelivery::class, 'handleSent']);
         Event::listen(NotificationFailed::class, [RecordNotificationDelivery::class, 'handleFailed']);
+
+        // The resend-php SDK's Resend::client() builds its Guzzle client with
+        // no timeout at all, so a slow/unreachable Resend API hangs every
+        // mail send until PHP's max_execution_time kills the whole request
+        // (fatal-errored a vendor registration in practice). Rebuild the
+        // transport with a bounded HTTP client instead of Laravel's default.
+        Mail::extend('resend', function (array $config) {
+            $apiKey = ApiKey::from($config['key'] ?? config('services.resend.key'));
+            $baseUri = BaseUri::from(getenv('RESEND_BASE_URL') ?: 'api.resend.com');
+            $headers = Headers::withAuthorization($apiKey);
+
+            $client = new GuzzleClient(['connect_timeout' => 5, 'timeout' => 10]);
+            $transporter = new HttpTransporter($client, $baseUri, $headers);
+
+            return new ResendTransport(new ResendClient($transporter));
+        });
 
         // Super Administrator gets every ability automatically, so newly
         // added permissions never need a reseed

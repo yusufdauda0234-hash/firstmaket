@@ -19,6 +19,11 @@ Thumbs.db
 /public/hot
 /storage/*.key
 /storage/pail
+
+# User-uploaded documents (CAC files, etc.) on the private disk — never
+# source, and may contain real personal data from local testing.
+/storage/app/private/*
+!/storage/app/private/.gitkeep
 auth.json
 .phpunit.result.cache
 .phpunit.cache
