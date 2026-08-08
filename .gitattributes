@@ -1,0 +1,6 @@
+# Certificates and shell scripts must keep LF endings. core.autocrlf=true on
+# Windows would otherwise rewrite them to CRLF on checkout, which breaks a
+# PEM for OpenSSL and makes a shell script fail with "bad interpreter".
+*.pem  text eol=lf
+*.crt  text eol=lf
+*.sh   text eol=lf
