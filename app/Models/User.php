@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Modules\Auth\Models\SocialAccount;
 use App\Modules\Customer\Models\CustomerProfile;
+use App\Modules\Logistics\Models\CourierProfile;
+use App\Modules\Savings\Models\Savings;
 use App\Modules\Vendor\Models\VendorProfile;
-use App\Modules\Wallet\Models\Wallet;
+use App\Shared\Casts\Uppercase;
 use App\Shared\Enums\UserStatus;
 use App\Shared\Enums\UserType;
 use App\Shared\Traits\HasUuid;
@@ -39,7 +41,7 @@ use Throwable;
  * @property Carbon|null $two_factor_confirmed_at
  * @property-read CustomerProfile|null $customerProfile
  * @property-read VendorProfile|null $vendorProfile
- * @property-read Wallet|null $wallet
+ * @property-read Savings|null $savings
  * @property-read Collection<int, SocialAccount> $socialAccounts
  * @property-read User|null $statusChangedBy
  */
@@ -67,9 +69,17 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            // Names are printed on delivery labels and searched on, so
+            // they are stored in one casing. Email is deliberately left
+            // alone: it is matched case-insensitively and shown back to
+            // people as they wrote it.
+            'name' => Uppercase::class,
             'phone_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+            // Highest TOTP window already accepted, so a code cannot be
+            // replayed inside its validity window (App\Shared\Security\TwoFactorCodes).
+            'two_factor_last_used_at' => 'datetime',
             'password' => 'hashed',
             'user_type' => UserType::class,
             'status' => UserStatus::class,
@@ -87,9 +97,20 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(VendorProfile::class);
     }
 
-    public function wallet(): HasOne
+    /**
+     * Set only on staff holding the Logistics Personnel role.
+     *
+     * What they drive and where they work — a dispatcher needs both, and
+     * neither belongs on `users`, which every customer shares.
+     */
+    public function courierProfile(): HasOne
     {
-        return $this->hasOne(Wallet::class);
+        return $this->hasOne(CourierProfile::class);
+    }
+
+    public function savings(): HasOne
+    {
+        return $this->hasOne(Savings::class);
     }
 
     public function socialAccounts(): HasMany

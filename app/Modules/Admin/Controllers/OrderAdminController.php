@@ -4,8 +4,8 @@ namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\Logistics\Services\DeliveryService;
 use App\Modules\Orders\Models\Order;
-use App\Modules\Orders\Services\DeliveryService;
 use App\Modules\Orders\Services\OrderService;
 use App\Modules\Orders\Services\PreparationService;
 use App\Shared\Enums\DeliveryAssignmentStatus;
@@ -61,21 +61,26 @@ class OrderAdminController extends Controller
     public function show(Request $request, Order $order): Response
     {
         $order->load([
-            'product:id,name,slug',
+            'product:id,name,slug,category_id',
+            'product.category:id,name',
             'vendor:id,business_name',
             'customer:id,name,email,phone',
-            'plan:id,uuid',
+            // The relation is savingsGoal; "plan" is only what the UI calls it.
+            'savingsGoal:id,uuid',
             'statusEvents' => fn ($q) => $q->orderBy('id'),
             'preparationEvents' => fn ($q) => $q->orderBy('id'),
             'deliveryAssignments' => fn ($q) => $q->orderByDesc('id'),
+            'shipment.assignments.logisticsUser:id,name',
         ]);
 
         $logisticsUsers = User::role('Logistics Personnel')
             ->get(['id', 'name'])
             ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->name]);
 
-        $activeAssignment = $order->deliveryAssignments
-            ->firstWhere('status', DeliveryAssignmentStatus::Assigned);
+        // Read off the parcel, not the order: assignments hang off shipments
+        // now, and only rows predating them carry an order_id.
+        $activeAssignment = $order->shipment?->activeAssignment()
+            ?? $order->deliveryAssignments->firstWhere('status', DeliveryAssignmentStatus::Assigned);
 
         return Inertia::render('Admin/Orders/Show', [
             'order' => [
@@ -83,11 +88,21 @@ class OrderAdminController extends Controller
                 'productName' => $order->product->name,
                 'vendorName' => $order->vendor->business_name,
                 'customerName' => $order->customer->name,
-                'planUuid' => $order->plan?->uuid,
+                'planUuid' => $order->savingsGoal?->uuid,
                 'status' => $order->status->value,
                 'statusLabel' => $order->status->label(),
                 'lockedPriceKobo' => $order->locked_price_kobo,
                 'commissionRatePercent' => $order->commission_rate_percent,
+                // Why the rate is what it is. Read from the order's own
+                // snapshot, not re-resolved: today's rules may differ from
+                // the ones this order was priced under, and answering with
+                // today's would be worse than saying nothing.
+                'commissionSource' => $order->commission_source,
+                'commissionReason' => match ($order->commission_source) {
+                    'vendor' => 'Rate agreed with '.$order->vendor->business_name,
+                    'category' => ($order->product->category?->name ?? 'Category').' category rate',
+                    default => 'Platform default — no rate set for this vendor or category',
+                },
                 'commissionKobo' => $order->commission_amount_kobo,
                 'vendorEarningKobo' => $order->vendor_earning_amount_kobo,
                 'deliveryAddress' => $order->delivery_address,
@@ -122,6 +137,55 @@ class OrderAdminController extends Controller
         ]);
     }
 
+    /**
+     * Confirm several paid orders in one pass.
+     *
+     * Confirmation is the only bulk action offered here: it is a yes/no on an
+     * order that has already been paid for, so doing twenty at once is the same
+     * decision twenty times. Assigning logistics needs a person chosen per
+     * order, and resolving a rejection needs a judgement about that order — both
+     * stay on the individual screen.
+     *
+     * Each order still goes through OrderService, so the rules, audit entries
+     * and customer notifications are identical to confirming one by hand.
+     */
+    public function bulkConfirm(Request $request, OrderService $orderService): RedirectResponse
+    {
+        $validated = $request->validate([
+            'uuids' => ['required', 'array', 'min:1', 'max:100'],
+            'uuids.*' => ['required', 'uuid'],
+        ], [
+            'uuids.required' => 'Select at least one order first.',
+            'uuids.max' => 'Up to 100 orders at a time.',
+        ]);
+
+        $orders = Order::query()
+            ->whereIn('uuid', $validated['uuids'])
+            ->where('status', OrderStatus::Pending)
+            ->get();
+
+        $done = 0;
+        $skipped = count($validated['uuids']) - $orders->count();
+
+        foreach ($orders as $order) {
+            try {
+                $orderService->confirm($request->user(), $order);
+                $done++;
+            } catch (\Throwable) {
+                // Moved on under us, or not in a state this allows.
+                $skipped++;
+            }
+        }
+
+        $message = "{$done} order".($done === 1 ? '' : 's').' confirmed.';
+
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped — already confirmed or no longer awaiting it.";
+        }
+
+        return back()->with($done > 0 ? 'success' : 'error', $message);
+    }
+
     public function confirm(Request $request, Order $order, OrderService $orderService): RedirectResponse
     {
         $orderService->confirm($request->user(), $order);
@@ -129,12 +193,24 @@ class OrderAdminController extends Controller
         return back()->with('success', 'Order confirmed — vendor preparation clock started.');
     }
 
+    /**
+     * Assign this order's parcel to a courier.
+     *
+     * The parcel, not the order: two of the same item bought together travel
+     * in one box, and assigning per order put the same stop on a courier's
+     * list twice. The dispatch queue is the usual way in — this stays for
+     * the one-off from inside an order.
+     */
     public function assignLogistics(Request $request, Order $order, DeliveryService $deliveryService): RedirectResponse
     {
         $validated = $request->validate(['logistics_user_id' => ['required', 'integer']]);
 
+        if ($order->shipment === null) {
+            return back()->with('error', 'This order has no parcel yet — the vendor has not packed it.');
+        }
+
         $logisticsUser = User::query()->findOrFail($validated['logistics_user_id']);
-        $deliveryService->assign($request->user(), $order, $logisticsUser);
+        $deliveryService->assign($request->user(), $order->shipment, $logisticsUser);
 
         return back()->with('success', "Delivery assigned to {$logisticsUser->name}.");
     }

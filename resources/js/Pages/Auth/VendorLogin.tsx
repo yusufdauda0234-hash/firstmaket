@@ -49,9 +49,9 @@ export default function VendorLogin() {
 
                     <a href={mainSiteUrl} aria-label="Back to FirstMaket">
                         <img
-                            src="/images/brand/logo-light-transparent.png"
+                            src="/images/brand/logo-full-light.png"
                             alt="FirstMaket"
-                            className="h-20 w-auto"
+                            className="h-28 w-auto"
                         />
                     </a>
 
@@ -90,7 +90,7 @@ export default function VendorLogin() {
                 {/* Form panel */}
                 <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
                     <a href={mainSiteUrl} className="lg:hidden" aria-label="Back to FirstMaket">
-                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
+                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-12 w-auto" />
                     </a>
 
                     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-8">

@@ -17,22 +17,75 @@ class HomeDataService
 {
     private const CACHE_TTL_SECONDS = 300;
 
+    /** Everything this service caches, so it can all be dropped at once. */
+    private const CACHE_KEYS = [
+        'home.categories.v3',
+        'home.featured',
+        'home.newest',
+    ];
+
     /**
-     * @return array<int, array{name: string, slug: string}>
+     * Drop the cached home page data.
+     *
+     * The TTL alone is not enough. A vendor who lists a product, or staff who
+     * approve one, expect to see it on the storefront straight away — waiting
+     * up to five minutes reads as the product having failed to save. Called
+     * whenever a product or category changes.
+     */
+    public static function forget(): void
+    {
+        foreach (self::CACHE_KEYS as $key) {
+            Cache::forget($key);
+        }
+    }
+
+    /**
+     * Top-level categories, each carrying its own sub-categories.
+     *
+     * Sub-categories are nested rather than listed as peers — putting "Phones"
+     * beside "Electronics" would present them as equals. They are included at
+     * all because the header menu drills into a category, and it had nothing
+     * to drill into: hovering a parent showed an empty panel.
+     *
+     * @return array<int, array{name: string, slug: string, children: array<int, array{name: string, slug: string}>}>
      */
     public function categories(): array
     {
-        return Cache::remember('home.categories', self::CACHE_TTL_SECONDS, function () {
-            $fromDatabase = Category::query()
+        // v3: the shape gained `children`, so the v2 entries must not be read.
+        return Cache::remember('home.categories.v3', self::CACHE_TTL_SECONDS, function () {
+            $active = Category::query()
                 ->where('is_active', true)
                 ->orderBy('sort_order')
-                ->get(['name', 'slug'])
-                ->map(fn (Category $category) => ['name' => $category->name, 'slug' => $category->slug])
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug', 'parent_id']);
+
+            $byParent = $active->groupBy('parent_id');
+
+            $fromDatabase = $active
+                ->whereNull('parent_id')
+                ->map(fn (Category $category) => [
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'children' => $byParent->get($category->id, collect())
+                        ->map(fn (Category $child) => ['name' => $child->name, 'slug' => $child->slug])
+                        ->values()
+                        ->all(),
+                ])
+                ->values()
                 ->all();
 
-            // Before the CategorySeeder has run (fresh install), fall back to
-            // the config list so navigation never renders empty.
-            return $fromDatabase !== [] ? $fromDatabase : config('firstmaket.categories');
+            if ($fromDatabase !== []) {
+                return $fromDatabase;
+            }
+
+            // Before anyone has built the catalogue (fresh install), fall back to
+            // the config list so navigation never renders empty. It carries no
+            // sub-categories, so they are filled in empty rather than left
+            // missing — the menu reads `children` on every entry.
+            return array_map(
+                fn (array $category) => $category + ['children' => []],
+                config('firstmaket.categories'),
+            );
         });
     }
 

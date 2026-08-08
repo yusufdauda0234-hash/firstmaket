@@ -3,7 +3,7 @@
 namespace App\Shared\Enums;
 
 /**
- * Paystack funding channels offered for wallet deposits
+ * Paystack channels offered when paying
  * (docs/FirstMaket_Implementation_Plan.md Sprint 4). Paystack decides the
  * final channel at checkout; this is the set we request/track.
  */

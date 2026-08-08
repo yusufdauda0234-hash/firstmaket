@@ -11,10 +11,14 @@ use Illuminate\Http\Request;
 
 /**
  * Phone verification is optional and self-service (docs/FirstMaket_Implementation_Plan.md
- * Sprint 2 Addendum) — there is no dedicated page or forced redirect. Any
- * page can open the shared VerifyPhoneModal (currently: the vendor
- * dashboard) and post here; both actions just redirect back to wherever
- * the modal was opened from.
+ * Sprint 2 Addendum) — there is no dedicated page or forced redirect. The
+ * VerifyPhoneModal on the vendor dashboard posts here and both actions just
+ * redirect back to it.
+ *
+ * The routes live in Modules/Identity/vendor-routes.php, on the Vendor
+ * Center subdomain only, because back() has to land on the origin the modal
+ * was opened from. Customers verify their phone through the separate
+ * account.identifier.* flow on the main site.
  */
 class PhoneVerificationController extends Controller
 {

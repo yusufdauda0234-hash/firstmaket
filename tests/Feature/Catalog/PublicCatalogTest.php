@@ -15,7 +15,7 @@ beforeEach(function () {
 });
 
 it('shows only approved products in the public catalog', function () {
-    Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'Visible TV']);
+    Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'VISIBLE TV']);
     Product::factory()->pending()->create(['category_id' => $this->category->id, 'name' => 'Hidden TV']);
     Product::factory()->create(['category_id' => $this->category->id, 'name' => 'Draft TV']);
 
@@ -43,7 +43,7 @@ it('filters the catalog by search query and category', function () {
 });
 
 it('sorts the catalog by price', function () {
-    Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'Cheap', 'price_kobo' => 100000]);
+    Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'CHEAP', 'price_kobo' => 100000]);
     Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'Costly', 'price_kobo' => 900000]);
 
     $this->get('/catalog?sort=price_asc')
@@ -70,7 +70,7 @@ it('returns 404 for a product that is not approved', function () {
 });
 
 it('suggests only approved products in search autocomplete', function () {
-    Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'Samsung Visible TV']);
+    Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'SAMSUNG VISIBLE TV']);
     Product::factory()->pending()->create(['category_id' => $this->category->id, 'name' => 'Samsung Hidden TV']);
 
     $this->getJson('/catalog/suggest?query=samsung')

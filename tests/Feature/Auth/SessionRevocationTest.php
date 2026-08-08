@@ -10,11 +10,11 @@ it('logs out a user the moment they are suspended', function () {
     $user = User::factory()->create();
     $user->assignRole('Customer');
 
-    $this->actingAs($user)->get(route('wallet.index'))->assertOk();
+    $this->actingAs($user)->get(route('savings.index'))->assertOk();
 
     $user->forceFill(['status' => UserStatus::Suspended])->save();
 
-    $this->get(route('wallet.index'))->assertRedirect(route('login'));
+    $this->get(route('savings.index'))->assertRedirect(route('login'));
     $this->assertGuest();
 });
 
@@ -25,7 +25,7 @@ it('logs out a banned user and deletes their API tokens', function () {
 
     $user->forceFill(['status' => UserStatus::Banned])->save();
 
-    $this->actingAs($user)->get(route('wallet.index'))->assertRedirect(route('login'));
+    $this->actingAs($user)->get(route('savings.index'))->assertRedirect(route('login'));
 
     $this->assertGuest();
     expect($user->tokens()->count())->toBe(0);

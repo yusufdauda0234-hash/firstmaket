@@ -1,7 +1,8 @@
 <?php
 
 use App\Models\User;
-use App\Modules\Wallet\Services\WalletService;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Savings\Services\SavingsGoalService;
 use App\Shared\Enums\UserType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
@@ -40,12 +41,15 @@ it('counts signups within the requested date range and excludes ones outside it'
         ->and($rows)->not->toContain($outOfRange->id);
 });
 
-it('sums deposits to match the wallet_transactions table for the range', function () {
+it('sums deposits to match the savings_transactions table for the range', function () {
     $admin = reportingStaff('Administrator');
     $customer = User::factory()->create(['user_type' => UserType::Customer]);
 
-    app(WalletService::class)->creditDeposit($customer, 25_000_00, 'TEST-DEP-'.fake()->unique()->uuid());
-    app(WalletService::class)->creditDeposit($customer, 10_000_00, 'TEST-DEP-'.fake()->unique()->uuid());
+    // Deposits are plan instalments now — there is no balance to top up.
+    $product = Product::factory()->approved()->create(['price_kobo' => 35_000_00]);
+    $plan = testPlan($customer, $product);
+    app(SavingsGoalService::class)->recordPayment($customer, $plan, 25_000_00, reference: 'TEST-PAY-A');
+    app(SavingsGoalService::class)->recordPayment($customer, $plan->refresh(), 10_000_00, reference: 'TEST-PAY-B');
 
     $response = $this->actingAs($admin)
         ->get('http://'.config('app.admin_domain').'/reports')

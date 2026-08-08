@@ -1,3 +1,4 @@
+import { useFlashToast } from '@/Components/ui/Toast';
 import { cn } from '@/Utils/cn';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -34,6 +35,11 @@ export default function VendorLayout({ children }: PropsWithChildren) {
         props: { auth, mainSiteUrl, flash },
         url,
     } = usePage<PageProps>();
+
+    // Same toast the storefront uses, so a result reads identically wherever
+    // it happens rather than as a banner here and a toast there.
+    useFlashToast(flash.success);
+    useFlashToast(flash.error, 'error');
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
@@ -59,6 +65,13 @@ export default function VendorLayout({ children }: PropsWithChildren) {
         });
 
     const path = url.split('?')[0];
+
+    // Nothing here works until somebody has approved the account, and the
+    // routes enforce that. Offering links the middleware will then refuse is
+    // worse than offering none — a pending vendor would find out which pages
+    // work by clicking them, which reads as a broken site rather than a queue.
+    const approved = auth.user?.vendorStatus === 'approved';
+
     const nav: NavItem[] = [
         {
             label: 'Dashboard',
@@ -66,24 +79,28 @@ export default function VendorLayout({ children }: PropsWithChildren) {
             icon: LayoutDashboard,
             active: path === '/dashboard' || path === '/',
         },
-        {
-            label: 'My Products',
-            href: route('vendor.products.index'),
-            icon: Package,
-            active: path.startsWith('/products'),
-        },
-        {
-            label: 'Orders',
-            href: route('vendor.orders.index'),
-            icon: ClipboardList,
-            active: path.startsWith('/orders'),
-        },
-        {
-            label: 'Earnings',
-            href: route('vendor.earnings'),
-            icon: Banknote,
-            active: path.startsWith('/earnings'),
-        },
+        ...(approved
+            ? [
+                  {
+                      label: 'My Products',
+                      href: route('vendor.products.index'),
+                      icon: Package,
+                      active: path.startsWith('/products'),
+                  },
+                  {
+                      label: 'Orders',
+                      href: route('vendor.orders.index'),
+                      icon: ClipboardList,
+                      active: path.startsWith('/orders'),
+                  },
+                  {
+                      label: 'Earnings',
+                      href: route('vendor.earnings'),
+                      icon: Banknote,
+                      active: path.startsWith('/earnings'),
+                  },
+              ]
+            : []),
     ];
 
     const initials = (auth.user?.name ?? '')
@@ -103,8 +120,8 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                     collapsed && !mobile && 'justify-center px-0',
                 )}
             >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 shadow-sm">
-                    <img src="/images/brand/logo-mark-transparent.png" alt="FirstMaket" className="h-9 w-9 object-contain" />
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl  from-brand-600 to-brand-900 shadow-sm">
+                    <img src="/images/brand/logo-mark-blue.png" alt="FirstMaket" className="h-10 w-10 object-contain" />
                 </span>
                 {(!collapsed || mobile) && (
                     <span className="min-w-0">
@@ -232,8 +249,8 @@ export default function VendorLayout({ children }: PropsWithChildren) {
             {/* Mobile top bar */}
             <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur-md lg:hidden">
                 <Link href={route('vendor.dashboard')} className="flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-brand-900">
-                        <img src="/images/brand/logo-mark-transparent.png" alt="FirstMaket" className="h-5 w-5 object-contain" />
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg  from-brand-600 to-brand-900">
+                        <img src="/images/brand/logo-mark-blue.png" alt="FirstMaket" className="h-10 w-10 object-contain" />
                     </span>
                     <span className="rounded-full bg-brand-yellow px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-900">
                         Vendor
@@ -268,21 +285,6 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                             <X className="h-4 w-4" />
                         </button>
                     </div>
-                </div>
-            )}
-
-            {flash.success && (
-                <div className={cn('mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6 lg:px-8', mainMargin)}>
-                    <p className="rounded-xl bg-green-50 px-4 py-2.5 text-sm text-green-700" role="status">
-                        {flash.success}
-                    </p>
-                </div>
-            )}
-            {flash.error && (
-                <div className={cn('mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6 lg:px-8', mainMargin)}>
-                    <p className="rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
-                        {flash.error}
-                    </p>
                 </div>
             )}
 

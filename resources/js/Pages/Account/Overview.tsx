@@ -6,17 +6,15 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
     Clock,
-    CreditCard,
     Heart,
+    LifeBuoy,
     Package,
     PackageCheck,
     Pencil,
     PiggyBank,
-    Plus,
     ReceiptText,
     Star,
     Truck,
-    Wallet,
 } from 'lucide-react';
 import { ComponentType } from 'react';
 
@@ -29,9 +27,10 @@ interface Props {
         phoneVerified: boolean;
         memberSince: string | null;
     };
-    walletBalanceKobo: number;
+    planCreditKobo: number;
+    activePlanCount: number;
     orderCounts: {
-        awaitingAddress: number;
+        saving: number;
         processing: number;
         shipped: number;
         toConfirm: number;
@@ -115,7 +114,7 @@ function ActionTile({
 }
 
 export default function AccountOverview() {
-    const { account, walletBalanceKobo, orderCounts } = usePage<Props>().props;
+    const { account, planCreditKobo, activePlanCount, orderCounts } = usePage<Props>().props;
     const firstName = account.name.split(' ')[0];
     const initials = account.name
         .split(/\s+/)
@@ -176,9 +175,9 @@ export default function AccountOverview() {
                 </header>
                 <div className="grid grid-cols-4 gap-2 px-3 py-5">
                     <OrderStatusTile
-                        label="Add address"
-                        icon={CreditCard}
-                        count={orderCounts.awaitingAddress}
+                        label="Saving"
+                        icon={PiggyBank}
+                        count={orderCounts.saving}
                         href={route('savings.index')}
                     />
                     <OrderStatusTile
@@ -204,22 +203,25 @@ export default function AccountOverview() {
 
             {/* ── Quick actions (AliExpress icon row + Jumia shortcuts) ── */}
             <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
+                {/* One tile per destination. This row previously held "My
+                    Savings", "Transactions" and "Savings" — three tiles, one
+                    page, and a wallet icon for a marketplace with no wallet. */}
                 <ActionTile
-                    label="My Wallet"
-                    icon={Wallet}
-                    href={route('wallet.index')}
+                    label="Pay Small Small"
+                    icon={PiggyBank}
+                    href={route('savings.index')}
                     accent="bg-brand-50 text-brand-600"
                 />
                 <ActionTile
-                    label="Transactions"
+                    label="Notifications"
                     icon={ReceiptText}
-                    href={route('wallet.transactions')}
+                    href={route('notifications.index')}
                     accent="bg-indigo-50 text-indigo-600"
                 />
                 <ActionTile
-                    label="Savings"
-                    icon={PiggyBank}
-                    href={route('savings.index')}
+                    label="Support"
+                    icon={LifeBuoy}
+                    href={route('support.index')}
                     accent="bg-amber-50 text-amber-600"
                 />
                 <ActionTile label="Saved Items" icon={Heart} href={null} accent="bg-rose-50 text-rose-600" />
@@ -270,38 +272,56 @@ export default function AccountOverview() {
                     </div>
                 </section>
 
-                {/* Wallet balance (Jumia store-credit card) */}
+                {/* Pay Small Small.
+                    Deliberately not a balance card. This used to show
+                    savings.balance_kobo — a column left behind by the retired
+                    wallet that is pinned at zero, so it read "Available
+                    balance ₦0" forever and implied a wallet FirstMaket does
+                    not have. What is real is how many plans are running, and
+                    credit from a cancelled plan, which is shown only when
+                    there is some. */}
                 <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
                     <header className="border-b border-gray-100 px-5 py-3">
-                        <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Wallet balance</h2>
+                        <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Pay Small Small</h2>
                     </header>
                     <div className="px-5 py-4">
                         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-900 p-5 text-white">
-                            <span
-                                className="pointer-events-none absolute -right-3 -top-4 select-none text-7xl leading-none opacity-10"
+                            <PiggyBank
+                                className="pointer-events-none absolute -right-3 -top-3 h-20 w-20 opacity-10"
                                 aria-hidden="true"
-                            >
-                                ₦
-                            </span>
+                            />
                             <p className="relative z-[1] text-xs font-semibold uppercase tracking-wide text-brand-100">
-                                Available balance
+                                {activePlanCount === 1 ? 'Active plan' : 'Active plans'}
                             </p>
                             <p className="relative z-[1] mt-1 text-3xl font-extrabold tracking-tight">
-                                {formatNairaFromKobo(walletBalanceKobo)}
+                                {activePlanCount}
+                            </p>
+                            <p className="relative z-[1] mt-2 text-xs leading-relaxed text-brand-100">
+                                {activePlanCount === 0
+                                    ? 'Lock a price today and pay it off bit by bit.'
+                                    : 'Money lives inside the plan it was paid into.'}
                             </p>
                         </div>
+
+                        {planCreditKobo > 0 && (
+                            <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                                {formatNairaFromKobo(planCreditKobo)} credit from a cancelled plan — it goes
+                                onto your next plan automatically.
+                            </p>
+                        )}
+
                         <div className="mt-3 flex items-center gap-3">
                             <Link
-                                href={route('wallet.add-money')}
-                                className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
+                                href={route('savings.index')}
+                                className="rounded-full bg-brand-yellow px-4 py-2 text-xs font-bold text-brand-900 transition hover:bg-yellow-300 active:scale-95"
                             >
-                                <Plus className="h-4 w-4" /> Add money
+                                My plans
                             </Link>
                             <Link
-                                href={route('wallet.index')}
+                                href={route('catalog.index')}
                                 className="text-sm font-semibold text-brand-600 hover:underline"
                             >
-                                View wallet
+                                Start a new plan
                             </Link>
                         </div>
                     </div>

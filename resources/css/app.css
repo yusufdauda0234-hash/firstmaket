@@ -7,9 +7,36 @@
         @apply bg-gray-50 text-gray-900 antialiased;
     }
 
-    /* Prevent accidental horizontal overflow from spacious header/content */
+    /* Prevent accidental horizontal overflow from spacious header/content.
+       `clip` rather than `hidden`: hiding one axis forces the other to `auto`,
+       which turns the element into a scroll container — and `position: sticky`
+       then anchors to that container instead of the viewport. That is what
+       stopped the catalogue's filter rail staying put while results scrolled.
+       `clip` cuts the overflow without creating a scroll container. */
     html, body {
-        overflow-x: hidden;
+        overflow-x: clip;
+    }
+
+    /* Chrome paints autofilled fields its own pale blue and overrides both
+       background-color and color — the one thing a stylesheet cannot set
+       directly. The inset box-shadow trick is the only way to reclaim the
+       background, and -webkit-text-fill-color the only way to reclaim the
+       text. Without this, any form the browser has remembered (checkout is
+       the obvious one) renders in a different palette from the rest of the
+       page and reads as broken. */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus,
+    textarea:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0 40rem theme('colors.white') inset;
+        -webkit-text-fill-color: theme('colors.gray.900');
+        /* Long transition defers Chrome's own repaint past the point it
+           gives up, which stops a blue flash on first paint. */
+        transition: background-color 100000s ease-in-out 0s;
+        caret-color: theme('colors.gray.900');
     }
 }
 

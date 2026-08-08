@@ -26,16 +26,16 @@ interface Props {
         emailVerified: boolean;
         phoneVerified: boolean;
         memberSince: string;
-        walletBalanceKobo: number;
+        savingsBalanceKobo: number;
         orders: { uuid: string; productName: string; status: string; statusLabel: string; lockedPriceKobo: number; createdAt: string }[];
-        plans: { uuid: string; productName: string; status: string; progress: number; targetPriceKobo: number }[];
+        savingsGoals: { uuid: string; productNames: string; status: string; targetKobo: number }[];
         tickets: { uuid: string; subject: string; status: string }[];
     } | null;
     [key: string]: unknown;
 }
 
 /**
- * Read-only customer lookup for support agents. Shows order/plan/wallet
+ * Read-only customer lookup for support agents. Shows order/goal/savings
  * context only — card details are never stored.
  */
 export default function CustomerLookup() {
@@ -54,7 +54,7 @@ export default function CustomerLookup() {
             <PageHeader
                 eyebrow="Support tools"
                 title="Customer lookup"
-                description="Read-only order, plan, and wallet context. No card data exists on FirstMaket and identity numbers are never shown."
+                description="Read-only order, goal, and savings context. No card data exists on FirstMaket and identity numbers are never shown."
             />
 
             <form onSubmit={search} className="mb-4 flex max-w-xl items-center gap-2">
@@ -137,9 +137,9 @@ export default function CustomerLookup() {
                     </Card>
 
                     <Card>
-                        <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Wallet</h2>
+                        <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Savings</h2>
                         <p className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900">
-                            {formatNairaFromKobo(customer.walletBalanceKobo)}
+                            {formatNairaFromKobo(customer.savingsBalanceKobo)}
                         </p>
                         <p className="mt-1 text-xs text-gray-400">
                             Deposit-only balance · card details are held by Paystack, never FirstMaket.
@@ -173,23 +173,23 @@ export default function CustomerLookup() {
 
                     <Card className="p-0">
                         <h2 className="border-b border-gray-100 px-5 py-3.5 text-xs font-bold uppercase tracking-wide text-gray-500">
-                            Savings plans
+                            Savings goals
                         </h2>
-                        {customer.plans.length === 0 ? (
-                            <p className="px-5 py-8 text-center text-sm text-gray-400">No plans.</p>
+                        {customer.savingsGoals.length === 0 ? (
+                            <p className="px-5 py-8 text-center text-sm text-gray-400">No savings goals.</p>
                         ) : (
                             <ul className="divide-y divide-gray-100">
-                                {customer.plans.map((plan) => (
-                                    <li key={plan.uuid} className="flex items-center gap-3 px-5 py-3">
+                                {customer.savingsGoals.map((goal) => (
+                                    <li key={goal.uuid} className="flex items-center gap-3 px-5 py-3">
                                         <span className="min-w-0 flex-1">
                                             <span className="block truncate text-sm font-semibold text-gray-900">
-                                                {plan.productName}
+                                                {goal.productNames}
                                             </span>
                                             <span className="block text-xs text-gray-400">
-                                                {Math.floor(plan.progress)}% of {formatNairaFromKobo(plan.targetPriceKobo)}
+                                                Target {formatNairaFromKobo(goal.targetKobo)}
                                             </span>
                                         </span>
-                                        <Badge tone={statusTone(plan.status)}>{plan.status.replace(/_/g, ' ')}</Badge>
+                                        <Badge tone={statusTone(goal.status)}>{goal.status.replace(/_/g, ' ')}</Badge>
                                     </li>
                                 ))}
                             </ul>

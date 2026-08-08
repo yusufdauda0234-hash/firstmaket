@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
  * earnings balance with a verified active bank account, approves it, then
  * marks each transfer paid or failed. The negative ledger row is written
  * only on paid — a failed transfer leaves the ledger untouched so a retry
- * can never double-debit. Vendor payouts never touch customer wallets.
+ * can never double-debit. Vendor payouts never touch customer savings.
  */
 class PayoutService
 {

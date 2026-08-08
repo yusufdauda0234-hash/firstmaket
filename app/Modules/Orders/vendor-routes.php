@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('orders')->group(function () {
     Route::get('/', [VendorOrderController::class, 'index'])->name('vendor.orders.index');
     Route::post('{order:uuid}/confirm-stock', [VendorOrderController::class, 'confirmStock'])->name('vendor.orders.confirm-stock');
+    Route::post('bulk-ready', [VendorOrderController::class, 'bulkReady'])->name('vendor.orders.bulk-ready');
     Route::post('{order:uuid}/ready', [VendorOrderController::class, 'markReady'])->name('vendor.orders.ready');
     Route::post('{order:uuid}/reject', [VendorOrderController::class, 'reject'])->name('vendor.orders.reject');
 });

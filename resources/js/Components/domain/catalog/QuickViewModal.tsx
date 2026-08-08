@@ -1,15 +1,20 @@
-import { useAuthModal } from '@/Components/domain/auth/auth-modal-context';
 import { CartGlyph, RatingStars } from '@/Components/domain/catalog/ProductCard';
-import { PageProps, ProductSummary } from '@/Types';
-import { formatNairaFromKobo } from '@/Utils/money';
+import { useAddToCart } from '@/Hooks/useAddToCart';
+import { ProductSummary } from '@/Types';
+import { useMoney } from '@/Hooks/useI18n';
 import { humanizeSlug } from '@/Utils/text';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 /**
  * Quick-look preview (AliExpress pattern): three columns — image slider,
  * description, and a buy box (price + quantity + add to cart) — with a
  * "You may also like" carousel band below.
+ *
+ * Add to cart is the only action here by design. A quick look exists to keep
+ * shoppers on the grid, so it adds the item and closes rather than offering
+ * a second path to checkout; the full product page is where anything more
+ * involved belongs.
  */
 export default function QuickViewModal({
     product,
@@ -23,14 +28,14 @@ export default function QuickViewModal({
     onSwitch: (product: ProductSummary) => void;
     onClose: () => void;
 }) {
+    const { money } = useMoney();
     const [quantity, setQuantity] = useState(1);
     const [activeImage, setActiveImage] = useState<string | null>(product.imageUrl);
     // Cursor-follow zoom over the main image (AliExpress lens behavior).
     const [zoomOrigin, setZoomOrigin] = useState<{ x: number; y: number } | null>(null);
     const maxQuantity = Math.max(product.stockQuantity ?? 1, 1);
     const similarRef = useRef<HTMLDivElement>(null);
-    const openAuth = useAuthModal();
-    const { auth } = usePage<PageProps>().props;
+    const { addToCart, adding } = useAddToCart();
 
     const gallery =
         product.imageUrls && product.imageUrls.length > 0
@@ -75,17 +80,6 @@ export default function QuickViewModal({
     function scrollSimilar(direction: 1 | -1) {
         const el = similarRef.current;
         el?.scrollBy({ left: direction * el.clientWidth * 0.8, behavior: 'smooth' });
-    }
-
-    function addToCart() {
-        // The cart module is still on the roadmap: guests get the sign-in
-        // modal; signed-in shoppers land on the full product page. The quick
-        // view stays open underneath so cancelling the login returns here.
-        if (!auth.user) {
-            openAuth();
-            return;
-        }
-        router.get(route('catalog.product', { product: product.slug }));
     }
 
     return (
@@ -224,12 +218,12 @@ export default function QuickViewModal({
                                 </p>
                                 <p className="flex flex-wrap items-baseline gap-x-2.5">
                                     <span className="text-2xl font-extrabold tracking-tight text-brand-700">
-                                        {formatNairaFromKobo(product.priceKobo)}
+                                        {money(product.priceKobo)}
                                     </span>
                                     {hasDiscount && (
                                         <>
                                             <s className="text-sm text-gray-400">
-                                                {formatNairaFromKobo(product.compareAtPriceKobo as number)}
+                                                {money(product.compareAtPriceKobo as number)}
                                             </s>
                                             <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">
                                                 -{savingsPercent}%
@@ -293,10 +287,17 @@ export default function QuickViewModal({
                                 )}
                                 <button
                                     type="button"
-                                    onClick={addToCart}
-                                    className="mt-3 flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-600 py-3 text-sm font-bold text-white transition hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-[0.98]"
+                                    disabled={adding}
+                                    onClick={() =>
+                                        addToCart(product.uuid, {
+                                            quantity,
+                                            productName: product.name,
+                                            onDone: onClose,
+                                        })
+                                    }
+                                    className="mt-3 flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-600 py-3 text-sm font-bold text-white transition hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    <CartGlyph /> Add to cart
+                                    <CartGlyph /> {adding ? 'Adding…' : 'Add to cart'}
                                 </button>
                             </div>
                         </div>
@@ -352,12 +353,12 @@ export default function QuickViewModal({
                                         <RatingStars average={item.ratingAverage} count={item.ratingCount} />
                                         <span className="mt-0.5 flex items-baseline gap-1.5">
                                             <span className="text-sm font-bold text-brand-700">
-                                                {formatNairaFromKobo(item.priceKobo)}
+                                                {money(item.priceKobo)}
                                             </span>
                                             {item.compareAtPriceKobo != null &&
                                                 item.compareAtPriceKobo > item.priceKobo && (
                                                     <s className="text-[10px] text-gray-400">
-                                                        {formatNairaFromKobo(item.compareAtPriceKobo)}
+                                                        {money(item.compareAtPriceKobo)}
                                                     </s>
                                                 )}
                                         </span>

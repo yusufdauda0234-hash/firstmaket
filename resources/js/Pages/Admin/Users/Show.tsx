@@ -22,9 +22,9 @@ interface Props {
         statusChangedBy: string | null;
         statusChangedAt: string | null;
         joinedAt: string;
-        walletBalanceKobo: number;
+        savingsBalanceKobo: number;
         orderCount: number;
-        planCount: number;
+        savingsGoalCount: number;
     };
     [key: string]: unknown;
 }
@@ -125,9 +125,9 @@ export default function UserShow() {
                         <Card className="flex items-center gap-3">
                             <Wallet className="h-5 w-5 text-brand-600" />
                             <div>
-                                <p className="text-xs text-gray-400">Wallet</p>
+                                <p className="text-xs text-gray-400">Savings</p>
                                 <p className="text-sm font-bold text-gray-900">
-                                    {formatNairaFromKobo(user.walletBalanceKobo)}
+                                    {formatNairaFromKobo(user.savingsBalanceKobo)}
                                 </p>
                             </div>
                         </Card>
@@ -142,7 +142,7 @@ export default function UserShow() {
                             <PiggyBank className="h-5 w-5 text-brand-600" />
                             <div>
                                 <p className="text-xs text-gray-400">Plans</p>
-                                <p className="text-sm font-bold text-gray-900">{user.planCount}</p>
+                                <p className="text-sm font-bold text-gray-900">{user.savingsGoalCount}</p>
                             </div>
                         </Card>
                     </div>

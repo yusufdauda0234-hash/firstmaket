@@ -2,6 +2,7 @@
 
 use App\Modules\Catalog\Controllers\CatalogController;
 use App\Modules\Catalog\Controllers\HomeController;
+use App\Modules\Catalog\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 // Routes for the Catalog module are registered here and auto-loaded on the
@@ -17,6 +18,10 @@ Route::get('catalog/suggest', [CatalogController::class, 'suggest'])
 Route::get('catalog/menu-products', [CatalogController::class, 'menuProducts'])
     ->middleware('throttle:60,1')->name('catalog.menu-products');
 Route::get('product/{product:slug}', [CatalogController::class, 'show'])->name('catalog.product');
+
+// Language / display currency / ship-to. A real request because translation is
+// server-side: the next render must come back in the chosen language.
+Route::post('locale', [LocaleController::class, 'update'])->name('locale.update');
 
 // Vendor listing management moved to the Vendor Center subdomain — see
 // app/Modules/Catalog/vendor-routes.php, required from routes/vendors.php.

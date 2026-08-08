@@ -1,71 +1,77 @@
+import PaymentMarks from '@/Components/ui/PaymentMarks';
 import AccountDropdown from '@/Components/domain/auth/AccountDropdown';
-import AuthModal from '@/Components/domain/auth/AuthModal';
-import { AuthModalContext } from '@/Components/domain/auth/auth-modal-context';
+import { useAuthModal } from '@/Components/domain/auth/auth-modal-context';
 import { CategoriesMenu, GetAppPopover, HelpMenu, LocalePopover } from '@/Components/domain/layout/HeaderMenus';
 import SearchBox from '@/Components/domain/search/SearchBox';
 import Reveal from '@/Components/ui/Reveal';
+import { useFlashToast } from '@/Components/ui/Toast';
 import { Category, PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
+import { PropsWithChildren, useState } from 'react';
+import { useTranslation } from '@/Hooks/useI18n';
+import { formatNairaFromKobo } from '@/Utils/money';
 
 interface PublicLayoutProps {
     /** Optional — falls back to the globally shared categories prop. */
     categories?: Category[];
 }
 
-// Public marketplace pages are always light, like every major marketplace
-// (Jumia, AliExpress, Temu, Amazon). Any signed-in customer page can reuse
-// this layout too — categories default to the shared Inertia prop.
+/**
+ * Public marketplace pages are always light, like every major marketplace
+ * (Jumia, AliExpress, Temu, Amazon). Any signed-in customer page can reuse
+ * this layout too — categories default to the shared Inertia prop.
+ *
+ * The sign-in modal and the toast host are mounted at the Inertia root
+ * (resources/js/app.tsx), not here, so page components can reach them too.
+ */
 export default function PublicLayout({ categories: categoriesProp, children }: PropsWithChildren<PublicLayoutProps>) {
-    const { auth, flash, supportHotline, categories: sharedCategories } = usePage<PageProps>().props;
+    const { t } = useTranslation();
+    const {
+        auth,
+        flash,
+        supportHotline,
+        categories: sharedCategories,
+        cartCount,
+        freeDeliveryFromKobo,
+    } = usePage<PageProps>().props;
     const categories = categoriesProp ?? sharedCategories ?? [];
     const hotline = supportHotline ?? '';
-    const [authOpen, setAuthOpen] = useState(false);
+    const openAuth = useAuthModal();
     // Only one of the two big header dropdowns (Categories mega menu /
     // search suggestions) may be open at a time.
     const [openModule, setOpenModule] = useState<'search' | 'category' | null>(null);
 
-    const openAuth = useCallback(() => setAuthOpen(true), []);
-
-    // The email/password login posts via Inertia and re-renders this layout
-    // with the user set — close the modal the moment they're signed in.
-    useEffect(() => {
-        if (auth.user) setAuthOpen(false);
-    }, [auth.user]);
-
-    // Customers authenticate in the modal only: /login and /register redirect
-    // here with ?auth=… . Open the modal once, then drop the flag from the
-    // address bar so refresh/back doesn't reopen it.
-    useEffect(() => {
-        if (auth.user) return;
-        const params = new URLSearchParams(window.location.search);
-        if (!params.has('auth')) return;
-        setAuthOpen(true);
-        params.delete('auth');
-        const query = params.toString();
-        window.history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : ''));
-    }, [auth.user]);
+    // Messages that arrive on a redirect (order placed, cart merged) surface
+    // as toasts too, so there is one confirmation language across the site.
+    useFlashToast(flash.success);
 
     return (
-        <AuthModalContext.Provider value={openAuth}>
         <div className="flex min-h-screen w-full flex-col bg-gray-50 text-gray-900">
             {/* Promo and utility top bar */}
             <div className="bg-slate-950 text-slate-100">
                 <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 text-xs sm:text-sm">
                     <div className="flex flex-wrap items-center gap-3">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-slate-100">
-                            <span className="text-base">🚚</span>
-                            Free shipping on orders over NGN 15,000
-                        </span>
+                        {/* Only shown when a delivery rate actually offers it.
+                            This was a hardcoded "NGN 15,000" that kept
+                            promising free delivery after the rates screen had
+                            been set to charge on every order. */}
+                        {freeDeliveryFromKobo > 0 && (
+                            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-slate-100">
+                                <span className="text-base">🚚</span>
+                                {t('Free shipping on orders over :amount', {
+                                    amount: formatNairaFromKobo(freeDeliveryFromKobo),
+                                })}
+                            </span>
+                        )}
                         <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-slate-100">
                             <span className="text-base">✅</span>
-                            Delivery guarantee for all orders
+                            {t('Delivery guarantee for all orders')}
                         </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-slate-200">
-                        <span className="hidden sm:inline">Limited-time offer</span>
+                        <span className="hidden sm:inline">{t('Limited-time offer')}</span>
                         <Link href={route('vendor.register')} className="font-medium text-brand-yellow hover:text-white">
-                            Sell on FirstMaket
+                            {t('Sell on FirstMaket')}
                         </Link>
                         <HelpMenu hotline={hotline} />
                         <GetAppPopover />
@@ -81,7 +87,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
             <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white shadow-sm">
                 <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-4 px-4 py-3 min-w-0">
                     <Link href={route('home')} className="shrink-0" aria-label="FirstMaket home">
-                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
+                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-12 w-auto" />
                     </Link>
 
                     <div className="flex flex-1 min-w-0 items-center gap-2">
@@ -101,19 +107,27 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                     <nav className="flex shrink-0 items-center min-w-0 gap-4 text-sm font-medium text-gray-700">
                         <LocalePopover />
                         <AccountDropdown user={auth.user} onOpenAuth={openAuth} />
-                        <Link href={route('dashboard')} className="relative hidden items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 hover:border-brand-200 hover:text-brand-600 lg:flex">
+                        {/* Guests get a cart too — the sign-in gate is at
+                            checkout, not here. Same tab: unlike a product
+                            page, the cart is a destination, not something you
+                            glance at and come back from. */}
+                        <Link
+                            href={route('cart.index')}
+                            aria-label={`Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}
+                            className="relative hidden items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 transition hover:border-brand-200 hover:text-brand-600 lg:flex"
+                        >
                             <CartIcon />
-                            <span>Cart</span>
-                            <CartBadge />
+                            <span>{t('Cart')}</span>
+                            <CartBadge count={cartCount} />
                         </Link>
-                        <button
-                            type="button"
-                            onClick={openAuth}
+                        <Link
+                            href={route('cart.index')}
+                            aria-label={`Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}
                             className="relative inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 transition hover:border-brand-200 hover:text-brand-600 lg:hidden"
                         >
                             <CartIcon />
-                            <CartBadge />
-                        </button>
+                            <CartBadge count={cartCount} />
+                        </Link>
                     </nav>
                 </div>
         </header>
@@ -122,29 +136,34 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
             <div className="border-b border-gray-200 bg-white">
                 <div className="scrollbar-none mx-auto flex max-w-7xl items-center justify-center gap-x-8 gap-y-1 overflow-x-auto px-4 py-2 text-xs text-gray-600 sm:text-sm">
                     <span className="flex shrink-0 items-center gap-1.5">
-                        <ShieldIcon /> Safe payments via Paystack
+                        <ShieldIcon /> {t('Safe payments via Paystack')}
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                        <CheckBadgeIcon /> Verified vendors only
+                        <CheckBadgeIcon /> {t('Verified vendors only')}
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
                         <TruckIcon /> FirstMaket delivery guarantee
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 lg:flex">
-                        <ReturnIcon /> 30-day returns
+                        <ReturnIcon /> {t('30-day returns')}
                     </span>
                 </div>
             </div>
 
             {flash.error && (
-                <div className="mx-auto mt-3 w-full max-w-7xl px-4 overflow-x-hidden">
+                <div className="mx-auto mt-3 w-full max-w-7xl px-4 overflow-x-clip">
                     <p className="rounded-md bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
                         {flash.error}
                     </p>
                 </div>
             )}
 
-            <main className="flex-1 w-full overflow-x-hidden">{children}</main>
+            {/* `clip`, not `hidden`. Hiding one axis forces the other to
+                `auto`, which makes this a scroll container — and any `sticky`
+                child inside a page then anchors to <main> instead of the
+                viewport, so it scrolls away. `clip` still cuts horizontal
+                overflow. */}
+            <main className="flex-1 w-full overflow-x-clip">{children}</main>
 
             {/* SEO footer */}
             <footer id="footer-help" className="mt-16 bg-brand-900 text-brand-cream">
@@ -152,7 +171,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 <div className="border-b border-white/10 bg-brand-800/40">
                     <Reveal className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-4 py-8">
                         <div className="max-w-md">
-                            <h3 className="text-xl font-extrabold text-white">Never miss a deal 🔔</h3>
+                            <h3 className="text-xl font-extrabold text-white">{t('Never miss a deal')} 🔔</h3>
                             <p className="mt-1 text-sm text-brand-100">
                                 Get price drops, new arrivals and vendor offers straight to your inbox.
                             </p>
@@ -176,7 +195,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                                 type="submit"
                                 className="shrink-0 rounded-full bg-brand-yellow px-6 py-3 text-sm font-bold text-brand-900 transition hover:-translate-y-0.5 hover:bg-yellow-300 hover:shadow-lg hover:shadow-brand-yellow/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
                             >
-                                Subscribe
+                                {t('Subscribe')}
                             </button>
                         </form>
                     </Reveal>
@@ -186,9 +205,9 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
                     <Reveal>
                         <img
-                            src="/images/brand/logo-light-transparent.png"
+                            src="/images/brand/logo-full-light.png"
                             alt="FirstMaket— Just Order. We Deliver"
-                            className="h-16 w-auto"
+                            className="h-20 w-auto"
                         />
                         <p className="mt-3 max-w-xs text-sm leading-relaxed text-brand-100">
                             Pay small small or pay at once — FirstMaket delivers. No loans, no cash
@@ -246,12 +265,12 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                         <ul className="mt-4 space-y-2.5 text-sm">
                             <li>
                                 <Link href={route('vendor.register')} className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow">
-                                    Become a Vendor
+                                    {t('Become a Vendor')}
                                 </Link>
                             </li>
                             <li>
                                 <a href={route('vendor.login')} className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow">
-                                    Vendor sign in
+                                    {t('Vendor sign in')}
                                 </a>
                             </li>
                             <li>
@@ -277,7 +296,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                                     href={`tel:${hotline.replace(/[^+\d]/g, '')}`}
                                     className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                 >
-                                    Call to order
+                                    {t('Call to order')}
                                 </a>
                             </li>
                             <li>
@@ -286,15 +305,15 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                                         href={route('orders.index')}
                                         className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                     >
-                                        Track my order
+                                        {t('Track my order')}
                                     </Link>
                                 ) : (
                                     <button
                                         type="button"
-                                        onClick={openAuth}
+                                        onClick={() => openAuth()}
                                         className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                     >
-                                        Track my order
+                                        {t('Track my order')}
                                     </button>
                                 )}
                             </li>
@@ -308,7 +327,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                                     href={route('faq')}
                                     className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                 >
-                                    Help center
+                                    {t('Help center')}
                                 </Link>
                             </li>
                         </ul>
@@ -322,16 +341,16 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                             <li>
                                 <button
                                     type="button"
-                                    onClick={openAuth}
+                                    onClick={() => openAuth()}
                                     className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                 >
-                                    Create account
+                                    {t('Create account')}
                                 </button>
                             </li>
                             <li>
                                 <button
                                     type="button"
-                                    onClick={openAuth}
+                                    onClick={() => openAuth()}
                                     className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                 >
                                     Log in
@@ -343,15 +362,15 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                                         href={route('dashboard')}
                                         className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                     >
-                                        My dashboard
+                                        {t('My dashboard')}
                                     </Link>
                                 ) : (
                                     <button
                                         type="button"
-                                        onClick={openAuth}
+                                        onClick={() => openAuth()}
                                         className="inline-block text-brand-100 transition-all duration-200 hover:translate-x-1 hover:text-brand-yellow"
                                     >
-                                        My dashboard
+                                        {t('My dashboard')}
                                     </button>
                                 )}
                             </li>
@@ -364,7 +383,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                     <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6">
                         <div className="flex items-center gap-3">
                             <span className="text-xs font-semibold uppercase tracking-wide text-brand-200">
-                                Get the app
+                                {t('Get the app')}
                             </span>
                             <span className="flex cursor-default items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-brand-100 opacity-70 transition duration-200 hover:-translate-y-0.5 hover:border-brand-yellow/50 hover:opacity-100">
                                 ▶ Google Play
@@ -378,14 +397,12 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                             <span className="text-xs font-semibold uppercase tracking-wide text-brand-200">
                                 We accept
                             </span>
-                            {['Paystack', 'Visa', 'Mastercard', 'Verve', 'Bank transfer'].map((method) => (
-                                <span
-                                    key={method}
-                                    className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:border-brand-yellow/50 hover:bg-white/10"
-                                >
-                                    {method}
-                                </span>
-                            ))}
+                            {/* Same marks as the cart's "Pay with" row, so the
+                                two never drift apart. */}
+                            <PaymentMarks compact />
+                            <span className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white">
+                                Bank transfer
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -402,9 +419,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 </div>
             </footer>
 
-            <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
         </div>
-        </AuthModalContext.Provider>
     );
 }
 
@@ -440,10 +455,12 @@ function SocialGlyph({ network }: { network: string }) {
     }
 }
 
-function CartBadge() {
+function CartBadge({ count }: { count: number }) {
+    if (!count) return null;
+
     return (
-        <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-yellow text-[10px] font-bold text-brand-900">
-            0
+        <span className="animate-popIn absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-yellow px-1 text-[10px] font-bold text-brand-900">
+            {count > 99 ? '99+' : count}
         </span>
     );
 }

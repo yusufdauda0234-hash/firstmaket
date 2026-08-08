@@ -11,7 +11,7 @@ use Inertia\Response;
 
 /**
  * Where Paystack returns the browser after checkout (Sprint 4). This screen
- * only *reports* status — it never credits the wallet (that is webhook-only).
+ * only *reports* status — it never credits savings (that is webhook-only).
  * The webhook may still be in flight, so an as-yet-unconfirmed charge shows
  * as "pending", not failed.
  */
@@ -33,7 +33,7 @@ class PaymentCallbackController extends Controller
             default => 'pending', // webhook not in yet — the common case right after redirect
         };
 
-        return Inertia::render('Wallet/PaymentCallback', [
+        return Inertia::render('Savings/PaymentCallback', [
             'state' => $state,
             'amountKobo' => $transaction?->amount_kobo,
             'reference' => $reference,

@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Immutable vendor earnings ledger row (docs/FirstMaket-Database_Schema.md
- * section 9) — fully separate from customer wallets and savings. Positive
+ * section 9) — fully separate from customer savings. Positive
  * `earning` rows are unique per order (credit exactly once, only after
  * delivery confirmation); `payout` rows are negative; corrections are new
  * `adjustment` rows, never edits. All writes go through EarningsService.

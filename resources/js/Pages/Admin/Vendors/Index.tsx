@@ -1,12 +1,18 @@
+import AddVendorModal from '@/Components/domain/admin/AddVendorModal';
 import VendorReviewModal from '@/Components/domain/admin/VendorReviewModal';
 import { Badge, statusTone } from '@/Components/ui/Badge';
+import BulkActionBar from '@/Components/ui/BulkActionBar';
 import { Card } from '@/Components/ui/Card';
 import PageHeader from '@/Components/ui/PageHeader';
 import Reveal from '@/Components/ui/Reveal';
+import RowCheckbox from '@/Components/ui/RowCheckbox';
+import ViewToggle from '@/Components/ui/ViewToggle';
+import { useRowSelection } from '@/Hooks/useRowSelection';
+import { useViewMode } from '@/Hooks/useViewMode';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { PageProps } from '@/Types';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronRight, Store } from 'lucide-react';
+import { PageProps, Paginated } from '@/Types';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { ChevronRight, Plus, Store } from 'lucide-react';
 import { useState } from 'react';
 
 interface VendorRow {
@@ -19,10 +25,7 @@ interface VendorRow {
 }
 
 interface Props {
-    vendors: {
-        data: VendorRow[];
-        links: { url: string | null; label: string; active: boolean }[];
-    };
+    vendors: Paginated<VendorRow>;
     status: string;
     [key: string]: unknown;
 }
@@ -49,14 +52,38 @@ function initials(name: string) {
 export default function VendorsIndex() {
     const { vendors, status, auth } = usePage<Props & PageProps>().props;
     const [reviewUuid, setReviewUuid] = useState<string | null>(null);
+    const [adding, setAdding] = useState(false);
+    // Vendor admin is mostly column-scanning, so table is the sensible default.
+    const { mode, choose } = useViewMode('admin.vendors', 'table');
 
     const hasPermission = (permission: string) =>
         auth.user !== null &&
         (auth.user.permissions.includes(permission) || auth.user.roles.includes('Super Administrator'));
 
+    const canCreate = hasPermission('vendors.approve');
+
+    const selection = useRowSelection(vendors.data.map((v) => v.uuid));
+    const bulk = useForm<{ action: string; uuids: string[]; reason: string }>({
+        action: 'approve',
+        uuids: [],
+        reason: '',
+    });
+
+    // Approve/reject only mean something for applications still pending.
+    const canDecide = status === 'pending' && hasPermission('vendors.approve');
+    const firstIndex = (vendors.from ?? 1) - 1;
+
+    function runBulk(action: 'approve' | 'reject', reason = '') {
+        bulk.transform(() => ({ action, uuids: selection.ids, reason }));
+        bulk.post(route('admin.vendors.bulk'), {
+            preserveScroll: true,
+            onSuccess: () => selection.clear(),
+        });
+    }
+
     return (
         <AdminLayout>
-            <Head title="Vendor approvals" />
+            <Head title="Vendors" />
 
             <VendorReviewModal
                 uuid={reviewUuid}
@@ -65,14 +92,25 @@ export default function VendorsIndex() {
                 onClose={() => setReviewUuid(null)}
             />
 
+            {canCreate && <AddVendorModal open={adding} onClose={() => setAdding(false)} />}
+
             <PageHeader
                 eyebrow="Marketplace operations"
                 title="Vendors"
                 description="Review seller applications and keep the marketplace trusted."
                 actions={
-                    <span className="rounded-full bg-brand-yellow px-3 py-1.5 text-xs font-bold text-brand-900">
-                        Approval queue
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <ViewToggle mode={mode} onChange={choose} label="vendors" />
+                        {canCreate && (
+                            <button
+                                type="button"
+                                onClick={() => setAdding(true)}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-700"
+                            >
+                                <Plus className="h-4 w-4" /> Add vendor
+                            </button>
+                        )}
+                    </div>
                 }
             />
 
@@ -102,39 +140,128 @@ export default function VendorsIndex() {
                             <p className="mt-4 text-sm font-medium text-gray-900">No {status} vendors</p>
                             <p className="mt-1 text-sm text-gray-500">Applications with this status will show up here.</p>
                         </div>
+                    ) : mode === 'table' ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[720px] text-sm">
+                                <thead className="border-b border-gray-100 bg-gray-50/70 text-left text-xs uppercase tracking-wide text-gray-500">
+                                    <tr>
+                                        <th className="w-10 py-3 pl-5 pr-2">
+                                            <RowCheckbox
+                                                checked={selection.allSelected}
+                                                indeterminate={selection.someSelected}
+                                                onChange={selection.toggleAll}
+                                                label="Select all vendors on this page"
+                                            />
+                                        </th>
+                                        <th className="w-12 px-2 py-3 font-semibold">S/N</th>
+                                        <th className="px-5 py-3 font-semibold">Business</th>
+                                        <th className="px-5 py-3 font-semibold">Contact</th>
+                                        <th className="px-5 py-3 font-semibold">Registered</th>
+                                        <th className="px-5 py-3 font-semibold">Status</th>
+                                        <th className="w-10 px-5 py-3" />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {vendors.data.map((vendor, index) => (
+                                        <tr
+                                            key={vendor.uuid}
+                                            onClick={() => setReviewUuid(vendor.uuid)}
+                                            className={`group cursor-pointer transition-colors hover:bg-brand-50/50 ${
+                                                selection.isSelected(vendor.uuid) ? 'bg-brand-50/70' : ''
+                                            }`}
+                                        >
+                                            <td className="py-3.5 pl-5 pr-2">
+                                                <RowCheckbox
+                                                    checked={selection.isSelected(vendor.uuid)}
+                                                    onChange={() => selection.toggle(vendor.uuid)}
+                                                    label={`Select ${vendor.businessName}`}
+                                                />
+                                            </td>
+                                            <td className="px-2 py-3.5 text-xs tabular-nums text-gray-400">
+                                                {firstIndex + index + 1}
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <span
+                                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-xs font-extrabold text-white shadow-sm ${gradients[index % gradients.length]}`}
+                                                    >
+                                                        {initials(vendor.businessName)}
+                                                    </span>
+                                                    <span className="font-semibold text-gray-900 group-hover:text-brand-700">
+                                                        {vendor.businessName}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-3.5 text-gray-600">
+                                                {vendor.contactName}
+                                                <span className="block text-xs text-gray-400">{vendor.email}</span>
+                                            </td>
+                                            <td className="px-5 py-3.5 text-xs text-gray-500">
+                                                {vendor.registeredAt}
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <Badge tone={statusTone(vendor.status)}>{vendor.status}</Badge>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <ChevronRight className="h-4 w-4 text-gray-300 transition-transform group-hover:translate-x-1 group-hover:text-brand-500" />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     ) : (
-                        <div className="divide-y divide-gray-100">
+                        <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
                             {vendors.data.map((vendor, index) => (
                                 <button
                                     key={vendor.uuid}
                                     type="button"
                                     onClick={() => setReviewUuid(vendor.uuid)}
-                                    className="group flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-brand-50/50"
+                                    className="group flex flex-col rounded-xl border border-gray-100 p-4 text-left transition hover:border-brand-200 hover:shadow-md hover:shadow-brand-600/5"
                                 >
-                                    <span
-                                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-sm font-extrabold text-white shadow-sm ${gradients[index % gradients.length]}`}
-                                    >
-                                        {initials(vendor.businessName)}
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block truncate font-semibold text-gray-900 group-hover:text-brand-700">
-                                            {vendor.businessName}
+                                    <div className="flex items-start justify-between gap-3">
+                                        <span
+                                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-sm font-extrabold text-white shadow-sm ${gradients[index % gradients.length]}`}
+                                        >
+                                            {initials(vendor.businessName)}
                                         </span>
-                                        <span className="block truncate text-sm text-gray-500">
-                                            {vendor.contactName} · {vendor.email}
-                                        </span>
+                                        <Badge tone={statusTone(vendor.status)}>{vendor.status}</Badge>
+                                    </div>
+                                    <span className="mt-3 line-clamp-2 font-bold text-gray-900 group-hover:text-brand-700">
+                                        {vendor.businessName}
                                     </span>
-                                    <span className="hidden shrink-0 text-xs text-gray-400 sm:block">
+                                    <span className="mt-1 truncate text-sm text-gray-500">{vendor.contactName}</span>
+                                    <span className="truncate text-xs text-gray-400">{vendor.email}</span>
+                                    <span className="mt-3 border-t border-gray-100 pt-2.5 text-xs text-gray-400">
                                         {vendor.registeredAt}
                                     </span>
-                                    <Badge tone={statusTone(vendor.status)}>{vendor.status}</Badge>
-                                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform group-hover:translate-x-1 group-hover:text-brand-500" />
                                 </button>
                             ))}
                         </div>
                     )}
                 </Card>
             </Reveal>
+
+            <BulkActionBar
+                count={selection.count}
+                noun="vendor"
+                processing={bulk.processing}
+                onClear={selection.clear}
+                actions={
+                    canDecide
+                        ? [
+                              { label: 'Approve', tone: 'primary', run: () => runBulk('approve') },
+                              {
+                                  label: 'Reject',
+                                  tone: 'danger',
+                                  needsReason: true,
+                                  reasonPlaceholder: 'e.g. CAC document could not be verified',
+                                  run: (reason) => runBulk('reject', reason),
+                              },
+                          ]
+                        : []
+                }
+            />
 
             {vendors.links.length > 3 && (
                 <div className="mt-4 flex flex-wrap gap-1">

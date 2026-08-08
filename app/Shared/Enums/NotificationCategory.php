@@ -21,7 +21,7 @@ enum NotificationCategory: string
     {
         return match ($this) {
             self::Orders => 'Orders and delivery',
-            self::Savings => 'Wallet and savings',
+            self::Savings => 'Savings',
             self::Security => 'Account security',
             self::Support => 'Support replies',
             self::Promotions => 'Deals and promotions',

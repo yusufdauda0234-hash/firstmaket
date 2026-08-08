@@ -4,7 +4,7 @@ import { InputError } from '@/Components/ui/InputError';
 import { Label } from '@/Components/ui/Label';
 import Modal from '@/Components/ui/Modal';
 import { router } from '@inertiajs/react';
-import { CheckCircle2, Download, Mail, MapPin, Phone, RotateCcw, ShieldOff, Store } from 'lucide-react';
+import { CheckCircle2, Download, KeyRound, Mail, MapPin, Phone, RotateCcw, ShieldOff, Store } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface VendorDetail {
@@ -48,6 +48,28 @@ export default function VendorReviewModal({
     const [reason, setReason] = useState('');
     const [reasonError, setReasonError] = useState('');
     const [busy, setBusy] = useState(false);
+    const [sendingReset, setSendingReset] = useState(false);
+
+    /**
+     * Email the vendor a code to set a new password.
+     *
+     * Closes the modal on the way out so the flash message is visible — it is
+     * rendered by the page underneath, not in here.
+     */
+    const sendPasswordReset = () => {
+        if (!vendor) return;
+
+        setSendingReset(true);
+        router.post(
+            route('admin.vendors.password-reset', vendor.uuid),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setSendingReset(false),
+                onSuccess: () => onClose(),
+            },
+        );
+    };
 
     useEffect(() => {
         if (!uuid) return;
@@ -205,6 +227,19 @@ export default function VendorReviewModal({
                                 >
                                     Open full page →
                                 </a>
+                                {/* Account recovery. Offered on any live account,
+                                    not just pending ones — the seller who needs
+                                    it is usually one who cannot get in. */}
+                                {canApprove && vendor.status !== 'rejected' && (
+                                    <Button
+                                        variant="secondary"
+                                        onClick={sendPasswordReset}
+                                        disabled={sendingReset}
+                                    >
+                                        <KeyRound className="mr-2 h-4 w-4" />
+                                        {sendingReset ? 'Sending…' : 'Email password link'}
+                                    </Button>
+                                )}
                                 {vendor.status === 'pending' && canApprove && (
                                     <>
                                         <Button

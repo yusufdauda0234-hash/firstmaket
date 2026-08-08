@@ -4,12 +4,15 @@ import { Label } from '@/Components/ui/Label';
 import Modal from '@/Components/ui/Modal';
 import SelectMenu from '@/Components/ui/SelectMenu';
 import { useForm } from '@inertiajs/react';
-import { ImagePlus, Star, UploadCloud, X } from 'lucide-react';
+import { AlertTriangle, ImagePlus, Star, UploadCloud, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { MoneyInput } from '@/Components/ui/MoneyInput';
+import DynamicFields, { AttributeField, AttributeValues } from '@/Components/domain/catalog/DynamicFields';
 
 interface Category {
     id: number;
     name: string;
+    children: { id: number; name: string }[];
 }
 
 interface FeeSettings {
@@ -30,14 +33,40 @@ interface EditProduct {
     categoryId: number;
     name: string;
     description: string;
+    videoUrl: string | null;
     priceNaira: number;
+    compareAtNaira: number | null;
     stockQuantity: number;
     status: string;
     rejectionReason: string | null;
     images: ExistingImage[];
+    /** Answers to the admin-defined fields for this listing's category. */
+    attributes?: AttributeValues;
 }
 
 const MAX_IMAGES = 5;
+
+/**
+ * An empty listing.
+ *
+ * Kept as one named shape because the modal is never unmounted between opens,
+ * so "start again" has to be an explicit act rather than something React does
+ * for us. Spread on every use — sharing the object would let one open's edits
+ * leak into the next.
+ */
+const blankProduct = {
+    category_id: '' as number | '',
+    name: '',
+    description: '',
+    video_url: '',
+    price_naira: '' as number | '',
+    compare_at_naira: '' as number | '',
+    stock_quantity: 1,
+    images: [] as File[],
+    submit: false,
+    tier: 'free',
+    attributes: {} as AttributeValues,
+};
 
 /**
  * Add / edit a product in a modal with a guided drag-and-drop image uploader
@@ -50,6 +79,8 @@ export default function ProductFormModal({
     editUuid,
     categories,
     feeSettings,
+    attributeFieldsByCategory = {},
+    builtInFields = {},
     onClose,
 }: {
     open: boolean;
@@ -57,30 +88,47 @@ export default function ProductFormModal({
     editUuid?: string | null;
     categories: Category[];
     feeSettings: FeeSettings;
+    /** Admin-defined fields, keyed by category id. */
+    attributeFieldsByCategory?: Record<string, AttributeField[]>;
+    /** Wording for the fields every product has, keyed by system key. */
+    builtInFields?: Record<string, { label: string; helpText: string | null }>;
     onClose: () => void;
 }) {
     const [loading, setLoading] = useState(false);
     const [product, setProduct] = useState<EditProduct | null>(null);
     const [previews, setPreviews] = useState<string[]>([]);
     const [dragOver, setDragOver] = useState(false);
+    const [parentId, setParentId] = useState<number | ''>('');
     const fileRef = useRef<HTMLInputElement>(null);
 
-    const form = useForm({
-        category_id: '' as number | '',
-        name: '',
-        description: '',
-        price_naira: '' as number | '',
-        stock_quantity: 1,
-        images: [] as File[],
-        submit: false,
-        tier: 'free',
-    });
+    /**
+     * What to call a built-in field.
+     *
+     * Staff reword these in the admin field manager. The labels used to be
+     * hardcoded here, so that screen was describing a form it did not control.
+     */
+    const labelFor = (key: string, fallback: string) => builtInFields[key]?.label ?? fallback;
+    const hintFor = (key: string) => builtInFields[key]?.helpText ?? null;
 
-    // Load the product when editing; reset when opening a create modal.
+    const form = useForm({ ...blankProduct });
+
+    // Load the product when editing; wipe the form when opening a create one.
     useEffect(() => {
         if (!open) return;
         setPreviews([]);
-        form.reset();
+        setParentId('');
+
+        /*
+         * Deliberately not form.reset().
+         *
+         * Inertia's useForm overwrites its defaults with whatever was
+         * submitted after every successful save, so reset() restores the
+         * product just added rather than an empty form — clicking "Add
+         * product" a second time opened the previous listing's details.
+         * setDefaults puts the blank shape back, so later resets behave too.
+         */
+        form.setDefaults({ ...blankProduct });
+        form.setData({ ...blankProduct });
         form.clearErrors();
 
         if (mode === 'edit' && editUuid) {
@@ -95,9 +143,22 @@ export default function ProductFormModal({
                         category_id: body.product.categoryId,
                         name: body.product.name,
                         description: body.product.description,
+                        video_url: body.product.videoUrl ?? '',
                         price_naira: body.product.priceNaira,
+                        compare_at_naira: body.product.compareAtNaira ?? '',
                         stock_quantity: body.product.stockQuantity,
+                        attributes: body.product.attributes ?? {},
                     }));
+
+                    // Only the leaf is stored, so reopen the pair by finding
+                    // whichever parent owns it.
+                    setParentId(
+                        categories.find(
+                            (c) =>
+                                c.id === body.product.categoryId ||
+                                c.children.some((child) => child.id === body.product.categoryId),
+                        )?.id ?? '',
+                    );
                 })
                 .catch(() => {
                     /* ignore */
@@ -130,18 +191,65 @@ export default function ProductFormModal({
         );
     };
 
+    const subCategories = categories.find((c) => c.id === parentId)?.children ?? [];
+
+    // Which extra fields apply is decided entirely by the chosen category, and
+    // every category's list is already on the page — so changing the dropdown
+    // swaps them with no round trip.
+    const activeFields =
+        form.data.category_id === ''
+            ? []
+            : (attributeFieldsByCategory[String(form.data.category_id)] ?? []);
+
     const canSubmitForApproval =
         mode === 'create' || !product || product.status === 'draft' || product.status === 'rejected';
 
     const save = (submitForApproval: boolean) => {
         form.transform((data) => ({ ...data, submit: submitForApproval }));
-        const opts = { forceFormData: true as const, onSuccess: () => onClose() };
+
+        const opts = {
+            forceFormData: true as const,
+            onSuccess: () => onClose(),
+            // Scroll the first problem into view. Without this a rejection
+            // below the fold reads as the button doing nothing at all.
+            onError: () => {
+                requestAnimationFrame(() => {
+                    document
+                        .querySelector('[data-form-error]')
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            },
+        };
+
         if (mode === 'edit' && product) {
             form.post(route('vendor.products.update', { product: product.uuid }), opts);
         } else {
             form.post(route('vendor.products.store'), opts);
         }
     };
+
+    /**
+     * Anything the server rejected that no field on this form renders.
+     *
+     * The failure that prompted this: submissions were rejected on keys the
+     * form had no input for, so nothing appeared and the button looked dead.
+     * Whatever the server objects to now, it gets said out loud.
+     */
+    const shownKeys = [
+        'category_id',
+        'name',
+        'description',
+        'video_url',
+        'price_naira',
+        'compare_at_naira',
+        'stock_quantity',
+        'images',
+        'tier',
+    ];
+
+    const unshownErrors = Object.entries(form.errors)
+        .filter(([key]) => !shownKeys.includes(key) && !key.startsWith('attributes.'))
+        .map(([, message]) => message as string);
 
     const tierOptions = [
         { value: 'free', label: 'Free', fee: 0 },
@@ -170,6 +278,24 @@ export default function ProductFormModal({
                 </div>
             ) : (
                 <form onSubmit={(e) => { e.preventDefault(); save(false); }} className="space-y-3">
+                    {unshownErrors.length > 0 && (
+                        <div
+                            data-form-error
+                            role="alert"
+                            className="flex gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-800"
+                        >
+                            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                            <span>
+                                <span className="font-semibold">This could not be saved.</span>
+                                <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                                    {unshownErrors.map((message, i) => (
+                                        <li key={i}>{message}</li>
+                                    ))}
+                                </ul>
+                            </span>
+                        </div>
+                    )}
+
                     {product?.status === 'rejected' && product.rejectionReason && (
                         <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-[13px] text-red-700">
                             <span className="font-semibold">Rejected:</span> {product.rejectionReason}
@@ -178,20 +304,57 @@ export default function ProductFormModal({
 
                     <div className="grid gap-3 sm:grid-cols-2">
                         <div>
-                            <Label htmlFor="pf-category" className="text-[13px]">Category</Label>
+                            <Label htmlFor="pf-category" className="text-[13px]">
+                                {labelFor('category', 'Category')}
+                            </Label>
                             <SelectMenu
                                 ariaLabel="Category"
-                                value={form.data.category_id === '' ? '' : String(form.data.category_id)}
+                                value={parentId === '' ? '' : String(parentId)}
                                 options={[
                                     { value: '', label: <span className="text-gray-400">Select a category</span> },
                                     ...categories.map((c) => ({ value: String(c.id), label: c.name })),
                                 ]}
-                                onChange={(v) => form.setData('category_id', v === '' ? '' : Number(v))}
+                                onChange={(v) => {
+                                    const next = v === '' ? '' : Number(v);
+                                    setParentId(next);
+
+                                    // A parent with sub-categories is a heading,
+                                    // not a shelf. One without any is the answer
+                                    // on its own.
+                                    const chosen = categories.find((c) => c.id === next);
+
+                                    form.setData(
+                                        'category_id',
+                                        chosen && chosen.children.length === 0 ? chosen.id : '',
+                                    );
+                                }}
                             />
                             <InputError message={form.errors.category_id} />
                         </div>
+
+                        {subCategories.length > 0 && (
+                            <div>
+                                <Label htmlFor="pf-subcategory" className="text-[13px]">
+                                    Sub-category
+                                </Label>
+                                <SelectMenu
+                                    ariaLabel="Sub-category"
+                                    value={form.data.category_id === '' ? '' : String(form.data.category_id)}
+                                    options={[
+                                        { value: '', label: <span className="text-gray-400">Select one</span> },
+                                        ...subCategories.map((c) => ({
+                                            value: String(c.id),
+                                            label: c.name,
+                                        })),
+                                    ]}
+                                    onChange={(v) =>
+                                        form.setData('category_id', v === '' ? '' : Number(v))
+                                    }
+                                />
+                            </div>
+                        )}
                         <div>
-                            <Label htmlFor="pf-name" className="text-[13px]">Product name</Label>
+                            <Label htmlFor="pf-name" className="text-[13px]">{labelFor('name', 'Product name')}</Label>
                             <input
                                 id="pf-name"
                                 value={form.data.name}
@@ -204,7 +367,7 @@ export default function ProductFormModal({
                     </div>
 
                     <div>
-                        <Label htmlFor="pf-desc" className="text-[13px]">Description</Label>
+                        <Label htmlFor="pf-desc" className="text-[13px]">{labelFor('description', 'Description')}</Label>
                         <textarea
                             id="pf-desc"
                             rows={3}
@@ -218,15 +381,13 @@ export default function ProductFormModal({
 
                     <div className="grid gap-3 sm:grid-cols-2">
                         <div>
-                            <Label htmlFor="pf-price" className="text-[13px]">Price (₦)</Label>
-                            <input
+                            <Label htmlFor="pf-price" className="text-[13px]">{labelFor('price_naira', 'Price (₦)')}</Label>
+                            <MoneyInput
                                 id="pf-price"
-                                type="number"
-                                min="100"
-                                step="0.01"
+                                min={100}
+                                allowDecimals
                                 value={form.data.price_naira}
-                                onChange={(e) => form.setData('price_naira', e.target.value === '' ? '' : Number(e.target.value))}
-                                className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                                onChange={(value) => form.setData('price_naira', value)}
                                 required
                             />
                             <InputError message={form.errors.price_naira} />
@@ -238,7 +399,24 @@ export default function ProductFormModal({
                                 )}
                         </div>
                         <div>
-                            <Label htmlFor="pf-stock" className="text-[13px]">Stock quantity</Label>
+                            <Label htmlFor="pf-compare" className="text-[13px]">
+                                {labelFor('compare_at_naira', 'Regular price (₦)')}{' '}
+                                <span className="font-normal text-gray-400">(optional)</span>
+                            </Label>
+                            <MoneyInput
+                                id="pf-compare"
+                                min={100}
+                                allowDecimals
+                                value={form.data.compare_at_naira}
+                                onChange={(value) => form.setData('compare_at_naira', value)}
+                            />
+                            <InputError message={form.errors.compare_at_naira} />
+                            <p className="mt-1 text-[11px] text-gray-400">
+                                Shown struck through beside your price.
+                            </p>
+                        </div>
+                        <div>
+                            <Label htmlFor="pf-stock" className="text-[13px]">{labelFor('stock_quantity', 'Stock quantity')}</Label>
                             <input
                                 id="pf-stock"
                                 type="number"
@@ -251,6 +429,29 @@ export default function ProductFormModal({
                             <InputError message={form.errors.stock_quantity} />
                         </div>
                     </div>
+
+                    {/* Whatever staff decided this category needs described.
+                        These never rendered in this modal at all, so a field
+                        added in the admin form builder appeared on the
+                        standalone page and nowhere a vendor actually looked. */}
+                    {activeFields.length > 0 && (
+                        <div className="rounded-lg border border-gray-100 bg-gray-50/60 p-3">
+                            <p className="mb-2 text-[13px] font-semibold text-gray-700">
+                                {categories
+                                    .flatMap((c) => [c, ...c.children])
+                                    .find((c) => c.id === form.data.category_id)?.name}{' '}
+                                details
+                            </p>
+                            <DynamicFields
+                                fields={activeFields}
+                                values={form.data.attributes}
+                                errors={form.errors as Record<string, string>}
+                                onChange={(key, value) =>
+                                    form.setData('attributes', { ...form.data.attributes, [key]: value })
+                                }
+                            />
+                        </div>
+                    )}
 
                     {/* Guided image uploader */}
                     <div>
@@ -284,6 +485,17 @@ export default function ProductFormModal({
                             onChange={(e) => addFiles(e.target.files)}
                         />
                         <InputError message={form.errors.images} />
+                        {Object.entries(form.errors)
+                            .filter(([key]) => key.startsWith('images.'))
+                            .map(([key, message]) => (
+                                <InputError
+                                    key={key}
+                                    // "images.0" is the first photo, and saying
+                                    // which one is the difference between a
+                                    // fixable error and a mystery.
+                                    message={`Photo ${Number(key.split('.')[1]) + 1}: ${message}`}
+                                />
+                            ))}
 
                         {/* New selections */}
                         {previews.length > 0 && (
@@ -336,6 +548,32 @@ export default function ProductFormModal({
                                 <p className="mt-1 text-[11px] text-gray-400">New uploads are added to these.</p>
                             </div>
                         )}
+                    </div>
+
+                    {/* Sits with the photos because it is the same job:
+                        showing the shopper the thing. Only links the product
+                        page can actually play are accepted, so a vendor is
+                        told at the point of pasting rather than discovering a
+                        dead field later. */}
+                    <div>
+                        <Label htmlFor="pf-video" className="text-[13px]">
+                            {labelFor('video_url', 'Video link')}{' '}
+                            <span className="font-normal text-gray-400">(optional)</span>
+                        </Label>
+                        <input
+                            id="pf-video"
+                            type="url"
+                            inputMode="url"
+                            value={form.data.video_url}
+                            onChange={(e) => form.setData('video_url', e.target.value)}
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                        />
+                        <InputError message={form.errors.video_url} />
+                        <p className="mt-1 text-[11px] text-gray-400">
+                            {hintFor('video_url') ??
+                                'YouTube or Vimeo. Shoppers watch it on the product page.'}
+                        </p>
                     </div>
 
                     {/* Posting tier (paid mode only, when submittable) */}

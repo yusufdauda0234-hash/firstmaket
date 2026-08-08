@@ -139,8 +139,19 @@ it('denies moderation to a role without customers.suspend', function () {
 });
 
 it('lists and searches customers on the management index', function () {
-    User::factory()->create(['user_type' => UserType::Customer, 'name' => 'Ada Lovelace']);
-    User::factory()->create(['user_type' => UserType::Customer, 'name' => 'Grace Hopper']);
+    // Emails are pinned, not left to the factory: the lookup matches name OR
+    // email OR phone, so a random address happening to contain "ada"
+    // (wanda@, nadia@, amada@) matched Grace and failed this test at random.
+    User::factory()->create([
+        'user_type' => UserType::Customer,
+        'name' => 'Ada Lovelace',
+        'email' => 'ada.lovelace@example.test',
+    ]);
+    User::factory()->create([
+        'user_type' => UserType::Customer,
+        'name' => 'Grace Hopper',
+        'email' => 'grace.hopper@example.test',
+    ]);
 
     $response = $this->actingAs(moderationStaff('Administrator'))
         ->get('http://'.config('app.admin_domain').'/customers?q=Ada')

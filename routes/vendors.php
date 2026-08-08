@@ -3,6 +3,8 @@
 use App\Modules\Auth\Controllers\AuthenticatedSessionController;
 use App\Modules\Vendor\Controllers\EarningsController;
 use App\Modules\Vendor\Controllers\VendorDashboardController;
+use App\Modules\Vendor\Controllers\VendorPasswordResetController;
+use App\Shared\Middleware\EnsureVendorApproved;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,19 +25,41 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('vendor.login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    // Where the "set your password" email lands. Guest-only: a vendor already
+    // signed in has no business on it, and the token is the credential here.
+    Route::get('reset-password/{token}', [VendorPasswordResetController::class, 'edit'])
+        ->name('vendor.password.reset');
+    Route::post('reset-password', [VendorPasswordResetController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('vendor.password.update');
 });
 
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('vendor.logout');
 
     Route::get('/', fn () => redirect()->route('vendor.dashboard'));
+
+    // Reachable while pending: it is where a vendor is told what is happening,
+    // and a portal that redirected every route including the one explaining
+    // why would be a loop. Phone verification stays open too — it is part of
+    // getting approved, not something that waits on approval.
     Route::get('dashboard', VendorDashboardController::class)->name('vendor.dashboard');
+    require app_path('Modules/Identity/vendor-routes.php');
 
-    require app_path('Modules/Catalog/vendor-routes.php');
-    require app_path('Modules/Orders/vendor-routes.php');
+    /*
+     * Everything a vendor can only do once somebody has said yes. Guarded in
+     * one place rather than per controller — approval used to be checked
+     * inside product management and nowhere else, so a pending vendor got a
+     * full navigation and found out which pages worked by clicking them.
+     */
+    Route::middleware(EnsureVendorApproved::class)->group(function () {
+        require app_path('Modules/Catalog/vendor-routes.php');
+        require app_path('Modules/Orders/vendor-routes.php');
 
-    // Earnings, payout history, and the verified payout bank account.
-    Route::get('earnings', [EarningsController::class, 'show'])->name('vendor.earnings');
-    Route::post('earnings/bank-account', [EarningsController::class, 'setBankAccount'])
-        ->name('vendor.earnings.bank-account');
+        // Earnings, payout history, and the verified payout bank account.
+        Route::get('earnings', [EarningsController::class, 'show'])->name('vendor.earnings');
+        Route::post('earnings/bank-account', [EarningsController::class, 'setBankAccount'])
+            ->name('vendor.earnings.bank-account');
+    });
 });

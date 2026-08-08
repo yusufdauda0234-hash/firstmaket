@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Models;
 
 use App\Models\User;
 use App\Modules\Vendor\Models\VendorProfile;
+use App\Shared\Casts\Uppercase;
 use App\Shared\Enums\ProductStatus;
 use App\Shared\Traits\HasUuid;
 use Database\Factories\ProductFactory;
@@ -65,7 +66,9 @@ class Product extends Model
         'name',
         'slug',
         'description',
+        'video_url',
         'price_kobo',
+        'compare_at_price_kobo',
         'stock_quantity',
         'status',
     ];
@@ -74,6 +77,11 @@ class Product extends Model
     {
         return [
             'price_kobo' => 'integer',
+            // The listing title, which shoppers search and staff scan in
+            // queues. The description is not cast — a paragraph in capitals
+            // is unreadable — and the slug and video_url are case-sensitive
+            // (a YouTube id in capitals is a different video, or none).
+            'name' => Uppercase::class,
             'compare_at_price_kobo' => 'integer',
             'stock_quantity' => 'integer',
             'rating_count' => 'integer',

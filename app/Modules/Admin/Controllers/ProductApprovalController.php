@@ -124,4 +124,58 @@ class ProductApprovalController extends Controller
 
         return redirect()->route('admin.products.index')->with('success', "\"{$product->name}\" rejected.");
     }
+
+    /**
+     * Approve or reject several listings in one pass.
+     *
+     * Each product still goes through ProductStatusService individually, so a
+     * bulk run is exactly N single decisions — same rules, same audit trail,
+     * same events. One listing whose status moved out from under the operator
+     * (approved by a colleague a second earlier) must not abort the rest, so
+     * failures are counted and reported rather than thrown.
+     */
+    public function bulkUpdate(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'action' => ['required', 'string', 'in:approve,reject'],
+            'uuids' => ['required', 'array', 'min:1', 'max:100'],
+            'uuids.*' => ['required', 'uuid'],
+            // Required for reject only — a rejection with no reason is useless
+            // to the vendor who has to act on it.
+            'reason' => ['required_if:action,reject', 'nullable', 'string', 'max:1000'],
+        ], [
+            'uuids.required' => 'Select at least one listing first.',
+            'uuids.max' => 'Up to 100 listings at a time.',
+            'reason.required_if' => 'Tell the vendor why these were rejected.',
+        ]);
+
+        $products = Product::query()->whereIn('uuid', $validated['uuids'])->get();
+
+        $done = 0;
+        $skipped = 0;
+
+        foreach ($products as $product) {
+            try {
+                if ($validated['action'] === 'approve') {
+                    $this->statusService->approve($product, $request->user());
+                } else {
+                    $this->statusService->reject($product, $request->user(), (string) $validated['reason']);
+                }
+
+                $done++;
+            } catch (\Throwable) {
+                // Already moved on, or not in a state this transition allows.
+                $skipped++;
+            }
+        }
+
+        $verb = $validated['action'] === 'approve' ? 'approved' : 'rejected';
+        $message = "{$done} listing".($done === 1 ? '' : 's')." {$verb}.";
+
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped — their status had already changed.";
+        }
+
+        return back()->with($done > 0 ? 'success' : 'error', $message);
+    }
 }

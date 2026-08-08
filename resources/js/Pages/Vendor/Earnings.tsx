@@ -1,5 +1,9 @@
+import ViewToggle from '@/Components/ui/ViewToggle';
+import { useViewMode } from '@/Hooks/useViewMode';
 import { Card } from '@/Components/ui/Card';
+import { Input } from '@/Components/ui/Input';
 import { InputError } from '@/Components/ui/InputError';
+import { Select } from '@/Components/ui/Select';
 import VendorLayout from '@/Layouts/VendorLayout';
 import { cn } from '@/Utils/cn';
 import { formatNairaFromKobo } from '@/Utils/money';
@@ -85,6 +89,9 @@ export default function VendorEarnings() {
         });
     };
 
+    // Read-only, so a toggle but no checkboxes — there is nothing to act on.
+    const { mode, choose } = useViewMode('vendor.earnings', 'table');
+
     return (
         <VendorLayout>
             <Head title="Earnings" />
@@ -121,13 +128,57 @@ export default function VendorEarnings() {
                 <div className="space-y-4">
                     {/* ── Ledger ── */}
                     <Card className="p-0">
-                        <h2 className="border-b border-gray-100 px-5 py-4 text-sm font-bold text-gray-900">
-                            Earnings ledger
-                        </h2>
+                        <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-3">
+                            <h2 className="text-sm font-bold text-gray-900">Earnings ledger</h2>
+                            <ViewToggle mode={mode} onChange={choose} label="ledger" />
+                        </div>
                         {ledger.length === 0 ? (
                             <p className="px-5 py-10 text-center text-sm text-gray-400">
                                 Confirmed deliveries appear here with your per-order earnings.
                             </p>
+                        ) : mode === 'table' ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[560px] text-sm">
+                                    <thead className="border-b border-gray-100 bg-gray-50/70 text-left text-xs uppercase tracking-wide text-gray-500">
+                                        <tr>
+                                            <th className="w-12 py-3 pl-5 pr-2 font-semibold">S/N</th>
+                                            <th className="px-4 py-3 font-semibold">Entry</th>
+                                            <th className="px-4 py-3 font-semibold">When</th>
+                                            <th className="px-4 py-3 text-right font-semibold">Amount</th>
+                                            <th className="px-5 py-3 text-right font-semibold">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {ledger.map((row, index) => {
+                                            const credit = row.amountKobo > 0;
+
+                                            return (
+                                                <tr key={row.uuid} className="transition-colors hover:bg-slate-50/60">
+                                                    <td className="py-3 pl-5 pr-2 text-xs tabular-nums text-gray-400">
+                                                        {index + 1}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-900">
+                                                        {row.note ?? row.type}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-xs text-gray-500">{row.at}</td>
+                                                    <td
+                                                        className={cn(
+                                                            'px-4 py-3 text-right font-bold tabular-nums',
+                                                            credit ? 'text-emerald-600' : 'text-gray-700',
+                                                        )}
+                                                    >
+                                                        {credit ? '+' : '−'}{' '}
+                                                        {formatNairaFromKobo(Math.abs(row.amountKobo))}
+                                                    </td>
+                                                    <td className="px-5 py-3 text-right tabular-nums text-gray-500">
+                                                        {formatNairaFromKobo(row.balanceAfterKobo)}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
                             <ul className="divide-y divide-gray-100">
                                 {ledger.map((row) => {
@@ -239,7 +290,7 @@ export default function VendorEarnings() {
                     ) : (
                         <form onSubmit={submitBank} className="mt-3 space-y-3">
                             <div>
-                                <select
+                                <Select
                                     value={bankForm.data.bank_code}
                                     onChange={(e) => {
                                         const bank = BANKS.find((b) => b.code === e.target.value);
@@ -250,7 +301,6 @@ export default function VendorEarnings() {
                                         }));
                                     }}
                                     required
-                                    className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
                                 >
                                     <option value="">Select your bank</option>
                                     {BANKS.map((bank) => (
@@ -258,11 +308,11 @@ export default function VendorEarnings() {
                                             {bank.name}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                                 <InputError message={bankForm.errors.bank_code} className="mt-1" />
                             </div>
                             <div>
-                                <input
+                                <Input
                                     type="text"
                                     inputMode="numeric"
                                     maxLength={10}
@@ -270,7 +320,7 @@ export default function VendorEarnings() {
                                     value={bankForm.data.account_number}
                                     onChange={(e) => bankForm.setData('account_number', e.target.value)}
                                     required
-                                    className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                                    className="rounded-xl"
                                 />
                                 <InputError message={bankForm.errors.account_number} className="mt-1" />
                             </div>

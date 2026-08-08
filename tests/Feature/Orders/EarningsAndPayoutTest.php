@@ -3,21 +3,19 @@
 use App\Models\User;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Customer\Models\CustomerProfile;
+use App\Modules\Logistics\Services\DeliveryService;
 use App\Modules\Orders\Models\Order;
-use App\Modules\Orders\Services\DeliveryService;
 use App\Modules\Orders\Services\OrderService;
 use App\Modules\Orders\Services\PreparationService;
-use App\Modules\Savings\Services\PlanService;
+use App\Modules\Savings\Models\Savings;
 use App\Modules\Vendor\Models\VendorEarning;
 use App\Modules\Vendor\Services\BankAccountService;
 use App\Modules\Vendor\Services\EarningsService;
 use App\Modules\Vendor\Services\PayoutService;
-use App\Modules\Wallet\Models\Wallet;
-use App\Modules\Wallet\Services\WalletService;
 use App\Shared\Contracts\BankAccountResolverContract;
-use App\Shared\Enums\OrderStatus;
 use App\Shared\Enums\PayoutBatchStatus;
 use App\Shared\Enums\PayoutItemStatus;
+use App\Shared\Enums\ShipmentStatus;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
@@ -63,18 +61,16 @@ beforeEach(function () {
 /** Run one order to Delivered (unconfirmed) and return it. */
 function deliveredOrder($test): Order
 {
-    app(WalletService::class)->creditDeposit($test->customer, $test->product->price_kobo, 'TEST-DEP-'.fake()->unique()->uuid());
-    $plan = app(PlanService::class)->payAtOnce($test->customer, $test->product);
-    $order = app(OrderService::class)->createFromPlan($test->customer, $plan, '12 Marina Road', 'Lagos', 'Eti-Osa');
+    $order = testOrder($test->customer, $test->product);
     app(OrderService::class)->confirm($test->admin, $order);
     app(PreparationService::class)->markReadyForPickup($test->vendorUser, $order->refresh());
 
     $logistics = User::factory()->create();
     $logistics->assignRole('Logistics Personnel');
-    app(DeliveryService::class)->assign($test->admin, $order->refresh(), $logistics);
-    foreach ([OrderStatus::Packed, OrderStatus::Shipped, OrderStatus::OutForDelivery, OrderStatus::Delivered] as $step) {
-        app(DeliveryService::class)->updateStatus($logistics, $order->refresh(), $step);
-    }
+
+    $shipment = $order->refresh()->shipment;
+    app(DeliveryService::class)->assign($test->admin, $shipment, $logistics);
+    walkParcel($logistics, $shipment->fresh(), ShipmentStatus::Delivered);
 
     return $order->refresh();
 }
@@ -128,7 +124,7 @@ it('generates a payout batch whose items equal each vendor ledger balance and pa
         $this->vendorUser, $order->vendor, '058', 'GTBank', '0123456789',
     );
 
-    $walletTotalBefore = (int) Wallet::query()->sum('balance_kobo');
+    $walletTotalBefore = (int) Savings::query()->sum('balance_kobo');
 
     $batch = app(PayoutService::class)->generateBatch($this->finance);
 
@@ -146,7 +142,7 @@ it('generates a payout batch whose items equal each vendor ledger balance and pa
     expect($item->refresh()->status)->toBe(PayoutItemStatus::Paid)
         ->and(app(EarningsService::class)->balanceKobo($order->vendor))->toBe(0)
         // Customer wallets are completely untouched by vendor payouts.
-        ->and((int) Wallet::query()->sum('balance_kobo'))->toBe($walletTotalBefore);
+        ->and((int) Savings::query()->sum('balance_kobo'))->toBe($walletTotalBefore);
 
     // Ledger shows the negative payout row.
     $this->assertDatabaseHas('vendor_earnings', [
@@ -218,17 +214,14 @@ it('never includes another vendor’s earnings in a payout item', function () {
     $productB = Product::factory()->approved()->create(['price_kobo' => 40_000_00]);
     $vendorUserB = $productB->vendor->user;
     $vendorUserB->assignRole('Vendor');
-    app(WalletService::class)->creditDeposit($this->customer, 40_000_00, 'TEST-DEP-'.fake()->unique()->uuid());
-    $planB = app(PlanService::class)->payAtOnce($this->customer, $productB);
-    $orderB = app(OrderService::class)->createFromPlan($this->customer, $planB, '12 Marina Road', 'Lagos', 'Eti-Osa');
+    $orderB = testOrder($this->customer, $productB);
     app(OrderService::class)->confirm($this->admin, $orderB);
     app(PreparationService::class)->markReadyForPickup($vendorUserB, $orderB->refresh());
     $logistics = User::factory()->create();
     $logistics->assignRole('Logistics Personnel');
-    app(DeliveryService::class)->assign($this->admin, $orderB->refresh(), $logistics);
-    foreach ([OrderStatus::Packed, OrderStatus::Shipped, OrderStatus::OutForDelivery, OrderStatus::Delivered] as $step) {
-        app(DeliveryService::class)->updateStatus($logistics, $orderB->refresh(), $step);
-    }
+    $shipmentB = $orderB->refresh()->shipment;
+    app(DeliveryService::class)->assign($this->admin, $shipmentB, $logistics);
+    walkParcel($logistics, $shipmentB->fresh(), ShipmentStatus::Delivered);
     app(OrderService::class)->confirmDelivery($this->customer, $orderB->refresh());
     app(BankAccountService::class)->setAccount($vendorUserB, $orderB->vendor, '044', 'Access Bank', '9876543210');
 

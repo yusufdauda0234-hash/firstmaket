@@ -1,10 +1,17 @@
+import AddCustomerModal from '@/Components/domain/admin/AddCustomerModal';
 import { Badge, statusTone } from '@/Components/ui/Badge';
+import BulkActionBar from '@/Components/ui/BulkActionBar';
 import { Card } from '@/Components/ui/Card';
 import PageHeader from '@/Components/ui/PageHeader';
 import Reveal from '@/Components/ui/Reveal';
+import RowCheckbox from '@/Components/ui/RowCheckbox';
+import ViewToggle from '@/Components/ui/ViewToggle';
+import { useRowSelection } from '@/Hooks/useRowSelection';
+import { useViewMode } from '@/Hooks/useViewMode';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronRight, Search, Users } from 'lucide-react';
+import { PageProps, Paginated } from '@/Types';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { ChevronRight, Plus, Search, Users } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 interface UserRow {
@@ -17,10 +24,7 @@ interface UserRow {
 }
 
 interface Props {
-    users: {
-        data: UserRow[];
-        links: { url: string | null; label: string; active: boolean }[];
-    };
+    users: Paginated<UserRow>;
     query: string;
     status: string;
     [key: string]: unknown;
@@ -36,22 +40,63 @@ const statusLabel: Record<string, string> = {
 };
 
 export default function UsersIndex() {
-    const { users, query, status } = usePage<Props>().props;
+    const { users, query, status, auth } = usePage<Props & PageProps>().props;
     const [search, setSearch] = useState(query);
+    const [adding, setAdding] = useState(false);
+    // Account admin is column-scanning work, so table leads here.
+    const { mode, choose } = useViewMode('admin.customers', 'table');
+
+    const canModerate =
+        auth.user !== null &&
+        (auth.user.permissions.includes('customers.suspend') ||
+            auth.user.roles.includes('Super Administrator'));
+
+    const selection = useRowSelection(users.data.map((u) => u.uuid));
+    const bulk = useForm<{ action: string; uuids: string[]; reason: string }>({
+        action: 'suspend',
+        uuids: [],
+        reason: '',
+    });
+
+    const firstIndex = (users.from ?? 1) - 1;
 
     const submitSearch: FormEventHandler = (e) => {
         e.preventDefault();
         router.get(route('admin.users.index'), { q: search, status }, { preserveState: true });
     };
 
+    function runBulk(action: 'suspend' | 'reactivate', reason = '') {
+        bulk.transform(() => ({ action, uuids: selection.ids, reason }));
+        bulk.post(route('admin.users.bulk'), {
+            preserveScroll: true,
+            onSuccess: () => selection.clear(),
+        });
+    }
+
     return (
         <AdminLayout>
             <Head title="Customers" />
+
+            {canModerate && <AddCustomerModal open={adding} onClose={() => setAdding(false)} />}
 
             <PageHeader
                 eyebrow="Operational controls"
                 title="Customers"
                 description="Search customer accounts and suspend or ban when necessary — sessions end on the account's next request."
+                actions={
+                    <div className="flex flex-wrap items-center gap-2">
+                        <ViewToggle mode={mode} onChange={choose} label="customers" />
+                        {canModerate && (
+                            <button
+                                type="button"
+                                onClick={() => setAdding(true)}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-700"
+                            >
+                                <Plus className="h-4 w-4" /> Add customer
+                            </button>
+                        )}
+                    </div>
+                }
             />
 
             <form onSubmit={submitSearch} className="mb-4 flex items-center gap-2">
@@ -99,31 +144,133 @@ export default function UsersIndex() {
                             <p className="mt-4 text-sm font-medium text-gray-900">No customers found</p>
                             <p className="mt-1 text-sm text-gray-500">Try a different search or status filter.</p>
                         </div>
+                    ) : mode === 'table' ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[720px] text-sm">
+                                <thead className="border-b border-gray-100 bg-gray-50/70 text-left text-xs uppercase tracking-wide text-gray-500">
+                                    <tr>
+                                        <th className="w-10 py-3 pl-5 pr-2">
+                                            <RowCheckbox
+                                                checked={selection.allSelected}
+                                                indeterminate={selection.someSelected}
+                                                onChange={selection.toggleAll}
+                                                label="Select all customers on this page"
+                                            />
+                                        </th>
+                                        <th className="w-12 px-2 py-3 font-semibold">S/N</th>
+                                        <th className="px-5 py-3 font-semibold">Customer</th>
+                                        <th className="px-5 py-3 font-semibold">Contact</th>
+                                        <th className="px-5 py-3 font-semibold">Joined</th>
+                                        <th className="px-5 py-3 font-semibold">Status</th>
+                                        <th className="w-10 px-5 py-3" />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {users.data.map((user, index) => (
+                                        <tr
+                                            key={user.uuid}
+                                            onClick={() => router.visit(route('admin.users.show', user.uuid))}
+                                            className={`group cursor-pointer transition-colors hover:bg-brand-50/50 ${
+                                                selection.isSelected(user.uuid) ? 'bg-brand-50/70' : ''
+                                            }`}
+                                        >
+                                            <td className="py-3.5 pl-5 pr-2">
+                                                <RowCheckbox
+                                                    checked={selection.isSelected(user.uuid)}
+                                                    onChange={() => selection.toggle(user.uuid)}
+                                                    label={`Select ${user.name}`}
+                                                />
+                                            </td>
+                                            <td className="px-2 py-3.5 text-xs tabular-nums text-gray-400">
+                                                {firstIndex + index + 1}
+                                            </td>
+                                            <td className="px-5 py-3.5 font-semibold text-gray-900 group-hover:text-brand-700">
+                                                {user.name}
+                                            </td>
+                                            <td className="px-5 py-3.5 text-gray-600">
+                                                {user.email ?? '—'}
+                                                {user.phone && (
+                                                    <span className="block text-xs text-gray-400">
+                                                        {user.phone}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-5 py-3.5 text-xs text-gray-500">{user.joinedAt}</td>
+                                            <td className="px-5 py-3.5">
+                                                <Badge tone={statusTone(user.status)}>
+                                                    {user.status.replace('_', ' ')}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <ChevronRight className="h-4 w-4 text-gray-300 transition-transform group-hover:translate-x-1 group-hover:text-brand-500" />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     ) : (
-                        <div className="divide-y divide-gray-100">
+                        <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
                             {users.data.map((user) => (
-                                <Link
+                                <div
                                     key={user.uuid}
-                                    href={route('admin.users.show', user.uuid)}
-                                    className="group flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-brand-50/50"
+                                    className={`flex flex-col rounded-xl border p-4 transition ${
+                                        selection.isSelected(user.uuid)
+                                            ? 'border-brand-300 bg-brand-50/60'
+                                            : 'border-gray-100 hover:border-brand-200 hover:shadow-md hover:shadow-brand-600/5'
+                                    }`}
                                 >
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block truncate font-semibold text-gray-900 group-hover:text-brand-700">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <RowCheckbox
+                                            checked={selection.isSelected(user.uuid)}
+                                            onChange={() => selection.toggle(user.uuid)}
+                                            label={`Select ${user.name}`}
+                                        />
+                                        <Badge tone={statusTone(user.status)}>
+                                            {user.status.replace('_', ' ')}
+                                        </Badge>
+                                    </div>
+                                    <Link
+                                        href={route('admin.users.show', user.uuid)}
+                                        className="group mt-2 block"
+                                    >
+                                        <span className="block truncate font-bold text-gray-900 group-hover:text-brand-700">
                                             {user.name}
                                         </span>
                                         <span className="block truncate text-sm text-gray-500">
                                             {user.email ?? user.phone ?? '—'}
                                         </span>
+                                    </Link>
+                                    <span className="mt-3 border-t border-gray-100 pt-2.5 text-xs text-gray-400">
+                                        Joined {user.joinedAt}
                                     </span>
-                                    <span className="hidden shrink-0 text-xs text-gray-400 sm:block">{user.joinedAt}</span>
-                                    <Badge tone={statusTone(user.status)}>{user.status.replace('_', ' ')}</Badge>
-                                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform group-hover:translate-x-1 group-hover:text-brand-500" />
-                                </Link>
+                                </div>
                             ))}
                         </div>
                     )}
                 </Card>
             </Reveal>
+
+            <BulkActionBar
+                count={selection.count}
+                noun="customer"
+                processing={bulk.processing}
+                onClear={selection.clear}
+                actions={
+                    canModerate
+                        ? [
+                              { label: 'Reactivate', tone: 'primary', run: () => runBulk('reactivate') },
+                              {
+                                  label: 'Suspend',
+                                  tone: 'danger',
+                                  needsReason: true,
+                                  reasonPlaceholder: 'e.g. Repeated chargebacks under review',
+                                  run: (reason) => runBulk('suspend', reason),
+                              },
+                          ]
+                        : []
+                }
+            />
 
             {users.links.length > 3 && (
                 <div className="mt-4 flex flex-wrap gap-1">

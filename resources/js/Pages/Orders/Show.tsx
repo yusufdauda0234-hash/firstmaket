@@ -3,7 +3,7 @@ import AccountLayout from '@/Layouts/AccountLayout';
 import { cn } from '@/Utils/cn';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, MapPin, Package, PartyPopper } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, KeyRound, MapPin, Package, PartyPopper } from 'lucide-react';
 
 interface TimelineEntry {
     id: number;
@@ -29,6 +29,10 @@ interface Props {
         deliveredAt: string | null;
         confirmedAt: string | null;
         canConfirmReceipt: boolean;
+        goodsDueKobo: number;
+        goodsPaidAt: string | null;
+        /** Four digits the customer reads to the courier. Null once spent. */
+        deliveryCode: string | null;
         timeline: TimelineEntry[];
     };
     [key: string]: unknown;
@@ -40,6 +44,7 @@ const CHAIN = ['pending', 'processing', 'ready_for_pickup', 'packed', 'shipped',
 export default function OrderShow() {
     const { order } = usePage<Props>().props;
     const confirmForm = useForm({});
+    const payGoodsForm = useForm({});
 
     const chainIndex = CHAIN.indexOf(order.status);
     const isProblem = order.status === 'vendor_rejected' || order.status === 'cancelled';
@@ -122,6 +127,28 @@ export default function OrderShow() {
                 )}
             </div>
 
+            {/* ── Delivery code ──
+                Shown for the whole journey, not just the last hour: the
+                courier can arrive early, and a customer hunting for a code
+                on a doorstep is the moment this is most likely to fail. */}
+            {order.deliveryCode && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4">
+                    <div>
+                        <p className="flex items-center gap-2 text-sm font-bold text-brand-900">
+                            <KeyRound className="h-4 w-4 text-brand-600" />
+                            Your delivery code
+                        </p>
+                        <p className="mt-0.5 text-xs text-brand-700">
+                            Read this to the courier when they hand your parcel over. Do not give it
+                            to anyone before you have the goods in your hands.
+                        </p>
+                    </div>
+                    <span className="rounded-xl bg-white px-5 py-2.5 text-2xl font-extrabold tracking-[0.35em] tabular-nums text-brand-800 shadow-sm">
+                        {order.deliveryCode}
+                    </span>
+                </div>
+            )}
+
             {/* ── Confirm receipt ── */}
             {order.canConfirmReceipt && (
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
@@ -146,6 +173,31 @@ export default function OrderShow() {
                 <p className="mt-4 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800">
                     <CheckCircle2 className="h-4 w-4" /> Receipt confirmed {order.confirmedAt}. Thanks for shopping
                     with FirstMaket!
+                </p>
+            )}
+
+            {order.status === 'delivered' && order.goodsDueKobo > 0 && !order.goodsPaidAt && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+                    <div>
+                        <p className="text-sm font-bold text-amber-900">Payment due for your item</p>
+                        <p className="mt-0.5 text-xs text-amber-700">
+                            Your delivery fee was paid at checkout. Pay the item balance securely now.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        disabled={payGoodsForm.processing}
+                        onClick={() => payGoodsForm.post(route('orders.pay-goods', order.uuid), { preserveScroll: true })}
+                        className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
+                    >
+                        {payGoodsForm.processing ? 'Opening payment…' : `Pay ${formatNairaFromKobo(order.goodsDueKobo)}`}
+                    </button>
+                </div>
+            )}
+
+            {order.goodsPaidAt && (
+                <p className="mt-4 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800">
+                    <CheckCircle2 className="h-4 w-4" /> Item payment confirmed {order.goodsPaidAt}.
                 </p>
             )}
 

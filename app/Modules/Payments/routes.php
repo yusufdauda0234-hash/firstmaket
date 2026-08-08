@@ -1,6 +1,5 @@
 <?php
 
-use App\Modules\Payments\Controllers\DepositController;
 use App\Modules\Payments\Controllers\PaymentCallbackController;
 use App\Modules\Payments\Controllers\PaystackWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -9,9 +8,7 @@ use Illuminate\Support\Facades\Route;
 // domain by App\Providers\ModuleServiceProvider.
 
 Route::middleware('auth')->group(function () {
-    Route::get('wallet/add-money', [DepositController::class, 'create'])->name('wallet.add-money');
-    Route::post('wallet/deposit', [DepositController::class, 'store'])->name('wallet.deposit');
-    Route::get('wallet/callback', [PaymentCallbackController::class, 'show'])->name('payment.callback');
+    Route::get('savings/callback', [PaymentCallbackController::class, 'show'])->name('payment.callback');
 });
 
 // Paystack webhook — public, no auth, CSRF-exempt (see bootstrap/app.php).

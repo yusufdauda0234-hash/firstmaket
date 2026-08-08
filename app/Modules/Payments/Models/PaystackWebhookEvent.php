@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 /**
  * Raw webhook event log for replay protection and debugging
  * (docs/FirstMaket-Database_Schema.md section 7). Every inbound webhook is
- * recorded here — valid or not — before any wallet is touched.
+ * recorded here — valid or not — before any balance is touched.
  *
  * @property int $id
  * @property string|null $event

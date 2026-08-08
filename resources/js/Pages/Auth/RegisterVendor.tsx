@@ -59,9 +59,9 @@ export default function RegisterVendor() {
 
                     <Link href={route('home')} aria-label="Back to FirstMaket home">
                         <img
-                            src="/images/brand/logo-light-transparent.png"
+                            src="/images/brand/logo-full-light.png"
                             alt="FirstMaket"
-                            className="h-20 w-auto"
+                            className="h-28 w-auto"
                         />
                     </Link>
 
@@ -101,7 +101,7 @@ export default function RegisterVendor() {
                 {/* Form panel */}
                 <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
                     <Link href={route('home')} className="lg:hidden" aria-label="Back to FirstMaket home">
-                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
+                        <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-12 w-auto" />
                     </Link>
 
                     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center py-8">

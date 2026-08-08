@@ -25,6 +25,18 @@ use Illuminate\Support\Carbon;
  */
 class CategoryCommissionRate extends Model
 {
+    /*
+     * SUPERSEDED by CommissionRule and no longer consulted when pricing a
+     * sale. A flat percentage per category could not express a price band, a
+     * flat handling fee, or a floor — see the migration that created
+     * commission_rules for why those matter.
+     *
+     * Kept because its rows are the historical record of what categories
+     * charged, and that migration copied the active ones across. Do not wire
+     * it back into CommissionRate: two sources of truth for what a sale costs
+     * is worse than either one alone.
+     */
+
     const UPDATED_AT = null;
 
     protected $fillable = [

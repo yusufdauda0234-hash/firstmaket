@@ -5,9 +5,9 @@ namespace App\Modules\Admin\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Orders\Models\Order;
-use App\Modules\Savings\Models\ProductTargetPlan;
+use App\Modules\Savings\Models\Savings;
+use App\Modules\Savings\Models\SavingsGoal;
 use App\Modules\Support\Models\SupportTicket;
-use App\Modules\Wallet\Models\Wallet;
 use App\Shared\Enums\UserType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +16,7 @@ use Inertia\Response;
 /**
  * Support-agent read-only customer lookup
  * (docs/FirstMaket_Implementation_Plan.md Sprint 7). Deliberately narrow:
- * order/plan/wallet CONTEXT only — never card data (none is stored), and no
+ * order/goal/savings CONTEXT only — never card data (none is stored), and no
  * mutation endpoints exist here at all.
  */
 class CustomerLookupController extends Controller
@@ -70,7 +70,7 @@ class CustomerLookupController extends Controller
             'emailVerified' => $user->hasVerifiedEmail(),
             'phoneVerified' => $user->hasVerifiedPhone(),
             'memberSince' => $user->created_at->format('j M Y'),
-            'walletBalanceKobo' => (int) Wallet::query()->where('user_id', $user->id)->value('balance_kobo'),
+            'savingsBalanceKobo' => (int) Savings::query()->where('user_id', $user->id)->value('balance_kobo'),
             'orders' => Order::query()
                 ->where('customer_id', $user->id)
                 ->with('product:id,name')
@@ -85,18 +85,17 @@ class CustomerLookupController extends Controller
                     'lockedPriceKobo' => $order->locked_price_kobo,
                     'createdAt' => $order->created_at->format('j M Y'),
                 ]),
-            'plans' => ProductTargetPlan::query()
+            'savingsGoals' => SavingsGoal::query()
                 ->where('user_id', $user->id)
-                ->with('product:id,name')
+                ->with('items.product:id,name')
                 ->orderByDesc('id')
                 ->limit(10)
                 ->get()
-                ->map(fn (ProductTargetPlan $plan) => [
-                    'uuid' => $plan->uuid,
-                    'productName' => $plan->product->name,
-                    'status' => $plan->status->value,
-                    'progress' => (float) $plan->progress_percentage,
-                    'targetPriceKobo' => $plan->target_price_kobo,
+                ->map(fn (SavingsGoal $goal) => [
+                    'uuid' => $goal->uuid,
+                    'productNames' => $goal->items->map(fn ($item) => $item->product->name)->implode(', '),
+                    'status' => $goal->status->value,
+                    'targetKobo' => $goal->target_kobo,
                 ]),
             'tickets' => SupportTicket::query()
                 ->where('customer_id', $user->id)

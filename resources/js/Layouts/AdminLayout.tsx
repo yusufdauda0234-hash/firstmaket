@@ -1,28 +1,8 @@
 import { cn } from '@/Utils/cn';
+import { useFlashToast } from '@/Components/ui/Toast';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import {
-    Banknote,
-    BarChart3,
-    ChevronLeft,
-    ClipboardList,
-    LayoutDashboard,
-    LifeBuoy,
-    LogOut,
-    Menu,
-    PackageCheck,
-    Percent,
-    Scale,
-    Search,
-    ShieldCheck,
-    SlidersHorizontal,
-    Smartphone,
-    Sparkles,
-    Store,
-    Truck,
-    Users,
-    X,
-} from 'lucide-react';
+import { BookOpen, Banknote, BarChart3, CalendarClock, ChevronLeft, ClipboardList, Coins, FolderTree, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, Scale, Search, Send, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, Users, Wallet, X } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 interface NavItem {
@@ -50,6 +30,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
         props: { auth },
         url,
     } = usePage<PageProps>();
+    const { flash } = usePage<PageProps>().props;
+
+    // One toast system across storefront, vendor and admin, so a result reads
+    // the same wherever it happens.
+    useFlashToast(flash.success);
+    useFlashToast(flash.error, 'error');
+
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [search, setSearch] = useState('');
@@ -80,6 +67,15 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     const can = (permission: string) => isSuper || (auth.user?.permissions.includes(permission) ?? false);
     const path = url.split('?')[0];
 
+    /*
+     * Grouped by system, not by who happened to build what.
+     *
+     * The rule: a group answers "what am I working on" — the catalogue, a
+     * vendor, an order, a delivery, a person. Pages that configure a system
+     * live with that system rather than in a single settings drawer, because
+     * nobody sets a delivery rate while thinking "settings" — they think
+     * "delivery".
+     */
     const groups = useMemo<NavGroup[]>(
         () => [
             {
@@ -92,10 +88,45 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         active: path === '/',
                         show: true,
                     },
+                    {
+                        label: 'Reports',
+                        href: route('admin.reports.index'),
+                        icon: BarChart3,
+                        active: path.startsWith('/reports'),
+                        show: can('reports.view'),
+                    },
                 ],
             },
             {
-                label: 'Marketplace',
+                label: 'Catalogue',
+                items: [
+                    {
+                        label: 'Products',
+                        href: route('admin.products.index'),
+                        icon: PackageCheck,
+                        active: path.startsWith('/products'),
+                        show: can('products.approve'),
+                    },
+                    {
+                        label: 'Categories',
+                        href: route('admin.catalog.categories'),
+                        icon: FolderTree,
+                        active: path.startsWith('/catalog/categories'),
+                        show: can('catalog.manage'),
+                    },
+                    {
+                        label: 'Product fields',
+                        href: route('admin.catalog.fields'),
+                        icon: ListChecks,
+                        active: path.startsWith('/catalog/product-fields'),
+                        show: can('catalog.manage'),
+                    },
+                ],
+            },
+            {
+                // Everything about the people who sell, including what they
+                // are charged and what they are owed.
+                label: 'Vendors',
                 items: [
                     {
                         label: 'Vendors',
@@ -105,12 +136,32 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         show: can('vendors.view'),
                     },
                     {
-                        label: 'Products',
-                        href: route('admin.products.index'),
-                        icon: PackageCheck,
-                        active: path.startsWith('/products'),
-                        show: can('products.approve'),
+                        label: 'Commissions',
+                        href: route('admin.settings.commissions'),
+                        icon: Percent,
+                        active: path.startsWith('/settings/commissions'),
+                        show: can('commissions.manage'),
                     },
+                    {
+                        label: 'Listing fees',
+                        href: route('admin.settings.fees'),
+                        icon: SlidersHorizontal,
+                        active: path.startsWith('/settings/fees'),
+                        show: can('vendor_fees.manage'),
+                    },
+                    {
+                        label: 'Payouts',
+                        href: route('admin.payouts.index'),
+                        icon: Banknote,
+                        active: path.startsWith('/payouts'),
+                        show: can('vendor_payouts.approve'),
+                    },
+                ],
+            },
+            {
+                // An order and the terms it can be placed under.
+                label: 'Orders',
+                items: [
                     {
                         label: 'Orders',
                         href: route('admin.orders.index'),
@@ -119,17 +170,77 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         show: can('orders.manage'),
                     },
                     {
-                        label: 'Deliveries',
+                        label: 'Pay Small Small',
+                        href: route('admin.settings.plan-terms'),
+                        icon: CalendarClock,
+                        active: path.startsWith('/settings/plan-terms'),
+                        show: can('vendor_fees.manage'),
+                    },
+                    {
+                        label: 'Promo codes',
+                        href: route('admin.settings.promo-codes'),
+                        icon: TicketPercent,
+                        active: path.startsWith('/settings/promo-codes'),
+                        show: can('commissions.manage'),
+                    },
+                ],
+            },
+            {
+                // The courier side, end to end: what it costs, who is sent,
+                // what they are carrying, and the cash they come back with.
+                label: 'Logistics',
+                items: [
+                    {
+                        // Assigning parcels. Gated on orders.manage, not
+                        // delivery.update — a courier must never be able to
+                        // hand themselves work.
+                        label: 'Dispatch',
+                        href: route('admin.dispatch.index'),
+                        icon: Send,
+                        active: path.startsWith('/dispatch'),
+                        show: can('orders.manage'),
+                    },
+                    {
+                        label: 'My deliveries',
                         href: route('admin.deliveries.index'),
                         icon: Truck,
                         active: path.startsWith('/deliveries'),
                         show: can('delivery.update'),
                     },
+                    {
+                        label: 'Cash on delivery',
+                        href: route('admin.cash.index'),
+                        icon: Wallet,
+                        active: path.startsWith('/cash'),
+                        show: can('orders.manage'),
+                    },
+                    {
+                        label: 'Delivery rates',
+                        href: route('admin.settings.delivery-rates'),
+                        icon: MapPin,
+                        active: path.startsWith('/settings/delivery-rates'),
+                        show: can('vendor_fees.manage'),
+                    },
                 ],
             },
             {
-                label: 'Customer care',
+                // Everyone with an account, and the queue for reaching them.
+                label: 'People',
                 items: [
+                    {
+                        label: 'Customers',
+                        href: route('admin.users.index'),
+                        icon: Users,
+                        active: path.startsWith('/customers'),
+                        show: can('customers.suspend'),
+                    },
+                    {
+                        label: 'Staff',
+                        href: route('admin.staff.index'),
+                        icon: UserCog,
+                        active: path.startsWith('/staff'),
+                        show: can('staff.manage'),
+                    },
                     {
                         label: 'Support',
                         href: route('admin.support.index'),
@@ -144,25 +255,6 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         active: path.startsWith('/phone-numbers'),
                         show: can('identity.review'),
                     },
-                    {
-                        label: 'Customers',
-                        href: route('admin.users.index'),
-                        icon: Users,
-                        active: path.startsWith('/customers'),
-                        show: can('customers.suspend'),
-                    },
-                ],
-            },
-            {
-                label: 'Insights',
-                items: [
-                    {
-                        label: 'Reports',
-                        href: route('admin.reports.index'),
-                        icon: BarChart3,
-                        active: path.startsWith('/reports'),
-                        show: can('reports.view'),
-                    },
                 ],
             },
             {
@@ -173,14 +265,14 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         href: route('admin.reconciliation.index'),
                         icon: Scale,
                         active: path.startsWith('/reconciliation'),
-                        show: can('wallet.reconcile'),
+                        show: can('savings.reconcile'),
                     },
                     {
-                        label: 'Vendor payouts',
-                        href: route('admin.payouts.index'),
-                        icon: Banknote,
-                        active: path.startsWith('/payouts'),
-                        show: can('vendor_payouts.approve'),
+                        label: 'Currencies',
+                        href: route('admin.settings.currencies'),
+                        icon: Coins,
+                        active: path.startsWith('/settings/currencies'),
+                        show: can('vendor_fees.manage'),
                     },
                 ],
             },
@@ -188,25 +280,18 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                 label: 'System',
                 items: [
                     {
-                        label: 'Fee settings',
-                        href: route('admin.settings.fees'),
-                        icon: SlidersHorizontal,
-                        active: path.startsWith('/settings/fees'),
-                        show: can('vendor_fees.manage'),
-                    },
-                    {
-                        label: 'Commissions',
-                        href: route('admin.settings.commissions'),
-                        icon: Percent,
-                        active: path.startsWith('/settings/commissions'),
-                        show: can('commissions.manage'),
-                    },
-                    {
                         label: 'AI settings',
                         href: route('admin.settings.ai'),
                         icon: Sparkles,
                         active: path.startsWith('/settings/ai'),
                         show: can('ai_settings.manage'),
+                    },
+                    {
+                        label: 'How it works',
+                        href: route('admin.guide'),
+                        icon: BookOpen,
+                        active: path.startsWith('/guide'),
+                        show: true,
                     },
                 ],
             },
@@ -240,13 +325,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                     collapsed && !mobile && 'justify-center px-0',
                 )}
             >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 shadow-sm">
-                    <img src="/images/brand/logo-mark-transparent.png" alt="FirstMaket" className="h-9 w-9 object-contain" />
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl  from-brand-600 to-brand-900 shadow-sm">
+                    <img src="/images/brand/logo-mark-blue.png" alt="FirstMaket" className="h-10 w-10 object-contain" />
                 </span>
                 {(!collapsed || mobile) && (
                     <span className="min-w-0">
                         <span className="flex items-center gap-2">
-                            <span className="text-[15px] font-extrabold leading-none tracking-tight text-gray-900">
+                            <span className="text-[15px] font-extrabold leading-none tracking-tight text-brand-700">
                                 FirstMaket
                             </span>
                             <span className="rounded-md bg-brand-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-900">
@@ -410,7 +495,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
             {/* Mobile top bar */}
             <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur-md lg:hidden">
                 <Link href={route('admin.dashboard')} className="flex items-center gap-2">
-                    <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-8 w-auto" />
+                    <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-10 w-auto" />
                     <span className="rounded-full bg-brand-yellow px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-900">
                         Staff
                     </span>
@@ -448,7 +533,9 @@ export default function AdminLayout({ children }: PropsWithChildren) {
             )}
 
             <main className={cn('px-4 py-6 transition-[margin] duration-200 sm:px-6 lg:px-8 lg:py-8', mainMargin)}>
-                <div className="mx-auto max-w-6xl">{children}</div>
+                <div className="mx-auto max-w-6xl">
+                    {children}
+                </div>
             </main>
         </div>
     );

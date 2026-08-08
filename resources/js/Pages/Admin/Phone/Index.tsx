@@ -10,7 +10,7 @@ import { ShieldCheck, Smartphone } from 'lucide-react';
 import { useState } from 'react';
 
 interface UserRow {
-    id: number;
+    uuid: string;
     name: string;
     email: string;
     phone: string;
@@ -29,28 +29,28 @@ interface Props {
  */
 export default function AdminPhoneIndex() {
     const { users, flash } = usePage<Props>().props;
-    const [rejectingId, setRejectingId] = useState<number | null>(null);
+    const [rejectingUuid, setRejectingUuid] = useState<string | null>(null);
     const [reason, setReason] = useState('');
-    const [busyId, setBusyId] = useState<number | null>(null);
+    const [busyUuid, setBusyUuid] = useState<string | null>(null);
 
-    const approve = (id: number) => {
-        setBusyId(id);
-        router.post(route('admin.phone.approve', id), {}, { preserveScroll: true, onFinish: () => setBusyId(null) });
+    const approve = (uuid: string) => {
+        setBusyUuid(uuid);
+        router.post(route('admin.phone.approve', uuid), {}, { preserveScroll: true, onFinish: () => setBusyUuid(null) });
     };
 
-    const submitReject = (id: number) => {
+    const submitReject = (uuid: string) => {
         if (!reason.trim()) return;
-        setBusyId(id);
+        setBusyUuid(uuid);
         router.post(
-            route('admin.phone.reject', id),
+            route('admin.phone.reject', uuid),
             { reason },
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    setRejectingId(null);
+                    setRejectingUuid(null);
                     setReason('');
                 },
-                onFinish: () => setBusyId(null),
+                onFinish: () => setBusyUuid(null),
             },
         );
     };
@@ -84,7 +84,7 @@ export default function AdminPhoneIndex() {
                     ) : (
                         <div className="divide-y divide-gray-100">
                             {users.data.map((user) => (
-                                <div key={user.id} className="px-5 py-4">
+                                <div key={user.uuid} className="px-5 py-4">
                                     <div className="flex flex-wrap items-center gap-4">
                                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
                                             <Smartphone className="h-5 w-5" />
@@ -99,8 +99,8 @@ export default function AdminPhoneIndex() {
                                         <div className="flex shrink-0 gap-2">
                                             <Button
                                                 type="button"
-                                                disabled={busyId === user.id}
-                                                onClick={() => approve(user.id)}
+                                                disabled={busyUuid === user.uuid}
+                                                onClick={() => approve(user.uuid)}
                                                 className="text-sm"
                                             >
                                                 Approve
@@ -108,8 +108,8 @@ export default function AdminPhoneIndex() {
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                disabled={busyId === user.id}
-                                                onClick={() => setRejectingId(rejectingId === user.id ? null : user.id)}
+                                                disabled={busyUuid === user.uuid}
+                                                onClick={() => setRejectingUuid(rejectingUuid === user.uuid ? null : user.uuid)}
                                                 className="text-sm border-red-300 text-red-600 hover:bg-red-50"
                                             >
                                                 Reject
@@ -117,7 +117,7 @@ export default function AdminPhoneIndex() {
                                         </div>
                                     </div>
 
-                                    {rejectingId === user.id && (
+                                    {rejectingUuid === user.uuid && (
                                         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-gray-50 p-3">
                                             <input
                                                 autoFocus
@@ -128,8 +128,8 @@ export default function AdminPhoneIndex() {
                                             />
                                             <Button
                                                 type="button"
-                                                disabled={!reason.trim() || busyId === user.id}
-                                                onClick={() => submitReject(user.id)}
+                                                disabled={!reason.trim() || busyUuid === user.uuid}
+                                                onClick={() => submitReject(user.uuid)}
                                                 className="text-sm border-red-600 bg-red-600 text-white hover:bg-red-700"
                                             >
                                                 Confirm reject

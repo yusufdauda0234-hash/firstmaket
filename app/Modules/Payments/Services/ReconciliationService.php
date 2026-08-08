@@ -5,14 +5,14 @@ namespace App\Modules\Payments\Services;
 use App\Models\User;
 use App\Modules\Payments\Models\SettlementImport;
 use App\Modules\Payments\Models\SettlementReconciliationItem;
-use App\Modules\Wallet\Models\WalletTransaction;
+use App\Modules\Savings\Models\SavingsTransaction;
 use App\Shared\Enums\ReconciliationStatus;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Finance reconciliation (Sprint 4): compare a batch of Paystack settlement
  * lines against the internal ledger and flag every mismatch. Read-only
- * against the ledger — reconciliation never mutates wallet balances.
+ * against the ledger — reconciliation never mutates savings balances.
  */
 class ReconciliationService
 {
@@ -36,7 +36,7 @@ class ReconciliationService
                 $providerAmount = (int) $line['amount_kobo'];
                 $seenReferences[] = $reference;
 
-                $ledger = WalletTransaction::query()->where('reference', $reference)->first();
+                $ledger = SavingsTransaction::query()->where('reference', $reference)->first();
 
                 if ($ledger === null) {
                     $status = ReconciliationStatus::MissingInLedger;
@@ -49,7 +49,7 @@ class ReconciliationService
                 SettlementReconciliationItem::query()->create([
                     'settlement_import_id' => $import->id,
                     'paystack_reference' => $reference,
-                    'wallet_transaction_id' => $ledger?->id,
+                    'savings_transaction_id' => $ledger?->id,
                     'provider_amount_kobo' => $providerAmount,
                     'ledger_amount_kobo' => $ledger?->amount_kobo,
                     'status' => $status,
@@ -58,14 +58,14 @@ class ReconciliationService
 
             // Deposits credited in our ledger that the provider file never
             // reported — these need a human to chase up with Paystack.
-            WalletTransaction::query()
+            SavingsTransaction::query()
                 ->where('type', 'deposit')
                 ->when($seenReferences !== [], fn ($q) => $q->whereNotIn('reference', $seenReferences))
                 ->get()
-                ->each(fn (WalletTransaction $ledger) => SettlementReconciliationItem::query()->create([
+                ->each(fn (SavingsTransaction $ledger) => SettlementReconciliationItem::query()->create([
                     'settlement_import_id' => $import->id,
                     'paystack_reference' => $ledger->reference,
-                    'wallet_transaction_id' => $ledger->id,
+                    'savings_transaction_id' => $ledger->id,
                     'provider_amount_kobo' => null,
                     'ledger_amount_kobo' => $ledger->amount_kobo,
                     'status' => ReconciliationStatus::MissingInProvider,

@@ -28,7 +28,7 @@ class PhoneReviewController extends Controller
             ->oldest('id')
             ->paginate(20)
             ->through(fn (User $user) => [
-                'id' => $user->id,
+                'uuid' => $user->uuid,
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,

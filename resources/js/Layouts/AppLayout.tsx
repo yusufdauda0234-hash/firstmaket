@@ -15,16 +15,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             FirstMaket
                         </Link>
                         <Link
-                            href={route('wallet.index')}
+                            href={route('savings.index')}
                             className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                         >
-                            Wallet
-                        </Link>
-                        <Link
-                            href={route('identity.status')}
-                            className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                        >
-                            Verification
+                            Savings
                         </Link>
                         {auth.user?.roles.includes('Vendor') && (
                             <a

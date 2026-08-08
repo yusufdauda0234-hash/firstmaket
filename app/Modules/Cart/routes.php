@@ -6,17 +6,34 @@ use Illuminate\Support\Facades\Route;
 // Routes for the Cart module are auto-loaded on the customer/vendor-facing
 // domain by App\Providers\ModuleServiceProvider.
 
-Route::middleware('auth')->group(function () {
-    Route::get('cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
-    Route::patch('cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.items.update');
-    Route::delete('cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+/*
+ * Browsing and filling a cart needs no account — guests get a session cart
+ * (App\Modules\Cart\Services\GuestCart) that CartService folds into their
+ * real one on login. Items are addressed by product uuid, not cart-item id,
+ * so the guest and signed-in paths share one shape and a shopper can only
+ * ever reach lines in their own cart.
+ */
+Route::get('cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
+Route::patch('cart/items/{product:uuid}', [CartController::class, 'update'])->name('cart.items.update');
+Route::delete('cart/items/{product:uuid}', [CartController::class, 'destroy'])->name('cart.items.destroy');
 
-    // Pay-in-full checkout: whole cart, one wallet debit, address collected here.
+// Paying is where an account becomes mandatory: orders, savings debits and
+// savings goals all hang off a user.
+Route::middleware('auth')->group(function () {
+    // Pay-in-full checkout: whole cart, address and payment method here.
     Route::get('cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('cart/checkout', [CartController::class, 'checkoutStore'])->name('cart.checkout.store');
+    // Saves the address on its own, so it survives an abandoned checkout.
+    Route::post('cart/checkout/address', [CartController::class, 'saveAddress'])->name('cart.checkout.address');
 
-    // Bundle two or more selected items into one multi-product savings plan.
-    Route::post('cart/bundle-plan/setup', [CartController::class, 'bundlePlanSetup'])->name('cart.bundle-plan.setup');
-    Route::post('cart/bundle-plan', [CartController::class, 'bundlePlanStore'])->name('cart.bundle-plan.store');
+    /*
+     * Promo codes. Throttled because a code is short, printed on flyers and
+     * therefore guessable by design — the limit, not secrecy, is what stops
+     * somebody grinding through the keyspace looking for a live one. Ten a
+     * minute is far more than a shopper with a code in hand needs.
+     */
+    Route::post('cart/promo', [CartController::class, 'applyPromo'])
+        ->middleware('throttle:10,1')->name('cart.promo.apply');
+    Route::delete('cart/promo', [CartController::class, 'removePromo'])->name('cart.promo.remove');
 });

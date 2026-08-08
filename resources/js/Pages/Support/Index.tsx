@@ -1,5 +1,6 @@
 import { Card } from '@/Components/ui/Card';
 import { InputError } from '@/Components/ui/InputError';
+import { Select } from '@/Components/ui/Select';
 import AccountLayout from '@/Layouts/AccountLayout';
 import { cn } from '@/Utils/cn';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
@@ -145,17 +146,16 @@ export default function SupportIndex() {
                             <InputError message={hotlineForm.errors.phone} className="mt-1" />
                         </div>
                         <div>
-                            <select
+                            <Select
                                 value={hotlineForm.data.reason}
                                 onChange={(e) => hotlineForm.setData('reason', e.target.value)}
-                                className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
                             >
                                 {ivrReasons.map((reason) => (
                                     <option key={reason.value} value={reason.value}>
                                         {reason.label}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                             <InputError message={hotlineForm.errors.reason} className="mt-1" />
                         </div>
                         <button

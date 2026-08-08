@@ -2,13 +2,18 @@ import { cn } from '@/Utils/cn';
 import { X } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useEffect } from 'react';
 
-type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
 const sizeClasses: Record<ModalSize, string> = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-2xl',
+    // Browsing a catalogue beside a basket needs the room a page gets, so
+    // this matches the storefront's own max-w-7xl content width rather than
+    // inventing a narrower ceiling. The dialog is already inset by the
+    // backdrop's padding, so it never touches the viewport edge.
+    '2xl': 'max-w-7xl',
 };
 
 interface ModalProps {

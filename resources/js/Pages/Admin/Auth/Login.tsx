@@ -20,10 +20,10 @@ export default function AdminLogin() {
 
     return (
         <StaffAuthLayout
-            title="FirstMaket Staff Sign In"
-            subtitle="Sign in with your staff account. 2FA is required for privileged roles."
+            title="Sign in"
+            subtitle="Enter your credentials to continue."
         >
-            <Head title="Admin log in" />
+            <Head title="Sign in" />
 
             <form onSubmit={submit} className="space-y-4">
                 <div>
@@ -78,7 +78,7 @@ export default function AdminLogin() {
             </form>
 
             <p className="mt-6 text-center text-xs text-gray-400">
-                Trouble signing in? Contact your administrator — staff accounts cannot self-register.
+                Need help signing in? Contact support for assistance.
             </p>
         </StaffAuthLayout>
     );

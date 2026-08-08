@@ -2,12 +2,12 @@
 
 use App\Models\User;
 use App\Modules\Payments\Services\ReconciliationService;
-use App\Modules\Wallet\Models\Wallet;
-use App\Modules\Wallet\Models\WalletTransaction;
+use App\Modules\Savings\Models\Savings;
+use App\Modules\Savings\Models\SavingsTransaction;
 use App\Shared\Enums\LedgerDirection;
 use App\Shared\Enums\ReconciliationStatus;
+use App\Shared\Enums\SavingsTransactionType;
 use App\Shared\Enums\UserType;
-use App\Shared\Enums\WalletTransactionType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
 /**
@@ -30,15 +30,15 @@ function financeStaff(): User
     return $user;
 }
 
-function ledgerDeposit(string $reference, int $amountKobo): WalletTransaction
+function ledgerDeposit(string $reference, int $amountKobo): SavingsTransaction
 {
     $user = User::factory()->create();
-    $wallet = Wallet::query()->create(['user_id' => $user->id, 'balance_kobo' => $amountKobo]);
+    $wallet = Savings::query()->create(['user_id' => $user->id, 'balance_kobo' => $amountKobo]);
 
-    return WalletTransaction::query()->create([
-        'wallet_id' => $wallet->id,
+    return SavingsTransaction::query()->create([
+        'savings_id' => $wallet->id,
         'user_id' => $user->id,
-        'type' => WalletTransactionType::Deposit,
+        'type' => SavingsTransactionType::Deposit,
         'direction' => LedgerDirection::Credit,
         'amount_kobo' => $amountKobo,
         'balance_before_kobo' => 0,

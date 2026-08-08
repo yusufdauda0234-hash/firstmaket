@@ -49,7 +49,7 @@ class ReconciliationController extends Controller
         $settlementImport->load(['importedBy:id,name']);
 
         $items = $settlementImport->items()
-            ->with('walletTransaction:id,uuid,user_id')
+            ->with('savingsTransaction:id,uuid,user_id')
             ->latest('id')
             ->get()
             ->map(fn ($item) => [

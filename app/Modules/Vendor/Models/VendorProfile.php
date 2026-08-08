@@ -4,6 +4,7 @@ namespace App\Modules\Vendor\Models;
 
 use App\Models\UploadedDocument;
 use App\Models\User;
+use App\Shared\Casts\Uppercase;
 use App\Shared\Enums\VendorStatus;
 use App\Shared\Traits\HasUuid;
 use Database\Factories\VendorProfileFactory;
@@ -53,6 +54,8 @@ class VendorProfile extends Model
     {
         return [
             'address' => 'encrypted',
+            'business_name' => Uppercase::class,
+            'contact_name' => Uppercase::class,
             'status' => VendorStatus::class,
             'approved_at' => 'datetime',
             'suspended_at' => 'datetime',

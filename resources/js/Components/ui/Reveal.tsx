@@ -4,6 +4,8 @@ interface RevealProps {
     /** Stagger delay in ms — pass index * 100 for one-after-another entrances. */
     delay?: number;
     className?: string;
+    /** Anchor target, so in-page jump links can land on a revealed section. */
+    id?: string;
 }
 
 /**
@@ -11,7 +13,7 @@ interface RevealProps {
  * and slide up the first time they enter the viewport. Respects
  * prefers-reduced-motion via Tailwind's motion-reduce variants.
  */
-export default function Reveal({ delay = 0, className = '', children }: PropsWithChildren<RevealProps>) {
+export default function Reveal({ delay = 0, className = '', id, children }: PropsWithChildren<RevealProps>) {
     const ref = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
 
@@ -37,6 +39,7 @@ export default function Reveal({ delay = 0, className = '', children }: PropsWit
     return (
         <div
             ref={ref}
+            id={id}
             style={{ transitionDelay: `${delay}ms` }}
             className={`transition-all duration-700 ease-out motion-reduce:transition-none ${
                 visible

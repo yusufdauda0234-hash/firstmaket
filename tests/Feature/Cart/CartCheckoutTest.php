@@ -3,19 +3,24 @@
 use App\Models\User;
 use App\Modules\Cart\Models\Cart;
 use App\Modules\Cart\Models\CartItem;
+use App\Modules\Cart\Models\CheckoutSession;
+use App\Modules\Cart\Services\CartCheckoutService;
+use App\Modules\Cart\Services\CartService;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Customer\Models\CustomerProfile;
 use App\Modules\Orders\Models\Order;
-use App\Modules\Wallet\Services\WalletService;
 use App\Shared\Enums\ProductStatus;
+use App\Shared\Enums\VendorStatus;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Validation\ValidationException;
 
 /**
- * Sprint 8 QA: cart pay-in-full checkout. Resolves the previously-blocked
- * delivery-address-timing design question — address is collected upfront on
- * the checkout screen, before the single wallet debit for the cart total —
- * and creates one order per unit, possibly across several vendors, all in
- * one transaction.
+ * Cart checkout paid by card.
+ *
+ * With no balance to debit, checkout is two steps: the cart is frozen into a
+ * pending session and the shopper goes to Paystack, then the verified
+ * webhook completes the session and raises the orders. Nothing exists in
+ * between that a failed payment could strand.
  */
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
@@ -25,11 +30,6 @@ beforeEach(function () {
     CustomerProfile::query()->create(['user_id' => $this->customer->id]);
 });
 
-function fundCartWallet(User $user, int $amountKobo): void
-{
-    app(WalletService::class)->creditDeposit($user, $amountKobo, 'TEST-DEP-'.fake()->unique()->uuid());
-}
-
 function addToCart(User $customer, Product $product, int $quantity = 1): void
 {
     test()->actingAs($customer)
@@ -37,145 +37,137 @@ function addToCart(User $customer, Product $product, int $quantity = 1): void
         ->assertRedirect();
 }
 
-it('pays for a multi-vendor cart in one wallet debit and creates one order per vendor', function () {
+/** Freeze the current cart into a pending, card-payable session. */
+function pendingSession(User $customer): CheckoutSession
+{
+    return app(CartCheckoutService::class)->startCardCheckout(
+        $customer,
+        app(CartService::class)->lines($customer),
+        [
+            'recipient_name' => 'Yakubu Dauda',
+            'recipient_phone' => '08031234567',
+            'delivery_address' => '12 Marina Road',
+            'state' => 'Lagos',
+            'lga' => 'Eti-Osa',
+        ],
+    );
+}
+
+it('freezes the basket and its prices when checkout starts, charging nothing yet', function () {
+    $product = Product::factory()->approved()->create(['price_kobo' => 50_000_00, 'stock_quantity' => 5]);
+    addToCart($this->customer, $product, 2);
+
+    $session = pendingSession($this->customer);
+
+    // Delivery is charged on every order now — free delivery only exists
+    // where an admin has set a threshold on the rates screen.
+    expect($session->status)->toBe('pending')
+        ->and($session->paystack_reference)->not->toBeNull()
+        ->and($session->shipping_fee_kobo)->toBe(1_500_00)
+        ->and($session->total_amount_kobo)->toBe(101_500_00)
+        ->and($session->items_snapshot)->toHaveCount(1)
+        ->and($session->items_snapshot[0]['unit_price_kobo'])->toBe(50_000_00)
+        // No orders until the money actually arrives.
+        ->and(Order::query()->count())->toBe(0);
+});
+
+it('creates one order per unit across vendors when the payment clears', function () {
     $productA = Product::factory()->approved()->create(['price_kobo' => 50_000_00, 'stock_quantity' => 5]);
     $productB = Product::factory()->approved()->create(['price_kobo' => 30_000_00, 'stock_quantity' => 5]);
 
     addToCart($this->customer, $productA);
     addToCart($this->customer, $productB);
 
-    fundCartWallet($this->customer, 100_000_00);
-
-    $this->actingAs($this->customer)
-        ->post(route('cart.checkout.store'), [
-            'delivery_address' => '12 Marina Road',
-            'state' => 'Lagos',
-            'lga' => 'Eti-Osa',
-        ])
-        ->assertRedirect(route('orders.index'));
-
-    // One wallet debit for the combined total.
-    expect(app(WalletService::class)->getOrCreate($this->customer)->balance_kobo)->toBe(20_000_00);
+    $session = pendingSession($this->customer);
+    app(CartCheckoutService::class)->completePaidSession($session);
 
     $orders = Order::query()->where('customer_id', $this->customer->id)->get();
 
     expect($orders)->toHaveCount(2)
         ->and($orders->pluck('vendor_id')->unique())->toHaveCount(2)
         ->and($orders->pluck('checkout_session_id')->unique())->toHaveCount(1)
-        ->and($orders->every(fn (Order $order) => $order->plan_id === null))->toBeTrue()
         ->and($orders->every(fn (Order $order) => $order->delivery_address === '12 Marina Road'))->toBeTrue()
-        ->and($orders->every(fn (Order $order) => $order->status->value === 'pending'))->toBeTrue();
+        ->and($orders->every(fn (Order $order) => $order->recipient_phone === '08031234567'))->toBeTrue()
+        ->and($session->refresh()->status)->toBe('paid');
 
     // Every purchased item left the cart.
-    expect(CartItem::query()->where('cart_id', Cart::query()->where('user_id', $this->customer->id)->value('id'))->count())->toBe(0);
+    $cartId = Cart::query()->where('user_id', $this->customer->id)->value('id');
+    expect(CartItem::query()->where('cart_id', $cartId)->count())->toBe(0);
 });
 
-it('fans a quantity greater than one out into that many separate orders at the correct unit price', function () {
+it('fans a quantity greater than one into that many orders at the frozen unit price', function () {
     $product = Product::factory()->approved()->create(['price_kobo' => 20_000_00, 'stock_quantity' => 5]);
     addToCart($this->customer, $product, 3);
 
-    fundCartWallet($this->customer, 60_000_00);
+    $session = pendingSession($this->customer);
 
-    $this->actingAs($this->customer)
-        ->post(route('cart.checkout.store'), [
-            'delivery_address' => '12 Marina Road',
-            'state' => 'Lagos',
-            'lga' => 'Eti-Osa',
-        ])
-        ->assertRedirect();
+    // Vendor reprices while the shopper is on Paystack.
+    $product->forceFill(['price_kobo' => 45_000_00])->save();
+
+    app(CartCheckoutService::class)->completePaidSession($session);
 
     $orders = Order::query()->where('customer_id', $this->customer->id)->get();
 
     expect($orders)->toHaveCount(3)
-        ->and($orders->every(fn (Order $order) => $order->locked_price_kobo === 20_000_00))->toBeTrue()
-        ->and(app(WalletService::class)->getOrCreate($this->customer)->balance_kobo)->toBe(0);
+        // They pay what they were shown, not the new price.
+        ->and($orders->every(fn (Order $order) => $order->locked_price_kobo === 20_000_00))->toBeTrue();
 });
 
-it('re-validates stock and approval at checkout, not just at add-to-cart, and leaves the failed item in the cart uncharged', function () {
+it('re-checks availability when the payment clears and leaves the failed item in the cart', function () {
     $available = Product::factory()->approved()->create(['price_kobo' => 40_000_00, 'stock_quantity' => 5]);
     $goesOutOfStock = Product::factory()->approved()->create(['price_kobo' => 25_000_00, 'stock_quantity' => 5]);
 
     addToCart($this->customer, $available);
     addToCart($this->customer, $goesOutOfStock);
 
-    // Sells out after being added to the cart.
+    $session = pendingSession($this->customer);
+
+    // Sells out while the shopper is paying.
     $goesOutOfStock->forceFill(['stock_quantity' => 0])->save();
 
-    fundCartWallet($this->customer, 100_000_00);
+    $result = app(CartCheckoutService::class)->completePaidSession($session);
 
-    $this->actingAs($this->customer)
-        ->post(route('cart.checkout.store'), [
-            'delivery_address' => '12 Marina Road',
-            'state' => 'Lagos',
-            'lga' => 'Eti-Osa',
-        ])
-        ->assertRedirect(route('orders.index'));
-
-    // Only the available item was purchased and only its price was debited.
-    expect(app(WalletService::class)->getOrCreate($this->customer)->balance_kobo)->toBe(60_000_00);
+    expect($result['skippedProductNames'])->toHaveCount(1);
 
     $orders = Order::query()->where('customer_id', $this->customer->id)->get();
     expect($orders)->toHaveCount(1)
         ->and($orders->first()->product_id)->toBe($available->id);
 
     // The unavailable item is still sitting in the cart.
-    $remaining = CartItem::query()->where('product_id', $goesOutOfStock->id)->first();
-    expect($remaining)->not->toBeNull();
+    expect(CartItem::query()->where('product_id', $goesOutOfStock->id)->exists())->toBeTrue();
 });
 
-it('blocks checkout entirely and charges nothing when every cart item is unavailable', function () {
+it('refuses to start a checkout when nothing in the cart is available', function () {
     $product = Product::factory()->approved()->create(['stock_quantity' => 5]);
     addToCart($this->customer, $product);
 
     $product->forceFill(['status' => ProductStatus::Delisted])->save();
 
-    fundCartWallet($this->customer, 100_000_00);
+    pendingSession($this->customer);
+})->throws(ValidationException::class);
 
-    $this->actingAs($this->customer)
-        ->post(route('cart.checkout.store'), [
-            'delivery_address' => '12 Marina Road',
-            'state' => 'Lagos',
-            'lga' => 'Eti-Osa',
-        ])
-        ->assertSessionHasErrors('cart');
+it('does not raise the orders twice when the same webhook is replayed', function () {
+    $product = Product::factory()->approved()->create(['price_kobo' => 20_000_00, 'stock_quantity' => 5]);
+    addToCart($this->customer, $product, 2);
 
-    expect(Order::query()->count())->toBe(0)
-        ->and(app(WalletService::class)->getOrCreate($this->customer)->balance_kobo)->toBe(100_000_00);
+    $session = pendingSession($this->customer);
+
+    app(CartCheckoutService::class)->completePaidSession($session);
+    app(CartCheckoutService::class)->completePaidSession($session->refresh());
+
+    expect(Order::query()->where('customer_id', $this->customer->id)->count())->toBe(2);
 });
 
-it('refuses checkout when the wallet cannot cover the cart total, charging nothing', function () {
-    $product = Product::factory()->approved()->create(['price_kobo' => 50_000_00, 'stock_quantity' => 5]);
-    addToCart($this->customer, $product);
-
-    fundCartWallet($this->customer, 10_000_00);
-
-    $this->actingAs($this->customer)
-        ->post(route('cart.checkout.store'), [
-            'delivery_address' => '12 Marina Road',
-            'state' => 'Lagos',
-            'lga' => 'Eti-Osa',
-        ])
-        ->assertSessionHasErrors('amount');
-
-    expect(Order::query()->count())->toBe(0)
-        ->and(app(WalletService::class)->getOrCreate($this->customer)->balance_kobo)->toBe(10_000_00);
-});
-
-it('never exposes the delivery address on the vendor orders screen for a cart-checkout order', function () {
+it('never exposes the delivery address on the vendor orders screen', function () {
     $product = Product::factory()->approved()->create(['price_kobo' => 20_000_00, 'stock_quantity' => 5]);
     $vendorUser = $product->vendor->user;
     $vendorUser->assignRole('Vendor');
+    // ->approved() approves the listing, not the seller behind it, and only
+    // an approved vendor can open the Vendor Center.
+    $product->vendor->update(['status' => VendorStatus::Approved]);
 
     addToCart($this->customer, $product);
-    fundCartWallet($this->customer, 20_000_00);
-
-    $this->actingAs($this->customer)
-        ->post(route('cart.checkout.store'), [
-            'delivery_address' => '12 Marina Road',
-            'state' => 'Lagos',
-            'lga' => 'Eti-Osa',
-        ])
-        ->assertRedirect();
+    app(CartCheckoutService::class)->completePaidSession(pendingSession($this->customer));
 
     $response = $this->actingAs($vendorUser)
         ->get('http://'.config('app.vendor_domain').'/orders')
@@ -184,5 +176,6 @@ it('never exposes the delivery address on the vendor orders screen for a cart-ch
     $serialized = json_encode($response->viewData('page')['props']['orders']);
 
     expect($serialized)->not->toContain($this->customer->name)
-        ->and($serialized)->not->toContain('12 Marina Road');
+        ->and($serialized)->not->toContain('12 Marina Road')
+        ->and($serialized)->not->toContain('08031234567');
 });

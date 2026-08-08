@@ -4,6 +4,8 @@ namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Shared\Contracts\AuditLoggerContract;
+use App\Shared\Security\TwoFactorCodes;
+use App\Shared\Security\TwoFactorDevices;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -56,8 +58,13 @@ class TwoFactorController extends Controller
         return trim(preg_replace('/^<\?xml.*?\?>/', '', $writer->writeString($otpAuthUrl)));
     }
 
-    public function confirm(Request $request, Google2FA $google2fa, AuditLoggerContract $auditLogger): RedirectResponse
-    {
+    public function confirm(
+        Request $request,
+        Google2FA $google2fa,
+        AuditLoggerContract $auditLogger,
+        TwoFactorCodes $codes,
+        TwoFactorDevices $devices,
+    ): RedirectResponse {
         $request->validate(['code' => ['required', 'string']]);
 
         $user = $request->user();
@@ -71,8 +78,57 @@ class TwoFactorController extends Controller
 
         $user->forceFill(['two_factor_confirmed_at' => now()])->save();
 
+        // Re-enrolling invalidates every previously trusted browser: whatever
+        // prompted a new authenticator (lost or replaced phone) is exactly when
+        // old bypasses should stop working.
+        $devices->forgetAll($user);
+
+        // Shown once, on the next screen. Without these, a lost phone locks the
+        // account out entirely.
+        $plainCodes = $codes->regenerateRecoveryCodes($user);
+
         $auditLogger->log(actor: $user, subject: $user, action: 'auth.two_factor_enrolled');
 
-        return redirect()->route('admin.dashboard');
+        return redirect()
+            ->route('admin.two-factor.recovery-codes')
+            ->with('recoveryCodes', $plainCodes);
+    }
+
+    /**
+     * The one and only time the recovery codes are readable.
+     *
+     * They are hashed at rest, so this page cannot be revisited — it is served
+     * from the flash payload and gone on refresh.
+     */
+    public function recoveryCodes(Request $request): Response|RedirectResponse
+    {
+        $codes = $request->session()->get('recoveryCodes');
+
+        if (! is_array($codes) || $codes === []) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return Inertia::render('Admin/Auth/RecoveryCodes', ['codes' => array_values($codes)]);
+    }
+
+    /** Replace the recovery codes, e.g. after one has been used or leaked. */
+    public function regenerateRecoveryCodes(
+        Request $request,
+        TwoFactorCodes $codes,
+        AuditLoggerContract $auditLogger,
+    ): RedirectResponse {
+        $user = $request->user();
+
+        if ($user->two_factor_confirmed_at === null) {
+            return redirect()->route('admin.two-factor.setup');
+        }
+
+        $plainCodes = $codes->regenerateRecoveryCodes($user);
+
+        $auditLogger->log(actor: $user, subject: $user, action: 'auth.two_factor_recovery_codes_regenerated');
+
+        return redirect()
+            ->route('admin.two-factor.recovery-codes')
+            ->with('recoveryCodes', $plainCodes);
     }
 }

@@ -1,4 +1,5 @@
 import { Category } from '@/Types';
+import { openProductInNewTab } from '@/Utils/links';
 import { router } from '@inertiajs/react';
 import {
     ArrowDown,
@@ -239,7 +240,7 @@ export default function SearchBox({ categories, forceClose = false, onOpen }: Se
             rememberSearch(suggestion.name);
             setQuery(suggestion.name);
             setIsOpen(false);
-            router.get(route('catalog.product', { product: suggestion.slug }));
+            openProductInNewTab(suggestion.slug);
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [recent],

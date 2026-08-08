@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 // ── Shared password rules (mirror the server's Password::defaults) ──
 export const passwordRules = [
-    { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+    { label: 'A 8 characters', test: (p: string) => p.length >= 8 },
     { label: 'A letter', test: (p: string) => /[A-Za-z]/.test(p) },
     { label: 'A number', test: (p: string) => /\d/.test(p) },
 ];

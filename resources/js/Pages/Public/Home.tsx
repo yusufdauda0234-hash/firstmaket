@@ -4,7 +4,8 @@ import QuickViewModal from '@/Components/domain/catalog/QuickViewModal';
 import Reveal from '@/Components/ui/Reveal';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { Category, PageProps, ProductSummary } from '@/Types';
-import { formatNairaFromKobo } from '@/Utils/money';
+import { productLinkProps } from '@/Utils/links';
+import { useMoney } from '@/Hooks/useI18n';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 
@@ -102,7 +103,7 @@ function AuthGateAction({
     }
 
     return (
-        <button type="button" onClick={openAuth} tabIndex={tabIndex} className={className}>
+        <button type="button" onClick={() => openAuth()} tabIndex={tabIndex} className={className}>
             {children}
         </button>
     );
@@ -155,6 +156,7 @@ const PROMO_SEEN_KEY = 'fm.promo-seen';
  * deal, real products. Shown once per browser session so it never nags.
  */
 function PromoPopup({ products }: { products: ProductSummary[] }) {
+    const { money } = useMoney();
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
@@ -224,21 +226,21 @@ function PromoPopup({ products }: { products: ProductSummary[] }) {
                     </p>
                     <p className="mt-2 text-2xl font-extrabold leading-tight">
                         Deals starting from{' '}
-                        <span className="text-brand-yellow">{formatNairaFromKobo(cheapest.priceKobo)}</span>
+                        <span className="text-brand-yellow">{money(cheapest.priceKobo)}</span>
                     </p>
                 </div>
 
                 {/* Product peek overlapping the band */}
                 <div className="-mt-9 flex justify-center gap-3 px-6">
                     {products.slice(0, 3).map((product) => (
-                        <Link
+                        <a
                             key={product.uuid}
-                            href={route('catalog.product', { product: product.slug })}
+                            {...productLinkProps(product.slug)}
                             onClick={dismiss}
                             className="block w-20 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5 transition-transform hover:scale-105"
                         >
                             <ShowcaseImage product={product} />
-                        </Link>
+                        </a>
                     ))}
                 </div>
 
@@ -321,6 +323,7 @@ function ShowcaseImage({ product }: { product: ProductSummary }) {
 }
 
 function HeroCarousel({ products }: { products: ProductSummary[] }) {
+    const { money } = useMoney();
     const [current, setCurrent] = useState(0);
     // Progress only drives the auto-advance timing now (dots replaced the rail).
     const [, setProgress] = useState(0);
@@ -375,7 +378,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                 const offerValue =
                     slide.offer === 'from-price'
                         ? cheapestKobo !== null
-                            ? formatNairaFromKobo(cheapestKobo)
+                            ? money(cheapestKobo)
                             : 'Best prices daily'
                         : slide.offerValue;
 
@@ -426,8 +429,8 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
 
                         {/* Full-bleed product image with overlaid price/name */}
                         {hero ? (
-                            <Link
-                                href={route('catalog.product', { product: hero.slug })}
+                            <a
+                                {...productLinkProps(hero.slug)}
                                 tabIndex={i === current ? 0 : -1}
                                 className="group/hero relative hidden h-full overflow-hidden sm:block"
                             >
@@ -462,12 +465,12 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                                         <RatingStars average={hero.ratingAverage} count={hero.ratingCount} />
                                         <span className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
                                             <span className="text-lg font-extrabold leading-tight text-brand-700">
-                                                {formatNairaFromKobo(hero.priceKobo)}
+                                                {money(hero.priceKobo)}
                                             </span>
                                             {hero.compareAtPriceKobo != null &&
                                                 hero.compareAtPriceKobo > hero.priceKobo && (
                                                     <s className="text-xs text-gray-400">
-                                                        {formatNairaFromKobo(hero.compareAtPriceKobo)}
+                                                        {money(hero.compareAtPriceKobo)}
                                                     </s>
                                                 )}
                                         </span>
@@ -476,7 +479,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                                         <CartGlyph className="h-5 w-5" />
                                     </span>
                                 </span>
-                            </Link>
+                            </a>
                         ) : (
                             <div className="flex h-full items-center justify-center text-[110px] opacity-70">
                                 {slide.emoji}
@@ -532,6 +535,7 @@ function PulseStat() {
 
 /** Rotating flash-deal spotlight: cycles through the featured deals. */
 function FlashSpotlight({ products }: { products: ProductSummary[] }) {
+    const { money } = useMoney();
     const [seconds, setSeconds] = useState(2 * 3600 + 14 * 60 + 9);
     const [index, setIndex] = useState(0);
 
@@ -555,8 +559,8 @@ function FlashSpotlight({ products }: { products: ProductSummary[] }) {
     const s = String(seconds % 60).padStart(2, '0');
 
     return (
-        <Link
-            href={route('catalog.product', { product: product.slug })}
+        <a
+            {...productLinkProps(product.slug)}
             className="group flex flex-1 items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-brand-300"
         >
             <div key={product.uuid} className="flex min-w-0 flex-1 animate-countUp items-center gap-4">
@@ -583,7 +587,7 @@ function FlashSpotlight({ products }: { products: ProductSummary[] }) {
                         {product.name}
                     </p>
                     <p className="font-mono text-lg font-bold text-brand-600">
-                        {formatNairaFromKobo(product.priceKobo)}
+                        {money(product.priceKobo)}
                     </p>
                     <p className="mt-1 font-mono text-xs text-gray-400">
                         Ends in{' '}
@@ -609,11 +613,12 @@ function FlashSpotlight({ products }: { products: ProductSummary[] }) {
                     ))}
                 </span>
             )}
-        </Link>
+        </a>
     );
 }
 
 function TrendingTicker({ products }: { products: ProductSummary[] }) {
+    const { money } = useMoney();
     const doubled = [...TRENDING_SEARCHES, ...TRENDING_SEARCHES];
     const [offset, setOffset] = useState(0);
 
@@ -655,9 +660,9 @@ function TrendingTicker({ products }: { products: ProductSummary[] }) {
                 <div className="mt-3 border-t border-gray-100 pt-3">
                     <div key={offset} className="grid animate-countUp grid-cols-3 gap-2">
                         {visible.map((product) => (
-                            <Link
+                            <a
                                 key={product.uuid}
-                                href={route('catalog.product', { product: product.slug })}
+                                {...productLinkProps(product.slug)}
                                 className="group/item min-w-0"
                             >
                                 <div className="flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-gray-50">
@@ -680,9 +685,9 @@ function TrendingTicker({ products }: { products: ProductSummary[] }) {
                                     {product.name}
                                 </p>
                                 <p className="text-sm font-bold text-brand-700">
-                                    {formatNairaFromKobo(product.priceKobo)}
+                                    {money(product.priceKobo)}
                                 </p>
-                            </Link>
+                            </a>
                         ))}
                     </div>
                     <Link

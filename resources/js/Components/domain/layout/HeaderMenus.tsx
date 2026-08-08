@@ -1,10 +1,12 @@
 import { AVATAR_COLOR_CYCLE } from '@/Components/domain/search/SearchBox';
 import PopoverCaret from '@/Components/ui/PopoverCaret';
 import SelectMenu from '@/Components/ui/SelectMenu';
+import type { CountryEntry } from '@/Data/countries';
 import { useHoverPopover, usePopover } from '@/Hooks/use-popover';
+import { useI18n, useMoney, useTranslation } from '@/Hooks/useI18n';
 import { Category, PageProps } from '@/Types';
-import { formatNairaFromKobo } from '@/Utils/money';
-import { Link, usePage } from '@inertiajs/react';
+import { productLinkProps } from '@/Utils/links';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Flame, LayoutGrid, Search, Smartphone, Sparkles, Tag } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -46,6 +48,7 @@ interface CategoriesMenuProps {
  * styling): left sidebar of category groups, right grid of quick-link tiles.
  */
 export function CategoriesMenu({ categories, forceClose = false, onOpen }: CategoriesMenuProps) {
+    const { t } = useTranslation();
     const { open, setOpen, ref, openNow, hoverProps } = useHoverPopover<HTMLDivElement>();
     const [activeGroupId, setActiveGroupId] = useState('all');
     // Products per group, fetched lazily the first time a group is viewed.
@@ -70,29 +73,42 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
 
     const activeProducts = menuProducts[activeGroupId];
 
-    // Sidebar = "All Categories" + each real category. The "all" panel shows
-    // one tile per category; a category's panel shows only its real products
-    // (no fabricated subcategory tiles).
+    /*
+     * Sidebar = "All Categories" + each real category. The "all" panel shows
+     * one tile per top-level category; a category's panel shows its real
+     * sub-categories alongside its products.
+     *
+     * Those tiles used to be hardcoded empty, back when sub-categories did not
+     * exist and anything shown there would have been invented. They do exist
+     * now, and without them hovering a parent rendered a blank panel.
+     */
+    const tilesFor = (
+        items: { name: string; slug: string }[],
+    ): (CategoryTile & { color: string })[] =>
+        items.map((item, i) => ({
+            label: item.name,
+            emoji: categoryEmoji[item.slug] ?? '🛍️',
+            href: route('catalog.index', { category: item.slug }),
+            color: AVATAR_COLOR_CYCLE[i % AVATAR_COLOR_CYCLE.length],
+        }));
+
     const groups = useMemo(() => {
         const all = {
             id: 'all',
             label: 'All Categories',
-            tiles: categories.map((category, i): CategoryTile & { color: string } => ({
-                label: category.name,
-                emoji: categoryEmoji[category.slug] ?? '🛍️',
-                href: route('catalog.index', { category: category.slug }),
-                color: AVATAR_COLOR_CYCLE[i % AVATAR_COLOR_CYCLE.length],
-            })),
+            tiles: tilesFor(categories),
         };
         const perCategory = categories.map((category) => ({
             id: category.slug,
             label: category.name,
-            tiles: [] as (CategoryTile & { color: string })[],
+            tiles: tilesFor(category.children ?? []),
         }));
         return [all, ...perCategory];
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [categories]);
 
     const activeGroup = groups.find((g) => g.id === activeGroupId) ?? groups[0];
+    const { money } = useMoney();
 
     // Another header module (e.g. the search bar) opened — close this one.
     useEffect(() => {
@@ -123,7 +139,7 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
                 }`}
             >
                 <LayoutGrid className="h-4 w-4" />
-                <span className="hidden sm:inline">Categories</span>
+                <span className="hidden sm:inline">{t('Categories')}</span>
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
             </button>
 
@@ -220,9 +236,9 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
                                 ) : (
                                     <div className="grid grid-cols-4 gap-3">
                                         {activeProducts.map((product) => (
-                                            <Link
+                                            <a
                                                 key={product.slug}
-                                                href={route('catalog.product', { product: product.slug })}
+                                                {...productLinkProps(product.slug)}
                                                 onClick={() => setOpen(false)}
                                                 className="group/menuitem min-w-0"
                                             >
@@ -247,16 +263,16 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
                                                 </span>
                                                 <span className="flex items-baseline gap-1.5">
                                                     <span className="text-sm font-bold text-brand-700">
-                                                        {formatNairaFromKobo(product.priceKobo)}
+                                                        {money(product.priceKobo)}
                                                     </span>
                                                     {product.compareAtPriceKobo != null &&
                                                         product.compareAtPriceKobo > product.priceKobo && (
                                                             <s className="text-[10px] text-gray-400">
-                                                                {formatNairaFromKobo(product.compareAtPriceKobo)}
+                                                                {money(product.compareAtPriceKobo)}
                                                             </s>
                                                         )}
                                                 </span>
-                                            </Link>
+                                            </a>
                                         ))}
                                     </div>
                                 )}
@@ -285,7 +301,7 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
                             onClick={() => setOpen(false)}
                             className="flex items-center gap-1.5 text-gray-600 hover:text-brand-700"
                         >
-                            <Sparkles className="h-4 w-4 text-gray-400" /> Sell on FirstMaket
+                            <Sparkles className="h-4 w-4 text-gray-400" /> {t('Sell on FirstMaket')}
                         </Link>
                         <Link
                             href={route('catalog.index')}
@@ -305,46 +321,39 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
 // Locale (ship to / language / currency)
 // ---------------------------------------------------------------------------
 
-interface RestCountry {
-    cca2: string;
-    name: { common: string };
-    region?: string;
-    languages?: Record<string, string>;
-    currencies?: Record<string, { name: string; symbol?: string }>;
-}
-
-interface LocalePrefs {
-    countryCode: string;
-    countryName: string;
-    language: string;
-    currency: string;
-    currencySymbol: string;
-}
-
-const LOCALE_KEY = 'fm.locale-prefs';
-const COUNTRIES_CACHE_KEY = 'fm.countries.v2';
-
-const DEFAULT_PREFS: LocalePrefs = {
-    countryCode: 'NG',
-    countryName: 'Nigeria',
-    language: 'English',
-    currency: 'NGN',
-    currencySymbol: '₦',
-};
-
-function loadPrefs(): LocalePrefs {
-    try {
-        const raw = localStorage.getItem(LOCALE_KEY);
-        if (raw) return { ...DEFAULT_PREFS, ...(JSON.parse(raw) as Partial<LocalePrefs>) };
-    } catch {
-        // fall through to defaults
-    }
-    return DEFAULT_PREFS;
-}
-
 function flagUrl(countryCode: string, width: 20 | 40 = 40) {
     // flagcdn serves the same flag set restcountries links to.
     return `https://flagcdn.com/w${width}/${countryCode.toLowerCase()}.png`;
+}
+
+/**
+ * Flag image that yields to the country code if the CDN is unreachable, so an
+ * offline header degrades to text instead of a row of broken-image icons.
+ */
+function Flag({ code, className = '' }: { code: string; className?: string }) {
+    const [failed, setFailed] = useState(false);
+
+    if (failed) {
+        return (
+            <span
+                aria-hidden="true"
+                className={`flex shrink-0 items-center justify-center rounded-[2px] bg-slate-100 text-[8px] font-bold text-gray-500 ${className}`}
+            >
+                {code}
+            </span>
+        );
+    }
+
+    return (
+        <img
+            src={flagUrl(code, 20)}
+            srcSet={`${flagUrl(code, 40)} 2x`}
+            alt=""
+            loading="lazy"
+            onError={() => setFailed(true)}
+            className={`shrink-0 rounded-[2px] object-cover shadow-sm ${className}`}
+        />
+    );
 }
 
 function CountryRow({
@@ -352,9 +361,9 @@ function CountryRow({
     selected,
     onChoose,
 }: {
-    country: RestCountry;
+    country: CountryEntry;
     selected: boolean;
-    onChoose: (country: RestCountry) => void;
+    onChoose: (country: CountryEntry) => void;
 }) {
     return (
         <li>
@@ -365,14 +374,10 @@ function CountryRow({
                     selected ? 'bg-brand-50 font-medium text-brand-700' : 'text-gray-700'
                 }`}
             >
-                <img
-                    src={flagUrl(country.cca2, 20)}
-                    alt=""
-                    loading="lazy"
-                    className="h-3.5 w-5 shrink-0 rounded-[2px] object-cover shadow-sm"
-                />
-                <span className="truncate">{country.name.common}</span>
-                {selected && <Check className="ml-auto h-4 w-4 shrink-0" />}
+                <Flag code={country.code} className="h-3.5 w-5" />
+                <span className="truncate">{country.name}</span>
+                <span className="ml-auto shrink-0 pl-2 text-xs text-gray-400">{country.currency}</span>
+                {selected && <Check className="ml-1 h-4 w-4 shrink-0" />}
             </button>
         </li>
     );
@@ -380,20 +385,21 @@ function CountryRow({
 
 /**
  * Ship-to / language / currency popover (Temu interaction): hover to open,
- * custom radio and dropdown options, and a "Change country/region" view.
- * Countries, currencies, and flags come from the restcountries + flagcdn
- * APIs with African countries listed first; the choice is a browser
- * preference until multi-currency lands server-side.
+ * custom dropdowns, and a "Change country/region" view.
+ *
+ * The choice is server state, not a browser preference: picking a language
+ * posts it and the next render comes back translated, and picking a currency
+ * changes the rate every price on the page is formatted with. Only languages
+ * we have strings for and currencies staff maintain a rate for are offered —
+ * an option that changed the label and nothing else is what this replaced.
  */
 export function LocalePopover() {
     const { open, ref, hoverProps } = useHoverPopover<HTMLDivElement>();
-    const [prefs, setPrefs] = useState<LocalePrefs>(DEFAULT_PREFS);
-    const [countries, setCountries] = useState<RestCountry[]>([]);
+    const { t } = useTranslation();
+    const { locale, locales, currency, currencies, country: countryCode } = useI18n();
+    const [countries, setCountries] = useState<CountryEntry[]>([]);
     const [view, setView] = useState<'main' | 'country'>('main');
     const [countrySearch, setCountrySearch] = useState('');
-    const [loadFailed, setLoadFailed] = useState(false);
-
-    useEffect(() => setPrefs(loadPrefs()), []);
 
     // Reset to the main view whenever the popover closes.
     useEffect(() => {
@@ -403,94 +409,57 @@ export function LocalePopover() {
         }
     }, [open]);
 
-    // Fetch the country list once the popover first opens (cached per session).
+    // Pulled from our own bundle the first time the popover opens. Split into
+    // its own chunk so the ~250-country table never weighs on first paint, and
+    // cached by the browser from then on. No third party involved, so there is
+    // no failure state to render.
     useEffect(() => {
         if (!open || countries.length > 0) return;
-
-        try {
-            const cached = sessionStorage.getItem(COUNTRIES_CACHE_KEY);
-            if (cached) {
-                setCountries(JSON.parse(cached) as RestCountry[]);
-                return;
-            }
-        } catch {
-            // ignore cache failures and fetch fresh
-        }
-
-        fetch('https://restcountries.com/v3.1/all?fields=name,cca2,region,languages,currencies')
-            .then((response) => (response.ok ? response.json() : Promise.reject(new Error('failed'))))
-            .then((data: RestCountry[]) => {
-                // FirstMaket ships from Nigeria, so Africa sorts first, then A-Z.
-                const sorted = data.sort((a, b) => {
-                    const africaFirst = Number(a.region !== 'Africa') - Number(b.region !== 'Africa');
-                    return africaFirst || a.name.common.localeCompare(b.name.common);
-                });
-                setCountries(sorted);
-                try {
-                    sessionStorage.setItem(COUNTRIES_CACHE_KEY, JSON.stringify(sorted));
-                } catch {
-                    // cache is best-effort
-                }
-            })
-            .catch(() => setLoadFailed(true));
+        let cancelled = false;
+        import('@/Data/countries').then((module) => {
+            if (!cancelled) setCountries(module.COUNTRIES);
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [open, countries.length]);
 
-    const selectedCountry = countries.find((c) => c.cca2 === prefs.countryCode);
-
-    const languageOptions = useMemo(() => {
-        const langs = new Set<string>(['English']);
-        Object.values(selectedCountry?.languages ?? {}).forEach((l) => langs.add(l));
-        return Array.from(langs);
-    }, [selectedCountry]);
-
-    // NGN pinned first, then the selected country's currencies, then every
-    // other African currency the countries API knows about.
-    const currencyOptions = useMemo(() => {
-        const map = new Map<string, string>([['NGN', '₦']]);
-        Object.entries(selectedCountry?.currencies ?? {}).forEach(([code, meta]) => {
-            if (!map.has(code)) map.set(code, meta.symbol ?? code);
-        });
-        countries
-            .filter((c) => c.region === 'Africa')
-            .forEach((c) => {
-                Object.entries(c.currencies ?? {}).forEach(([code, meta]) => {
-                    if (!map.has(code)) map.set(code, meta.symbol ?? code);
-                });
-            });
-        return Array.from(map.entries());
-    }, [countries, selectedCountry]);
+    const selectedCountry = countries.find((c) => c.code === countryCode);
 
     const filteredCountries = useMemo(() => {
         const term = countrySearch.trim().toLowerCase();
         if (!term) return countries;
-        return countries.filter((c) => c.name.common.toLowerCase().includes(term));
+        return countries.filter(
+            (c) => c.name.toLowerCase().includes(term) || c.currency.toLowerCase().includes(term),
+        );
     }, [countries, countrySearch]);
 
     const africanCountries = filteredCountries.filter((c) => c.region === 'Africa');
     const otherCountries = filteredCountries.filter((c) => c.region !== 'Africa');
 
-    /** Merge and persist immediately — Temu applies changes on click. */
-    function update(next: Partial<LocalePrefs>) {
-        setPrefs((current) => {
-            const merged = { ...current, ...next };
-            try {
-                localStorage.setItem(LOCALE_KEY, JSON.stringify(merged));
-            } catch {
-                // preference just won't persist
-            }
-            return merged;
+    /**
+     * Applied immediately on click (Temu behaviour). preserveScroll keeps the
+     * shopper where they were — switching currency halfway down a product page
+     * should not throw them back to the top.
+     */
+    function apply(next: { locale?: string; currency?: string; country?: string }) {
+        router.post(route('locale.update'), next, {
+            preserveScroll: true,
+            preserveState: false,
         });
     }
 
-    function chooseCountry(country: RestCountry) {
-        const [currencyCode, currencyMeta] = Object.entries(country.currencies ?? {})[0] ?? ['NGN', { symbol: '₦' }];
-        const firstLanguage = Object.values(country.languages ?? {})[0] ?? 'English';
-        update({
-            countryCode: country.cca2,
-            countryName: country.name.common,
-            language: firstLanguage.includes('English') ? 'English' : firstLanguage,
-            currency: currencyCode,
-            currencySymbol: currencyMeta.symbol ?? currencyCode,
+    /**
+     * Choosing a country also moves the currency, but only if we actually
+     * maintain a rate for it — otherwise prices stay in naira rather than
+     * quoting a number we cannot stand behind.
+     */
+    function chooseCountry(country: CountryEntry) {
+        const supported = currencies.some((c) => c.code === country.currency);
+
+        apply({
+            country: country.code,
+            currency: supported ? country.currency : undefined,
         });
         setView('main');
         setCountrySearch('');
@@ -503,18 +472,13 @@ export function LocalePopover() {
                 aria-expanded={open}
                 className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-brand-600"
             >
-                <img
-                    src={flagUrl(prefs.countryCode, 20)}
-                    srcSet={`${flagUrl(prefs.countryCode, 40)} 2x`}
-                    alt={prefs.countryName}
-                    className="h-3.5 w-5 shrink-0 rounded-[2px] object-cover shadow-sm"
-                />
+                <Flag code={countryCode} className="h-3.5 w-5" />
                 <span className="text-left">
                     <span className="block text-[11px] leading-tight text-gray-400">
-                        {prefs.language.slice(0, 2).toUpperCase()}
+                        {locales.find((l) => l.code === locale)?.badge ?? locale.toUpperCase()}
                     </span>
                     <span className="block font-semibold leading-tight text-gray-800">
-                        {prefs.currencySymbol} {prefs.currency}
+                        {currency.symbol} {currency.code}
                     </span>
                 </span>
                 <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -526,50 +490,55 @@ export function LocalePopover() {
 
                     {view === 'main' ? (
                         <>
-                            {/* Language — custom dropdown */}
-                            <h3 className="px-1 text-sm font-semibold text-slate-900">Language</h3>
+                            {/* Language — only what we have strings for */}
+                            <h3 className="px-1 text-sm font-semibold text-slate-900">{t('Language')}</h3>
                             <SelectMenu
                                 className="mt-2"
-                                ariaLabel="Language"
-                                value={prefs.language}
-                                options={languageOptions.map((lang) => ({ value: lang, label: lang }))}
-                                onChange={(language) => update({ language })}
+                                ariaLabel={t('Language')}
+                                value={locale}
+                                options={locales.map((l) => ({
+                                    value: l.code,
+                                    // Endonym first, so a speaker recognises it
+                                    // without reading English.
+                                    label: l.endonym === l.english ? l.endonym : `${l.endonym} · ${l.english}`,
+                                }))}
+                                onChange={(code) => apply({ locale: code })}
                             />
 
                             <div className="my-3 border-t border-gray-100" />
 
-                            {/* Currency — custom dropdown */}
-                            <h3 className="px-1 text-sm font-semibold text-slate-900">Currency</h3>
+                            {/* Currency — only codes staff maintain a rate for */}
+                            <h3 className="px-1 text-sm font-semibold text-slate-900">{t('Currency')}</h3>
                             <SelectMenu
                                 className="mt-2"
-                                ariaLabel="Currency"
-                                value={prefs.currency}
-                                options={currencyOptions.map(([code, symbol]) => ({
-                                    value: code,
-                                    label: `${code}: ${symbol}`,
+                                ariaLabel={t('Currency')}
+                                value={currency.code}
+                                options={currencies.map((c) => ({
+                                    value: c.code,
+                                    label: `${c.code}: ${c.symbol}`,
                                 }))}
-                                onChange={(code) => {
-                                    const symbol = currencyOptions.find(([c]) => c === code)?.[1] ?? code;
-                                    update({ currency: code, currencySymbol: symbol });
-                                }}
+                                onChange={(code) => apply({ currency: code })}
                             />
 
                             <div className="my-3 border-t border-gray-100" />
 
                             <p className="px-1 text-center text-sm leading-snug text-gray-500">
-                                You are shopping on FirstMaket{prefs.countryName}.
+                                {selectedCountry
+                                    ? `${t('Ship to')}: ${selectedCountry.name}`
+                                    : `${t('Ship to')}: ${countryCode}`}
                             </p>
                             <button
                                 type="button"
                                 onClick={() => setView('country')}
                                 className="mt-3 w-full rounded-full border border-gray-300 py-2 text-sm font-medium text-gray-800 transition-colors hover:border-gray-400 hover:bg-slate-50"
                             >
-                                Change country/region
+                                {t('Change country/region')}
                             </button>
-                            <p className="mt-3 px-1 text-xs leading-snug text-gray-400">
-                                Prices are shown in ₦ NGN for now — more currencies and languages arrive
-                                with multi-currency support.
-                            </p>
+                            {!currency.isBase && (
+                                <p className="mt-3 px-1 text-xs leading-snug text-gray-400">
+                                    {t('Prices are indicative — you pay in Nigerian Naira.')}
+                                </p>
+                            )}
                         </>
                     ) : (
                         <>
@@ -583,7 +552,7 @@ export function LocalePopover() {
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </button>
-                                <h3 className="text-sm font-semibold text-slate-900">Change country/region</h3>
+                                <h3 className="text-sm font-semibold text-slate-900">{t('Change country/region')}</h3>
                             </div>
 
                             <div className="mt-2 flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
@@ -598,11 +567,9 @@ export function LocalePopover() {
                             </div>
 
                             <ul className="mt-2 max-h-64 overflow-y-auto">
-                                {countries.length === 0 && (
+                                {countries.length > 0 && filteredCountries.length === 0 && (
                                     <li className="px-3 py-4 text-center text-xs text-gray-400">
-                                        {loadFailed
-                                            ? 'Could not load countries — check your connection.'
-                                            : 'Loading countries…'}
+                                        No country matches “{countrySearch}”.
                                     </li>
                                 )}
                                 {africanCountries.length > 0 && (
@@ -612,9 +579,9 @@ export function LocalePopover() {
                                 )}
                                 {africanCountries.map((country) => (
                                     <CountryRow
-                                        key={country.cca2}
+                                        key={country.code}
                                         country={country}
-                                        selected={country.cca2 === prefs.countryCode}
+                                        selected={country.code === countryCode}
                                         onChoose={chooseCountry}
                                     />
                                 ))}
@@ -625,9 +592,9 @@ export function LocalePopover() {
                                 )}
                                 {otherCountries.map((country) => (
                                     <CountryRow
-                                        key={country.cca2}
+                                        key={country.code}
                                         country={country}
-                                        selected={country.cca2 === prefs.countryCode}
+                                        selected={country.code === countryCode}
                                         onChoose={chooseCountry}
                                     />
                                 ))}

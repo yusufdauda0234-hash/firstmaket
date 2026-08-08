@@ -55,6 +55,51 @@ class VendorOrderController extends Controller
         ]);
     }
 
+    /**
+     * Mark several orders ready for pickup.
+     *
+     * A vendor packing the morning's orders finishes them together, so making
+     * them click through one at a time is busywork. PreparationService still
+     * runs per order, and one already moved on is skipped and counted.
+     */
+    public function bulkReady(Request $request, PreparationService $preparationService): RedirectResponse
+    {
+        $validated = $request->validate([
+            'uuids' => ['required', 'array', 'min:1', 'max:100'],
+            'uuids.*' => ['required', 'uuid'],
+        ], [
+            'uuids.required' => 'Select at least one order first.',
+        ]);
+
+        $vendor = $request->user()->vendorProfile;
+
+        // Scoped to the vendor's own orders.
+        $orders = Order::query()
+            ->where('vendor_id', $vendor?->id)
+            ->whereIn('uuid', $validated['uuids'])
+            ->get();
+
+        $done = 0;
+        $skipped = 0;
+
+        foreach ($orders as $order) {
+            try {
+                $preparationService->markReadyForPickup($request->user(), $order);
+                $done++;
+            } catch (\Throwable) {
+                $skipped++;
+            }
+        }
+
+        $message = "{$done} order".($done === 1 ? '' : 's').' marked ready for pickup.';
+
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped — not at that stage.";
+        }
+
+        return back()->with($done > 0 ? 'success' : 'error', $message);
+    }
+
     public function confirmStock(Request $request, Order $order, PreparationService $preparationService): RedirectResponse
     {
         $preparationService->confirmStock($request->user(), $order);

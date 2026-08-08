@@ -10,7 +10,7 @@ use RuntimeException;
 
 /**
  * Paystack payment driver (https://paystack.com/docs/api/transaction/).
- * Initializes hosted charges and verifies webhook signatures. The wallet is
+ * Initializes hosted charges and verifies webhook signatures. Savings is
  * never credited here — that happens only after ProcessPaystackWebhook
  * confirms a signature-verified charge.success event.
  */
@@ -26,7 +26,7 @@ class PaystackGateway implements PaymentGatewayContract
         $response = Http::withToken((string) config('services.paystack.secret_key'))
             ->asJson()
             ->post(config('services.paystack.base_url').'/transaction/initialize', [
-                'email' => $user->email ?? $user->phone.'@wallet.FirstMaket.ng',
+                'email' => $user->email ?? $user->phone.'@savings.FirstMaket.ng',
                 'amount' => $amountKobo, // Paystack expects the smallest unit (kobo).
                 'currency' => 'NGN',
                 'reference' => $reference,
@@ -34,7 +34,7 @@ class PaystackGateway implements PaymentGatewayContract
                 'callback_url' => $callbackUrl,
                 'metadata' => [
                     'user_uuid' => $user->uuid,
-                    'purpose' => 'wallet_deposit',
+                    'purpose' => 'firstmaket_payment',
                 ],
             ]);
 

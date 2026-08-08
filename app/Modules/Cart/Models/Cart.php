@@ -14,10 +14,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * section 8a). Items can come from any vendor; checkout logic lives in
  * CartService, not here.
  *
+ * Exactly one of user_id / token is set: an account cart is found by user,
+ * a guest cart by the long-lived cookie token GuestCart issues. The guest
+ * row is deleted once MergeGuestCartOnLogin has folded it into an account.
+ *
  * @property int $id
  * @property string $uuid
- * @property int $user_id
- * @property-read User $user
+ * @property int|null $user_id
+ * @property string|null $token
+ * @property-read User|null $user
  * @property-read Collection<int, CartItem> $items
  */
 class Cart extends Model
@@ -26,6 +31,12 @@ class Cart extends Model
 
     protected $fillable = [
         'user_id',
+        'token',
+    ];
+
+    protected $hidden = [
+        // Whoever holds this owns the cart — it must never reach a payload.
+        'token',
     ];
 
     /** @return BelongsTo<User, $this> */

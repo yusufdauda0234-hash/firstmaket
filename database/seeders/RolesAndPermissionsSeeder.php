@@ -23,9 +23,10 @@ class RolesAndPermissionsSeeder extends Seeder
         'vendors.approve',
         'vendors.suspend',
         'products.approve',
+        'catalog.manage',
         'identity.review',
-        'wallet.view',
-        'wallet.reconcile',
+        'savings.view',
+        'savings.reconcile',
         'plans.view',
         'orders.manage',
         'delivery.update',
@@ -41,6 +42,9 @@ class RolesAndPermissionsSeeder extends Seeder
         'reports.view',
         'settings.manage',
         'roles.manage',
+        // Creating a staff account is creating a way into the admin domain,
+        // so it is its own permission rather than folded into roles.manage.
+        'staff.manage',
     ];
 
     private const ROLE_PERMISSIONS = [
@@ -52,8 +56,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'vendors.approve',
             'vendors.suspend',
             'products.approve',
+            'catalog.manage',
             'identity.review',
-            'wallet.view',
+            'savings.view',
             'plans.view',
             'orders.manage',
             'delivery.update',
@@ -64,6 +69,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'reports.view',
             'affiliates.manage',
             'affiliate_conversions.review',
+            'staff.manage',
         ],
         'Support Agent' => [
             'customers.view',
@@ -73,8 +79,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'delivery.update',
         ],
         'Finance Officer' => [
-            'wallet.view',
-            'wallet.reconcile',
+            'savings.view',
+            'savings.reconcile',
             'finance.reconcile',
             'affiliate_payouts.approve',
             'vendor_payouts.approve',

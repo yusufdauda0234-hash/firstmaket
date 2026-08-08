@@ -5,7 +5,16 @@ import { useEffect } from 'react';
  * Sign-in/register modal over the public pages (AliExpress pattern) —
  * customers never leave the storefront to authenticate.
  */
-export default function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function AuthModal({
+    open,
+    intended,
+    onClose,
+}: {
+    open: boolean;
+    /** Path to land on after signing in; defaults to the current page. */
+    intended?: string;
+    onClose: () => void;
+}) {
     useEffect(() => {
         if (!open) return;
 
@@ -59,7 +68,7 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
                     </div>
 
                     <div className="rounded-2xl border border-gray-100 bg-slate-50 p-6 shadow-sm">
-                        <AuthPanel />
+                        <AuthPanel intended={intended} />
                     </div>
                 </div>
             </div>

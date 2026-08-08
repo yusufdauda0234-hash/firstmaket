@@ -1,5 +1,6 @@
 import { Card } from '@/Components/ui/Card';
 import PageHeader from '@/Components/ui/PageHeader';
+import { Select } from '@/Components/ui/Select';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { cn } from '@/Utils/cn';
 import { formatNairaFromKobo } from '@/Utils/money';
@@ -32,6 +33,8 @@ interface Props {
         statusLabel: string;
         lockedPriceKobo: number;
         commissionRatePercent: string;
+        commissionSource: string;
+        commissionReason: string;
         commissionKobo: number;
         vendorEarningKobo: number;
         deliveryAddress: string;
@@ -52,7 +55,7 @@ interface Props {
     [key: string]: unknown;
 }
 
-function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+function DetailRow({ label, value }: { label: React.ReactNode; value: React.ReactNode }) {
     return (
         <div className="flex items-start justify-between gap-3 py-2 text-sm">
             <dt className="text-gray-500">{label}</dt>
@@ -129,11 +132,12 @@ export default function AdminOrderShow() {
                         }}
                         className="flex items-center gap-2"
                     >
-                        <select
+                        <Select
                             value={assignForm.data.logistics_user_id}
                             onChange={(e) => assignForm.setData('logistics_user_id', e.target.value)}
                             required
-                            className="rounded-full border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                            aria-label="Assign logistics personnel"
+                            className="rounded-full"
                         >
                             <option value="">
                                 {order.assignedLogistics
@@ -145,7 +149,7 @@ export default function AdminOrderShow() {
                                     {user.name}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                         <button
                             type="submit"
                             disabled={assignForm.processing || assignForm.data.logistics_user_id === ''}
@@ -168,8 +172,30 @@ export default function AdminOrderShow() {
                     <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Money (snapshots)</h2>
                     <dl className="mt-2 divide-y divide-gray-50">
                         <DetailRow label="Locked price" value={formatNairaFromKobo(order.lockedPriceKobo)} />
+                        {/* The rate alone made people come and ask where the
+                            figure came from, so it says which rule set it. */}
                         <DetailRow
-                            label={`Commission (${order.commissionRatePercent}%)`}
+                            label={
+                                <>
+                                    Commission ({order.commissionRatePercent}%)
+                                    <span className="mt-0.5 flex items-center gap-1.5">
+                                        <span
+                                            className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                                                order.commissionSource === 'vendor'
+                                                    ? 'bg-indigo-50 text-indigo-700'
+                                                    : order.commissionSource === 'category'
+                                                      ? 'bg-sky-50 text-sky-700'
+                                                      : 'bg-gray-100 text-gray-500'
+                                            }`}
+                                        >
+                                            {order.commissionSource}
+                                        </span>
+                                        <span className="text-[11px] font-normal text-gray-400">
+                                            {order.commissionReason}
+                                        </span>
+                                    </span>
+                                </>
+                            }
                             value={formatNairaFromKobo(order.commissionKobo)}
                         />
                         <DetailRow label="Vendor earning" value={formatNairaFromKobo(order.vendorEarningKobo)} />

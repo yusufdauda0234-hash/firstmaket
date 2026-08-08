@@ -99,3 +99,19 @@ it('still serves vendor product management on the vendor portal', function () {
 
     $this->actingAs($vendor)->get(vendorPortalUrl('products'))->assertOk();
 });
+
+// The VerifyPhoneModal is rendered on the vendor dashboard, so its endpoints
+// have to answer on the vendor origin — they used to be registered
+// domain-less, where NotOnAdminDomain 404'd them for exactly this caller.
+it('serves phone verification on the vendor portal, not the main domain', function () {
+    $vendor = portalVendor();
+
+    // What the modal calls: route() must point at the vendor origin.
+    expect(parse_url(route('phone.send'), PHP_URL_HOST))
+        ->toBe(parse_url(vendorPortalUrl(), PHP_URL_HOST));
+
+    // Absolute URLs on both: a relative one would be resolved against the
+    // host of the preceding request, not config('app.url').
+    $this->actingAs($vendor)->post(config('app.url').'/phone/send')->assertNotFound();
+    $this->actingAs($vendor)->post(vendorPortalUrl('phone/send'))->assertRedirect();
+});

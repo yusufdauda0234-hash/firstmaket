@@ -1,3 +1,8 @@
+import BulkActionBar from '@/Components/ui/BulkActionBar';
+import RowCheckbox from '@/Components/ui/RowCheckbox';
+import ViewToggle from '@/Components/ui/ViewToggle';
+import { useRowSelection } from '@/Hooks/useRowSelection';
+import { useViewMode } from '@/Hooks/useViewMode';
 import { Card } from '@/Components/ui/Card';
 import VendorLayout from '@/Layouts/VendorLayout';
 import { cn } from '@/Utils/cn';
@@ -53,6 +58,22 @@ export default function VendorOrdersIndex() {
     const actionForm = useForm({ reason: '' });
     const [rejecting, setRejecting] = useState<string | null>(null);
 
+    // Orders lead with the photo of what has to be packed, so grid by default.
+    const { mode, choose } = useViewMode('vendor.orders', 'grid');
+
+    // Only an order still being prepared can be marked ready.
+    const readyable = orders.filter((order) => order.status === 'processing');
+    const selection = useRowSelection(readyable.map((order) => order.uuid));
+    const bulk = useForm<{ uuids: string[] }>({ uuids: [] });
+
+    function markSelectedReady() {
+        bulk.transform(() => ({ uuids: selection.ids }));
+        bulk.post(route('vendor.orders.bulk-ready'), {
+            preserveScroll: true,
+            onSuccess: () => selection.clear(),
+        });
+    }
+
     return (
         <VendorLayout>
             <Head title="Orders" />
@@ -65,11 +86,14 @@ export default function VendorOrdersIndex() {
                         Buyer details are never shared.
                     </p>
                 </div>
-                {toPrepareCount > 0 && (
-                    <span className="rounded-full bg-brand-50 px-4 py-2 text-sm font-bold text-brand-700">
-                        {toPrepareCount} to prepare
-                    </span>
-                )}
+                <div className="flex flex-wrap items-center gap-2">
+                    <ViewToggle mode={mode} onChange={choose} label="orders" />
+                    {toPrepareCount > 0 && (
+                        <span className="rounded-full bg-brand-50 px-4 py-2 text-sm font-bold text-brand-700">
+                            {toPrepareCount} to prepare
+                        </span>
+                    )}
+                </div>
             </div>
 
             {orders.length === 0 ? (
@@ -83,6 +107,119 @@ export default function VendorOrdersIndex() {
                         instantly.
                     </p>
                 </Card>
+            ) : mode === 'table' ? (
+                <Card className="overflow-hidden p-0">
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[880px] text-sm">
+                            <thead className="border-b border-gray-100 bg-gray-50/70 text-left text-xs uppercase tracking-wide text-gray-500">
+                                <tr>
+                                    <th className="w-10 py-3 pl-5 pr-2">
+                                        <RowCheckbox
+                                            checked={selection.allSelected}
+                                            indeterminate={selection.someSelected}
+                                            onChange={selection.toggleAll}
+                                            label="Select all orders to prepare"
+                                        />
+                                    </th>
+                                    <th className="w-12 px-2 py-3 font-semibold">S/N</th>
+                                    <th className="px-5 py-3 font-semibold">Product</th>
+                                    <th className="px-4 py-3 font-semibold">Sold</th>
+                                    <th className="px-4 py-3 text-right font-semibold">You earn</th>
+                                    <th className="px-4 py-3 font-semibold">Status</th>
+                                    <th className="px-5 py-3 text-right font-semibold">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {orders.map((order, index) => {
+                                    const actionable = order.status === 'processing';
+
+                                    return (
+                                        <tr
+                                            key={order.uuid}
+                                            className={cn(
+                                                'transition-colors hover:bg-brand-50/40',
+                                                selection.isSelected(order.uuid) && 'bg-brand-50/70',
+                                            )}
+                                        >
+                                            <td className="py-3.5 pl-5 pr-2">
+                                                {actionable && (
+                                                    <RowCheckbox
+                                                        checked={selection.isSelected(order.uuid)}
+                                                        onChange={() => selection.toggle(order.uuid)}
+                                                        label={'Select ' + order.productName}
+                                                    />
+                                                )}
+                                            </td>
+                                            <td className="px-2 py-3.5 text-xs tabular-nums text-gray-400">
+                                                {index + 1}
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-50">
+                                                        {order.productImage ? (
+                                                            <img
+                                                                src={order.productImage}
+                                                                alt=""
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <Package className="h-4 w-4 text-gray-300" />
+                                                        )}
+                                                    </span>
+                                                    <span className="min-w-0">
+                                                        <span className="line-clamp-1 font-semibold text-gray-900">
+                                                            {order.productName}
+                                                        </span>
+                                                        <span className="block font-mono text-xs text-gray-400">
+                                                            {order.uuid.slice(0, 8).toUpperCase()}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3.5 text-xs text-gray-500">{order.soldAt}</td>
+                                            <td className="px-4 py-3.5 text-right font-bold tabular-nums text-emerald-600">
+                                                {formatNairaFromKobo(order.vendorEarningKobo)}
+                                            </td>
+                                            <td className="px-4 py-3.5">
+                                                <span
+                                                    className={cn(
+                                                        'rounded-full px-2.5 py-0.5 text-[11px] font-bold',
+                                                        statusStyle[order.status] ?? 'bg-gray-100 text-gray-500',
+                                                    )}
+                                                >
+                                                    {order.statusLabel}
+                                                </span>
+                                                {actionable && order.prepareOverdue && (
+                                                    <span className="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-700">
+                                                        <AlertTriangle className="h-3 w-3" /> overdue
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-5 py-3.5 text-right">
+                                                {actionable ? (
+                                                    <button
+                                                        type="button"
+                                                        disabled={actionForm.processing}
+                                                        onClick={() =>
+                                                            actionForm.post(route('vendor.orders.ready', order.uuid), {
+                                                                preserveScroll: true,
+                                                            })
+                                                        }
+                                                        className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
+                                                    >
+                                                        <PackageCheck className="h-3.5 w-3.5" /> Ready
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-xs text-gray-300">—</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
             ) : (
                 <div className="space-y-3">
                     {orders.map((order) => {
@@ -90,6 +227,13 @@ export default function VendorOrdersIndex() {
                         return (
                             <Card key={order.uuid} className="p-4">
                                 <div className="flex flex-wrap items-center gap-4">
+                                    {actionable && (
+                                        <RowCheckbox
+                                            checked={selection.isSelected(order.uuid)}
+                                            onChange={() => selection.toggle(order.uuid)}
+                                            label={`Select ${order.productName}`}
+                                        />
+                                    )}
                                     <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50">
                                         {order.productImage ? (
                                             <img src={order.productImage} alt="" className="h-full w-full object-cover" />
@@ -218,6 +362,14 @@ export default function VendorOrdersIndex() {
                     })}
                 </div>
             )}
+
+            <BulkActionBar
+                count={selection.count}
+                noun="order"
+                processing={bulk.processing}
+                onClear={selection.clear}
+                actions={[{ label: 'Mark ready', tone: 'primary', run: markSelectedReady }]}
+            />
         </VendorLayout>
     );
 }

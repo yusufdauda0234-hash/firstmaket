@@ -74,7 +74,7 @@
                                     <!-- Wordmark -->
                                     <td style="vertical-align:middle; text-align:left;">
                                         <div style="font-size:24px; font-weight:800; letter-spacing:0.5px; line-height:1; font-family:'Segoe UI', Arial, sans-serif;">
-                                            <span style="color:{{ $brandYellow }};">First</span><span style="color:#ffffff;">Market</span>
+                                            <span style="color:{{ $brandYellow }};">First</span><span style="color:#ffffff;">Maket</span>
                                         </div>
                                         <div style="font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:rgba(255,255,255,0.65); margin-top:5px; font-family:'Segoe UI', Arial, sans-serif;">
                                             Just Order. We Deliver.

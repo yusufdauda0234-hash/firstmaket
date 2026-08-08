@@ -43,11 +43,17 @@ export default {
                 scaleIn: 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                 shimmer: 'shimmer 1.6s ease-in-out infinite',
                 slideInRight: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                toastIn: 'toastIn 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
             },
             keyframes: {
                 marquee: {
                     '0%': { transform: 'translateX(0)' },
                     '100%': { transform: 'translateX(-50%)' },
+                },
+                // Top-centre toasts drop in from above the viewport edge.
+                toastIn: {
+                    '0%': { transform: 'translateY(-14px) scale(0.96)', opacity: '0' },
+                    '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
                 },
                 countUp: {
                     '0%': { transform: 'translateY(8px)', opacity: '0' },

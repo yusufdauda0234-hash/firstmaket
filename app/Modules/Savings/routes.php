@@ -1,36 +1,37 @@
 <?php
 
-use App\Modules\Savings\Controllers\OpenSavingsController;
-use App\Modules\Savings\Controllers\PayAtOnceController;
-use App\Modules\Savings\Controllers\PlanController;
 use App\Modules\Savings\Controllers\SavingsDashboardController;
+use App\Modules\Savings\Controllers\SavingsGoalController;
 use Illuminate\Support\Facades\Route;
 
 // Routes for the Savings module are registered here and auto-loaded on the
 // customer/vendor-facing domain by App\Providers\ModuleServiceProvider.
-// Sprint 5 Purchase and Savings Engine: no withdrawal route exists here or
-// anywhere — money only ever moves wallet → savings → product.
+//
+// There is no balance and no way to deposit: money is only ever paid into a
+// specific Pay Small Small plan, and it only ever leaves as goods. No
+// withdrawal route exists here or anywhere.
 
 Route::middleware('auth')->group(function () {
-    // Savings dashboard + Open Savings pot
     Route::get('savings', [SavingsDashboardController::class, 'show'])->name('savings.index');
-    Route::post('savings/open/allocate', [OpenSavingsController::class, 'allocate'])
-        ->name('savings.open.allocate');
 
-    // Product Target Plans
-    Route::get('product/{product:slug}/start-plan', [PlanController::class, 'start'])->name('savings.plans.start');
-    Route::post('savings/plans', [PlanController::class, 'store'])->name('savings.plans.store');
-    Route::get('savings/plans/{plan:uuid}', [PlanController::class, 'show'])->name('savings.plans.show');
-    Route::post('savings/plans/{plan:uuid}/contribute', [PlanController::class, 'contribute'])
-        ->name('savings.plans.contribute');
-    Route::post('savings/plans/{plan:uuid}/pause', [PlanController::class, 'pause'])->name('savings.plans.pause');
-    Route::post('savings/plans/{plan:uuid}/resume', [PlanController::class, 'resume'])->name('savings.plans.resume');
-    Route::post('savings/plans/{plan:uuid}/redirect-open-savings', [PlanController::class, 'redirectOpenSavings'])
-        ->name('savings.plans.redirect-open-savings');
-    Route::post('savings/plans/{plan:uuid}/switch-product', [PlanController::class, 'switchProduct'])
-        ->name('savings.plans.switch-product');
+    Route::get('savings/plans/{goal:uuid}', [SavingsGoalController::class, 'show'])->name('savings.goals.show');
+    Route::get('savings/plans/{goal:uuid}/payments', [SavingsGoalController::class, 'payments'])->name('savings.goals.payments');
+    Route::post('savings/plans/{goal:uuid}/pay', [SavingsGoalController::class, 'pay'])->name('savings.goals.pay');
+    Route::post('savings/plans/{goal:uuid}/collect', [SavingsGoalController::class, 'fulfil'])->name('savings.goals.buy');
+    // Changing the schedule and giving up are both money-affecting and both
+    // reachable from one page, so they share a throttle.
+    Route::get('savings/switch-options', [SavingsGoalController::class, 'switchOptions'])
+        ->name('savings.switch-options');
 
-    // Pay At Once checkout
-    Route::get('checkout/{product:slug}', [PayAtOnceController::class, 'create'])->name('checkout.pay-at-once');
-    Route::post('checkout/{product:slug}', [PayAtOnceController::class, 'store'])->name('checkout.pay-at-once.store');
+    Route::post('savings/plans/{goal:uuid}/switch', [SavingsGoalController::class, 'switchItem'])
+        ->middleware('throttle:10,1')
+        ->name('savings.goals.switch');
+
+    Route::post('savings/plans/{goal:uuid}/reschedule', [SavingsGoalController::class, 'reschedule'])
+        ->middleware('throttle:10,1')
+        ->name('savings.goals.reschedule');
+
+    Route::post('savings/plans/{goal:uuid}/cancel', [SavingsGoalController::class, 'cancel'])
+        ->middleware('throttle:10,1')
+        ->name('savings.goals.cancel');
 });

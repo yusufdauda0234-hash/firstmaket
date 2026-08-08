@@ -5,6 +5,7 @@ use App\Modules\Identity\Models\OtpCode;
 use App\Modules\Identity\Services\OtpService;
 use App\Shared\Contracts\SmsSenderContract;
 use App\Shared\Enums\OtpPurpose;
+use App\Shared\Enums\UserType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Validation\ValidationException;
 
@@ -36,8 +37,21 @@ beforeEach(function () {
     app()->instance(SmsSenderContract::class, $this->sms);
 });
 
+/**
+ * phone.send/phone.verify are registered on the Vendor Center subdomain (the
+ * only origin that renders VerifyPhoneModal), and EnsureCorrectPortal logs
+ * out anyone who is not a vendor account there — so these tests need a
+ * vendor, not the factory's default customer.
+ */
+function otpUser(bool $phoneVerified = false): User
+{
+    $factory = $phoneVerified ? User::factory() : User::factory()->unverified();
+
+    return $factory->create(['user_type' => UserType::Vendor]);
+}
+
 it('sends a code when an unverified user requests one', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
 
     $this->actingAs($user)->post(route('phone.send'))->assertRedirect();
 
@@ -46,7 +60,7 @@ it('sends a code when an unverified user requests one', function () {
 });
 
 it('does not send a code for an already-verified phone', function () {
-    $user = User::factory()->create();
+    $user = otpUser(phoneVerified: true);
 
     $this->actingAs($user)->post(route('phone.send'));
 
@@ -54,7 +68,7 @@ it('does not send a code for an already-verified phone', function () {
 });
 
 it('verifies the phone with the correct code', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
 
     $this->actingAs($user)->post(route('phone.send'));
 
@@ -66,7 +80,7 @@ it('verifies the phone with the correct code', function () {
 });
 
 it('rejects a wrong code', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
 
     $this->actingAs($user)->post(route('phone.send'));
 
@@ -78,7 +92,7 @@ it('rejects a wrong code', function () {
 });
 
 it('exposes the plaintext code for local/debug display but never in production', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
 
     config(['app.debug' => true]);
     $this->actingAs($user)->post(route('phone.send'));
@@ -90,7 +104,7 @@ it('exposes the plaintext code for local/debug display but never in production',
 });
 
 it('rejects an expired code', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
     $otp = app(OtpService::class);
 
     $otp->request($user->phone, OtpPurpose::Registration, $user);
@@ -104,7 +118,7 @@ it('rejects an expired code', function () {
 });
 
 it('burns the code after too many incorrect attempts', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
 
     app(OtpService::class)->request($user->phone, OtpPurpose::Registration, $user);
     $code = $this->sms->lastCode();
@@ -120,7 +134,7 @@ it('burns the code after too many incorrect attempts', function () {
 });
 
 it('throttles repeated code requests for the same phone', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
     $otp = app(OtpService::class);
 
     foreach (range(1, OtpService::MAX_REQUESTS_PER_WINDOW) as $ignored) {
@@ -132,7 +146,7 @@ it('throttles repeated code requests for the same phone', function () {
 });
 
 it('invalidates earlier codes when a new one is requested', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
     $otp = app(OtpService::class);
 
     $otp->request($user->phone, OtpPurpose::Registration, $user);
@@ -146,7 +160,7 @@ it('invalidates earlier codes when a new one is requested', function () {
 });
 
 it('stores only a hash of the code', function () {
-    $user = User::factory()->unverified()->create();
+    $user = otpUser();
 
     app(OtpService::class)->request($user->phone, OtpPurpose::Registration, $user);
 

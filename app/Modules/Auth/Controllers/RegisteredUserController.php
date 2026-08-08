@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Auth\Requests\RegisterUserRequest;
+use App\Modules\Auth\Services\PostAuthRedirect;
 use App\Modules\Auth\Services\SessionAuthenticator;
 use App\Modules\Customer\Models\CustomerProfile;
 use App\Shared\Contracts\AuditLoggerContract;
@@ -21,7 +22,7 @@ use Illuminate\Validation\ValidationException;
  * an email or phone number, proves it with a code through the matching
  * channel, then completes name + password here. The proven identifier is
  * created pre-verified; the other identifier can be added later. Phone
- * verification is optional/secondary — it does not gate wallet funding or
+ * verification is optional/secondary — it does not gate savings funding or
  * Product Target Plans. There is no BVN/NIN identity verification feature
  * (docs/FirstMaket_Implementation_Plan.md Sprint 2 + Addendum).
  */
@@ -85,9 +86,18 @@ class RegisteredUserController extends Controller
 
         $authenticator->establish($user, $request, method: 'register');
 
-        // Phone-registered users land on the dashboard directly; email-only
-        // accounts are prompted for a phone number before any wallet funding
-        // (enforced by the wallet flow, not at signup, to keep friction low).
-        return redirect()->route('dashboard')->with('success', 'Welcome to FirstMaket!');
+        /*
+         * Wherever they were trying to get to, same as signing in.
+         *
+         * This used to always land on the dashboard, so a shopper who hit
+         * Checkout with a full cart, registered, and was then dropped on the
+         * dashboard had to find their way back and start the checkout again.
+         * PostAuthRedirect only honours safe same-site paths, and falls back
+         * to the dashboard when there was no particular destination.
+         */
+        $intended = PostAuthRedirect::customer($request);
+
+        return redirect()->to($intended === route('home') ? route('dashboard') : $intended)
+            ->with('success', 'Welcome to FirstMaket!');
     }
 }

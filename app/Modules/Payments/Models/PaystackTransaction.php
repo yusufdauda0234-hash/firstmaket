@@ -3,20 +3,23 @@
 namespace App\Modules\Payments\Models;
 
 use App\Models\User;
-use App\Modules\Wallet\Models\WalletTransaction;
+use App\Modules\Cart\Models\CheckoutSession;
+use App\Modules\Logistics\Models\Shipment;
+use App\Modules\Savings\Models\SavingsGoal;
+use App\Modules\Savings\Models\SavingsTransaction;
 use App\Shared\Enums\PaystackTransactionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One Paystack charge for a wallet deposit (docs/FirstMaket-Database_Schema.md
+ * One Paystack charge — a card checkout or a plan instalment (docs/FirstMaket-Database_Schema.md
  * section 7). Created as Pending at initialization; only moved to Success and
  * linked to a ledger row by a signature-verified webhook.
  *
  * @property int $id
  * @property int $user_id
- * @property int|null $wallet_transaction_id
+ * @property int|null $savings_transaction_id
  * @property string $paystack_reference
  * @property string|null $access_code
  * @property int $amount_kobo
@@ -28,13 +31,17 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
- * @property-read WalletTransaction|null $walletTransaction
+ * @property-read SavingsTransaction|null $savingsTransaction
  */
 class PaystackTransaction extends Model
 {
     protected $fillable = [
         'user_id',
-        'wallet_transaction_id',
+        'purpose',
+        'checkout_session_id',
+        'shipment_id',
+        'savings_goal_id',
+        'savings_transaction_id',
         'paystack_reference',
         'access_code',
         'amount_kobo',
@@ -55,15 +62,33 @@ class PaystackTransaction extends Model
         ];
     }
 
+    /** @return BelongsTo<CheckoutSession, $this> */
+    public function checkoutSession(): BelongsTo
+    {
+        return $this->belongsTo(CheckoutSession::class);
+    }
+
+    /** @return BelongsTo<Shipment, $this> */
+    public function shipment(): BelongsTo
+    {
+        return $this->belongsTo(Shipment::class);
+    }
+
+    /** @return BelongsTo<SavingsGoal, $this> */
+    public function savingsGoal(): BelongsTo
+    {
+        return $this->belongsTo(SavingsGoal::class, 'savings_goal_id');
+    }
+
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /** @return BelongsTo<WalletTransaction, $this> */
-    public function walletTransaction(): BelongsTo
+    /** @return BelongsTo<SavingsTransaction, $this> */
+    public function savingsTransaction(): BelongsTo
     {
-        return $this->belongsTo(WalletTransaction::class);
+        return $this->belongsTo(SavingsTransaction::class);
     }
 }

@@ -13,12 +13,12 @@ use App\Shared\Enums\UserStatus;
 use App\Shared\Enums\UserType;
 use App\Shared\Enums\VendorStatus;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Vendor onboarding: account + vendor profile + CAC document in one step.
@@ -33,7 +33,7 @@ class VendorRegistrationController extends Controller
         return Inertia::render('Auth/RegisterVendor');
     }
 
-    public function store(RegisterVendorRequest $request, AuditLoggerContract $auditLogger): RedirectResponse
+    public function store(RegisterVendorRequest $request, AuditLoggerContract $auditLogger): SymfonyResponse
     {
         $cacPath = $request->file('cac_document')->store('cac-documents', 'local');
 
@@ -81,7 +81,10 @@ class VendorRegistrationController extends Controller
         // The Vendor Center lives on its own subdomain with a scoped session
         // cookie (App\Shared\Security\VendorDomain) — this main-site session
         // does not carry over, so send them to sign in there rather than
-        // straight to vendor.dashboard.
-        return redirect()->route('vendor.login', ['registered' => 1]);
+        // straight to vendor.dashboard. It has to be an Inertia::location
+        // (409 + X-Inertia-Location) and not a plain redirect: the form posts
+        // over XHR, and the browser would follow a 302 cross-origin and then
+        // block the response for want of CORS headers, leaving the page stuck.
+        return Inertia::location(route('vendor.login', ['registered' => 1]));
     }
 }

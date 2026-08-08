@@ -19,7 +19,19 @@ interface IdentifyResponse {
  * email-or-phone field decides whether the visitor signs in or registers,
  * and OTP codes travel through the channel matching the identifier.
  */
-export default function AuthPanel({ initialStep = 'entry' }: { initialStep?: Step }) {
+export default function AuthPanel({
+    initialStep = 'entry',
+    intended,
+}: {
+    initialStep?: Step;
+    /**
+     * Where to land after signing in. Defaults to the current page, but the
+     * cart passes /cart/checkout so the Checkout click that triggered the
+     * sign-in actually completes.
+     */
+    intended?: string;
+}) {
+    const redirectTo = intended ?? window.location.pathname + window.location.search;
     const [step, setStep] = useState<Step>(initialStep);
     const [identifier, setIdentifier] = useState('');
     const [masked, setMasked] = useState('');
@@ -79,7 +91,7 @@ export default function AuthPanel({ initialStep = 'entry' }: { initialStep?: Ste
         setError('');
         router.post(
             route('login'),
-            { identifier, password, redirect: window.location.pathname + window.location.search },
+            { identifier, password, redirect: redirectTo },
             {
                 onError: (errors) => setError(Object.values(errors)[0] ?? 'Sign in failed.'),
                 onFinish: () => setBusy(false),
@@ -121,7 +133,7 @@ export default function AuthPanel({ initialStep = 'entry' }: { initialStep?: Ste
         setError('');
         router.post(
             route('auth.code.login'),
-            { identifier, code: codeValue, redirect: window.location.pathname + window.location.search },
+            { identifier, code: codeValue, redirect: redirectTo },
             {
                 onError: (errors) => {
                     setError(Object.values(errors)[0] ?? 'Sign in failed.');
@@ -154,7 +166,11 @@ export default function AuthPanel({ initialStep = 'entry' }: { initialStep?: Ste
         setError('');
         router.post(
             route('register'),
-            { name, password, password_confirmation: passwordConfirmation },
+            // `redirect` for the same reason sign-in sends it: someone who
+            // opened this from the Checkout button wants checkout, not the
+            // dashboard. Leaving it off was why registering there dropped
+            // them somewhere else with a full cart.
+            { name, password, password_confirmation: passwordConfirmation, redirect: redirectTo },
             {
                 onError: (errors) => setError(Object.values(errors)[0] ?? 'Registration failed.'),
                 onFinish: () => setBusy(false),

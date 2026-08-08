@@ -2,9 +2,10 @@ import { ProductCard } from '@/Components/domain/catalog/ProductCard';
 import QuickViewModal from '@/Components/domain/catalog/QuickViewModal';
 import { Pagination } from '@/Components/ui/Pagination';
 import PublicLayout from '@/Layouts/PublicLayout';
+import { Select } from '@/Components/ui/Select';
 import { Category, Paginated, ProductSummary } from '@/Types';
 import { Head, Link, router } from '@inertiajs/react';
-import { PackageSearch, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronDown, PackageSearch, SlidersHorizontal, X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 
 interface CatalogProps {
@@ -34,7 +35,11 @@ const categoryEmoji: Record<string, string> = {
  * filter rail on desktop and a slide-over filter drawer on mobile.
  */
 export default function Catalog({ products, categories, filters }: CatalogProps) {
-    const activeCategory = categories.find((c) => c.slug === filters.category);
+    // Searched across sub-categories too, or browsing "Televisions" would
+    // lose its heading and filter chip now that children are nested.
+    const activeCategory = categories
+        .flatMap((c) => [c, ...(c.children ?? [])])
+        .find((c) => c.slug === filters.category);
     const [minPrice, setMinPrice] = useState(filters.minPrice?.toString() ?? '');
     const [maxPrice, setMaxPrice] = useState(filters.maxPrice?.toString() ?? '');
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -74,6 +79,39 @@ export default function Catalog({ products, categories, filters }: CatalogProps)
         filters.minPrice !== null ||
         filters.maxPrice !== null;
 
+    /*
+     * Which category groups are expanded.
+     *
+     * Only the branch being browsed opens by default — everything expanded at
+     * once made the rail taller than the screen, which is what stopped it
+     * staying put while the results scrolled.
+     */
+    const branchOfActive = categories.find(
+        (c) =>
+            c.slug === filters.category ||
+            (c.children ?? []).some((child) => child.slug === filters.category),
+    );
+
+    const [openCategories, setOpenCategories] = useState<string[]>(
+        branchOfActive ? [branchOfActive.slug] : [],
+    );
+
+    const toggleCategory = (slug: string) =>
+        setOpenCategories((open) =>
+            open.includes(slug) ? open.filter((s) => s !== slug) : [...open, slug],
+        );
+
+    // Inertia keeps this component mounted between filter clicks, so the open
+    // group has to follow the category the visitor actually navigated to.
+    useEffect(() => {
+        if (branchOfActive) {
+            setOpenCategories((open) =>
+                open.includes(branchOfActive.slug) ? open : [...open, branchOfActive.slug],
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filters.category]);
+
     // ── Filter rail (shared by desktop sidebar and mobile drawer) ──
     const filterBody = (
         <>
@@ -92,24 +130,74 @@ export default function Catalog({ products, categories, filters }: CatalogProps)
                             <span className="text-base">🛍️</span> All products
                         </Link>
                     </li>
-                    {categories.map((category) => (
-                        <li key={category.slug}>
-                            <Link
-                                href={route('catalog.index', {
-                                    category: category.slug,
-                                    query: filters.query || undefined,
-                                })}
-                                className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                                    filters.category === category.slug
-                                        ? 'bg-brand-50 font-semibold text-brand-700'
-                                        : 'text-gray-600 hover:bg-gray-50'
-                                }`}
-                            >
-                                <span className="text-base">{categoryEmoji[category.slug] ?? '🏷️'}</span>
-                                {category.name}
-                            </Link>
-                        </li>
-                    ))}
+                    {/* Parents collapse over their sub-categories.
+                        Expanded all at once the rail ran to several screens,
+                        which is what pushed the whole page into scrolling. */}
+                    {categories.map((category) => {
+                        const children = category.children ?? [];
+                        const isOpen = openCategories.includes(category.slug);
+
+                        return (
+                            <li key={category.slug}>
+                                <div
+                                    className={`flex items-center rounded-lg transition ${
+                                        filters.category === category.slug
+                                            ? 'bg-brand-50 font-semibold text-brand-700'
+                                            : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <Link
+                                        href={route('catalog.index', {
+                                            category: category.slug,
+                                            query: filters.query || undefined,
+                                        })}
+                                        className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2"
+                                    >
+                                        <span className="text-base">
+                                            {categoryEmoji[category.slug] ?? '🏷️'}
+                                        </span>
+                                        <span className="truncate">{category.name}</span>
+                                    </Link>
+
+                                    {children.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleCategory(category.slug)}
+                                            aria-expanded={isOpen}
+                                            aria-label={`${isOpen ? 'Hide' : 'Show'} ${category.name} sub-categories`}
+                                            className="shrink-0 rounded-lg p-2 text-gray-400 transition hover:text-brand-600"
+                                        >
+                                            <ChevronDown
+                                                className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                                            />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {children.length > 0 && isOpen && (
+                                    <ul className="ml-5 border-l border-gray-100 pl-2">
+                                        {children.map((child) => (
+                                            <li key={child.slug}>
+                                                <Link
+                                                    href={route('catalog.index', {
+                                                        category: child.slug,
+                                                        query: filters.query || undefined,
+                                                    })}
+                                                    className={`block rounded-lg px-3 py-1.5 text-[13px] transition ${
+                                                        filters.category === child.slug
+                                                            ? 'bg-brand-50 font-semibold text-brand-700'
+                                                            : 'text-gray-500 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    {child.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
 
@@ -170,11 +258,26 @@ export default function Catalog({ products, categories, filters }: CatalogProps)
                 />
             )}
 
-            <div className="mx-auto max-w-7xl px-4 pb-12">
-                <div className="mt-4 grid gap-6 lg:grid-cols-[240px_1fr]">
-                    {/* Desktop filter rail */}
+            {/* Wider than the rest of the storefront on purpose — this is the
+                one screen whose job is fitting as many products on screen as
+                possible. The header and footer keep their own max-w-7xl.
+
+                An arbitrary value rather than a theme token: a token lives in
+                tailwind.config.js, which a already-running `npm run dev` does
+                not always pick up, so the cap silently did not exist until the
+                dev server was restarted. This is generated from this file. */}
+            <div className="mx-auto max-w-[1600px] px-4 pb-12">
+                {/* No `items-start` here, deliberately. A sticky element only
+                    travels inside its own parent's box, so the <aside> has to
+                    stretch to the full height of the results column — shrink
+                    it to its content and the rail unsticks the moment the
+                    products scroll past the bottom of the category list. */}
+                <div className="mt-4 grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+                    {/* Desktop filter rail. Capped to the viewport and
+                        scrollable inside, so a long category list still stays
+                        put rather than pushing itself off screen. */}
                     <aside className="hidden lg:block">
-                        <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                             {filterBody}
                         </div>
                     </aside>
@@ -199,15 +302,16 @@ export default function Catalog({ products, categories, filters }: CatalogProps)
                                 </button>
                                 <label className="flex items-center gap-2 text-sm text-gray-600">
                                     <span className="hidden sm:inline">Sort</span>
-                                    <select
+                                    <Select
                                         value={filters.sort}
                                         onChange={(e) => applyFilters({ sort: e.target.value })}
-                                        className="rounded-full border border-gray-200 px-3 py-2 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                                        aria-label="Sort products"
+                                        className="rounded-full font-medium"
                                     >
                                         <option value="newest">Newest</option>
                                         <option value="price_asc">Price: low to high</option>
                                         <option value="price_desc">Price: high to low</option>
-                                    </select>
+                                    </Select>
                                 </label>
                             </div>
                         </div>
@@ -261,7 +365,10 @@ export default function Catalog({ products, categories, filters }: CatalogProps)
                                 )}
                             </div>
                         ) : (
-                            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                            // A fifth column on the widest screens — the extra
+                            // width should show more products, not stretch four
+                            // cards across it.
+                            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                                 {products.data.map((product) => (
                                     <ProductCard key={product.uuid} product={product} onQuickView={setQuickView} />
                                 ))}

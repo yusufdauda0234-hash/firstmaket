@@ -234,3 +234,9 @@ cd C:\Users\<you>\Desktop\FirstMaket
 
 For automated testing, create a separate `FirstMaket_testing` database (`createdb FirstMaket_testing`) â€” `phpunit.xml` points Pest at it by default.
 
+
+
+
+
+
+but my model should be like those bigg companies aliexpress and the rest for the first, means checkout-paid-shipped.

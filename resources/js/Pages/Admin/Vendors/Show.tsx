@@ -7,8 +7,8 @@ import Modal from '@/Components/ui/Modal';
 import PageHeader from '@/Components/ui/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { PageProps } from '@/Types';
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { AlertTriangle, CheckCircle2, Download, FileText, Mail, MapPin, Phone, RotateCcw, ShieldOff } from 'lucide-react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { AlertTriangle, CheckCircle2, Download, FileText, KeyRound, Mail, MapPin, Phone, RotateCcw, ShieldOff } from 'lucide-react';
 import { useState } from 'react';
 
 interface DocumentRow {
@@ -96,6 +96,7 @@ export default function VendorShow() {
 
     const canApprove = hasPermission('vendors.approve');
     const canSuspend = hasPermission('vendors.suspend');
+    const [sendingReset, setSendingReset] = useState(false);
 
     const busy =
         approveForm.processing || rejectForm.processing || suspendForm.processing || reinstateForm.processing;
@@ -154,6 +155,7 @@ export default function VendorShow() {
                         </div>
                     )}
 
+
                     {/* Documents */}
                     <h3 className="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-gray-400">Documents</h3>
                     {vendor.documents.length === 0 ? (
@@ -194,6 +196,41 @@ export default function VendorShow() {
 
                 {/* Review actions */}
                 <div className="space-y-4">
+                    {/* Account recovery. Available on any live account — the
+                        seller who needs it is usually one who cannot get in. */}
+                    {canApprove && vendor.status !== 'rejected' && (
+                        <Card className="rounded-2xl shadow-sm">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gray-100 text-gray-600">
+                                <KeyRound className="h-5 w-5" />
+                            </div>
+                            <h2 className="mt-4 text-lg font-extrabold text-gray-900">Password help</h2>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Emails {vendor.email} a one-time link that opens the Vendor Center, where they choose a
+                                new password themselves. We never see it, and never set one for them.
+                            </p>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                disabled={sendingReset}
+                                onClick={() => {
+                                    setSendingReset(true);
+                                    router.post(
+                                        route('admin.vendors.password-reset', vendor.uuid),
+                                        {},
+                                        {
+                                            preserveScroll: true,
+                                            onFinish: () => setSendingReset(false),
+                                        },
+                                    );
+                                }}
+                                className="mt-4 w-full active:scale-95"
+                            >
+                                <KeyRound className="mr-2 h-4 w-4" />
+                                {sendingReset ? 'Sending…' : 'Email password link'}
+                            </Button>
+                        </Card>
+                    )}
+
                     {vendor.status === 'pending' && canApprove && (
                         <Card className="rounded-2xl border-brand-100 bg-gradient-to-br from-brand-50/60 to-white shadow-sm">
                             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-600 text-white">

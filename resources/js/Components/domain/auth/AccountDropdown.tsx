@@ -69,10 +69,10 @@ export default function AccountDropdown({
                                 {[
                                     { label: 'My Account', href: route('account.overview'), icon: <UserSmallIcon /> },
                                     { label: 'My Orders', href: route('orders.index'), icon: <OrdersIcon /> },
-                                    { label: 'My Savings', href: route('savings.index'), icon: <HeartIcon /> },
-                                    { label: 'My Wallet', href: route('wallet.index'), icon: <WalletIcon /> },
-                                    { label: 'Transactions', href: route('wallet.transactions'), icon: <OrdersIcon /> },
-                                    { label: 'Identity verification', href: route('identity.status'), icon: <ShieldSmallIcon /> },
+                                    { label: 'My Savings', href: route('savings.index'), icon: <WalletIcon /> },
+                                    // No "Identity verification" entry: the dedicated page went away
+                                    // when BVN/NIN checks were dropped (commit bb15765) and phone
+                                    // verification became the dashboard modal (VerifyPhoneModal).
                                     { label: 'Support Center', href: route('support.index'), icon: <UserSmallIcon /> },
                                 ].map((item) => (
                                     <li key={item.label}>
@@ -179,18 +179,6 @@ function WalletIcon() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"
-            />
-        </svg>
-    );
-}
-
-function ShieldSmallIcon() {
-    return (
-        <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 12.75 11.25 15 15 9.75m-3-7.04A12 12 0 0 1 3.6 6.1a12 12 0 0 0 8.4 15.28A12 12 0 0 0 20.4 6.1 12 12 0 0 1 12 2.71Z"
             />
         </svg>
     );

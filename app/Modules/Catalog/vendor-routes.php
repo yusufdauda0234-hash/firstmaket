@@ -12,8 +12,13 @@ Route::prefix('products')->group(function () {
     Route::get('/', [VendorProductController::class, 'index'])->name('vendor.products.index');
     Route::get('create', [VendorProductController::class, 'create'])->name('vendor.products.create');
     Route::post('/', [VendorProductController::class, 'store'])->name('vendor.products.store');
+    // Before the {product:uuid} routes, otherwise 'bulk-submit' is taken for
+    // a product identifier and dies in model binding.
+    Route::post('bulk-submit', [VendorProductController::class, 'bulkSubmit'])->name('vendor.products.bulk-submit');
+
     Route::get('{product:uuid}/details', [VendorProductController::class, 'details'])->name('vendor.products.details');
     Route::get('{product:uuid}/edit', [VendorProductController::class, 'edit'])->name('vendor.products.edit');
     Route::post('{product:uuid}', [VendorProductController::class, 'update'])->name('vendor.products.update');
     Route::post('{product:uuid}/submit', [VendorProductController::class, 'submit'])->name('vendor.products.submit');
+    Route::delete('{product:uuid}', [VendorProductController::class, 'destroy'])->name('vendor.products.destroy');
 });

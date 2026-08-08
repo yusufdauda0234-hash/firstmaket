@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 
 /**
  * Paystack webhook endpoint (Sprint 4) — the ONLY thing that credits a
- * wallet. Public (no auth, no CSRF), but every request is signature-verified
+ * savings. Public (no auth, no CSRF), but every request is signature-verified
  * against the raw body before any processing. Invalid signatures are rejected
- * with 400 and never touch a wallet; valid ones are processed idempotently.
+ * with 400 and never touch a balance; valid ones are processed idempotently.
  */
 class PaystackWebhookController extends Controller
 {

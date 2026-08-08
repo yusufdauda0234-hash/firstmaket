@@ -80,39 +80,56 @@ it('updates an item quantity', function () {
     $product = Product::factory()->approved()->create(['stock_quantity' => 10]);
     $this->actingAs($this->customer)->post(route('cart.items.store'), ['product_uuid' => $product->uuid]);
 
-    $item = CartItem::query()->firstOrFail();
-
     $this->actingAs($this->customer)
-        ->patch(route('cart.items.update', $item->id), ['quantity' => 4])
+        ->patch(route('cart.items.update', $product->uuid), ['quantity' => 4])
         ->assertRedirect();
 
-    expect($item->refresh()->quantity)->toBe(4);
+    expect(CartItem::query()->firstOrFail()->quantity)->toBe(4);
 });
 
 it('removes an item from the cart', function () {
     $product = Product::factory()->approved()->create(['stock_quantity' => 10]);
     $this->actingAs($this->customer)->post(route('cart.items.store'), ['product_uuid' => $product->uuid]);
 
-    $item = CartItem::query()->firstOrFail();
-
     $this->actingAs($this->customer)
-        ->delete(route('cart.items.destroy', $item->id))
+        ->delete(route('cart.items.destroy', $product->uuid))
         ->assertRedirect();
 
     expect(CartItem::query()->count())->toBe(0);
 });
 
-it('prevents one customer from mutating another customer\'s cart item', function () {
+/*
+ * Lines are addressed by product uuid rather than cart-item id, so reaching
+ * another shopper's cart is not expressible: the same uuid resolves to each
+ * caller's own line. This replaces the old ownership check, which existed
+ * only because the route took a cart-item id.
+ */
+it('scopes a mutation to the caller\'s own cart when two customers hold the same product', function () {
     $product = Product::factory()->approved()->create(['stock_quantity' => 10]);
-    $this->actingAs($this->customer)->post(route('cart.items.store'), ['product_uuid' => $product->uuid]);
-    $item = CartItem::query()->firstOrFail();
 
     $intruder = User::factory()->create();
     $intruder->assignRole('Customer');
 
-    $this->actingAs($intruder)
-        ->patch(route('cart.items.update', $item->id), ['quantity' => 9])
-        ->assertSessionHasErrors('item');
+    $this->actingAs($this->customer)->post(route('cart.items.store'), ['product_uuid' => $product->uuid]);
+    $this->actingAs($intruder)->post(route('cart.items.store'), ['product_uuid' => $product->uuid]);
 
-    expect($item->refresh()->quantity)->toBe(1);
+    $this->actingAs($intruder)->patch(route('cart.items.update', $product->uuid), ['quantity' => 9]);
+
+    $ownCart = Cart::query()->where('user_id', $this->customer->id)->firstOrFail();
+    $intruderCart = Cart::query()->where('user_id', $intruder->id)->firstOrFail();
+
+    expect($ownCart->items()->value('quantity'))->toBe(1)
+        ->and($intruderCart->items()->value('quantity'))->toBe(9);
+});
+
+it('caps a repeated add at available stock instead of letting it creep past one unit at a time', function () {
+    $product = Product::factory()->approved()->create(['stock_quantity' => 2]);
+
+    $this->actingAs($this->customer)->post(route('cart.items.store'), ['product_uuid' => $product->uuid, 'quantity' => 2]);
+
+    $this->actingAs($this->customer)
+        ->post(route('cart.items.store'), ['product_uuid' => $product->uuid, 'quantity' => 1])
+        ->assertSessionHasErrors('quantity');
+
+    expect(CartItem::query()->firstOrFail()->quantity)->toBe(2);
 });

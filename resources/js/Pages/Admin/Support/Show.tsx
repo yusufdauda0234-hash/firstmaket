@@ -1,5 +1,6 @@
 import { Card } from '@/Components/ui/Card';
 import { InputError } from '@/Components/ui/InputError';
+import { Select } from '@/Components/ui/Select';
 import PageHeader from '@/Components/ui/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { cn } from '@/Utils/cn';
@@ -68,17 +69,17 @@ export default function SupportAdminShow() {
                         }}
                         className="flex items-center gap-2"
                     >
-                        <select
+                        <Select
                             value={statusForm.data.status}
                             onChange={(e) => statusForm.setData('status', e.target.value)}
-                            className="rounded-full border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                            className="rounded-full"
                         >
                             {STATUSES.map((status) => (
                                 <option key={status} value={status}>
                                     {status}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                         <button
                             type="submit"
                             disabled={statusForm.processing || statusForm.data.status === ticket.status}

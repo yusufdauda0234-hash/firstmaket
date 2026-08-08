@@ -5,12 +5,11 @@ namespace App\Modules\Reporting\Services;
 use App\Models\User;
 use App\Modules\Catalog\Models\ProductStatusEvent;
 use App\Modules\Orders\Models\Order;
-use App\Modules\Savings\Models\ProductTargetPlan;
+use App\Modules\Savings\Models\PlanPayment;
+use App\Modules\Savings\Models\SavingsGoal;
 use App\Modules\Vendor\Models\VendorProfile;
-use App\Modules\Wallet\Models\WalletTransaction;
-use App\Shared\Enums\PlanStatus;
+use App\Shared\Enums\SavingsGoalStatus;
 use App\Shared\Enums\UserType;
-use App\Shared\Enums\WalletTransactionType;
 use Illuminate\Support\Carbon;
 
 /**
@@ -46,8 +45,8 @@ class ReportingService
     /** @return array{count: int, totalKobo: int, rows: array<int, array<string, mixed>>} */
     public function deposits(Carbon $from, Carbon $to): array
     {
-        $deposits = WalletTransaction::query()
-            ->where('type', WalletTransactionType::Deposit)
+        // Money in is now plan instalments — there are no balance deposits.
+        $deposits = PlanPayment::query()
             ->whereBetween('created_at', [$from, $to])
             ->orderBy('created_at')
             ->get(['id', 'user_id', 'amount_kobo', 'reference', 'created_at']);
@@ -55,7 +54,7 @@ class ReportingService
         return [
             'count' => $deposits->count(),
             'totalKobo' => (int) $deposits->sum('amount_kobo'),
-            'rows' => $deposits->map(fn (WalletTransaction $transaction) => [
+            'rows' => $deposits->map(fn (PlanPayment $transaction) => [
                 'id' => $transaction->id,
                 'userId' => $transaction->user_id,
                 'amountKobo' => $transaction->amount_kobo,
@@ -68,19 +67,19 @@ class ReportingService
     /** @return array{count: int, rows: array<int, array<string, mixed>>} */
     public function planCompletions(Carbon $from, Carbon $to): array
     {
-        $plans = ProductTargetPlan::query()
-            ->where('status', PlanStatus::Completed)
-            ->whereBetween('completed_at', [$from, $to])
-            ->orderBy('completed_at')
-            ->get(['id', 'uuid', 'user_id', 'target_price_kobo', 'completed_at']);
+        $goals = SavingsGoal::query()
+            ->where('status', SavingsGoalStatus::Fulfilled)
+            ->whereBetween('fulfilled_at', [$from, $to])
+            ->orderBy('fulfilled_at')
+            ->get(['id', 'uuid', 'user_id', 'target_kobo', 'fulfilled_at']);
 
         return [
-            'count' => $plans->count(),
-            'rows' => $plans->map(fn (ProductTargetPlan $plan) => [
-                'uuid' => $plan->uuid,
-                'userId' => $plan->user_id,
-                'targetPriceKobo' => $plan->target_price_kobo,
-                'date' => $plan->completed_at?->toDateString(),
+            'count' => $goals->count(),
+            'rows' => $goals->map(fn (SavingsGoal $goal) => [
+                'uuid' => $goal->uuid,
+                'userId' => $goal->user_id,
+                'targetPriceKobo' => $goal->target_kobo,
+                'date' => $goal->fulfilled_at?->toDateString(),
             ])->all(),
         ];
     }

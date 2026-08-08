@@ -3,7 +3,7 @@
 namespace App\Modules\Payments\Models;
 
 use App\Models\User;
-use App\Modules\Wallet\Models\WalletTransaction;
+use App\Modules\Savings\Models\SavingsTransaction;
 use App\Shared\Enums\ReconciliationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,21 +16,21 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $settlement_import_id
  * @property string $paystack_reference
- * @property int|null $wallet_transaction_id
+ * @property int|null $savings_transaction_id
  * @property int|null $provider_amount_kobo
  * @property int|null $ledger_amount_kobo
  * @property ReconciliationStatus $status
  * @property int|null $reviewed_by
  * @property Carbon|null $reviewed_at
  * @property-read SettlementImport $settlementImport
- * @property-read WalletTransaction|null $walletTransaction
+ * @property-read SavingsTransaction|null $savingsTransaction
  */
 class SettlementReconciliationItem extends Model
 {
     protected $fillable = [
         'settlement_import_id',
         'paystack_reference',
-        'wallet_transaction_id',
+        'savings_transaction_id',
         'provider_amount_kobo',
         'ledger_amount_kobo',
         'status',
@@ -54,10 +54,10 @@ class SettlementReconciliationItem extends Model
         return $this->belongsTo(SettlementImport::class);
     }
 
-    /** @return BelongsTo<WalletTransaction, $this> */
-    public function walletTransaction(): BelongsTo
+    /** @return BelongsTo<SavingsTransaction, $this> */
+    public function savingsTransaction(): BelongsTo
     {
-        return $this->belongsTo(WalletTransaction::class);
+        return $this->belongsTo(SavingsTransaction::class);
     }
 
     /** @return BelongsTo<User, $this> */

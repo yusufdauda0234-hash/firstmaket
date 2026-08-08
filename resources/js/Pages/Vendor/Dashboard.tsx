@@ -66,7 +66,7 @@ export default function VendorDashboard() {
             icon: Banknote,
             accent: 'bg-brand-50 text-brand-600',
             tone: 'brand' as const,
-            hint: 'Wallet and payouts arrive with Sprint 4.',
+            hint: 'Payouts arrive with Sprint 4.',
         },
     ];
 
@@ -160,20 +160,53 @@ export default function VendorDashboard() {
                 </Reveal>
             )}
 
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {stats.map((stat, index) => (
-                    <Reveal key={stat.label} delay={index * 90}>
-                        <StatCard {...stat} light />
-                    </Reveal>
-                ))}
-            </div>
-
-            <Reveal delay={300}>
-                <p className="mt-8 text-sm text-gray-500">
-                    Orders, delivery tracking, and payouts arrive in later sprints — listings are the
-                    focus for now.
-                </p>
-            </Reveal>
+            {/* Every card links into product management, which an unapproved
+                vendor cannot open. Showing four counters of zero pointing at
+                pages that refuse them is worse than showing nothing — so they
+                get what actually happens next instead. */}
+            {isApproved ? (
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {stats.map((stat, index) => (
+                        <Reveal key={stat.label} delay={index * 90}>
+                            <StatCard {...stat} light />
+                        </Reveal>
+                    ))}
+                </div>
+            ) : (
+                <Reveal delay={150}>
+                    <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                        <h2 className="text-base font-extrabold text-gray-900">What happens next</h2>
+                        <ol className="mt-4 space-y-3 text-sm text-gray-600">
+                            <li className="flex gap-3">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+                                    ✓
+                                </span>
+                                <span>You registered your business and uploaded your documents.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">
+                                    2
+                                </span>
+                                <span>
+                                    <strong className="text-gray-900">We check them.</strong> Usually a
+                                    working day or two. Nothing is needed from you.
+                                </span>
+                            </li>
+                            <li className="flex gap-3">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500">
+                                    3
+                                </span>
+                                <span>
+                                    Once approved, listings, orders and earnings all open up here.
+                                </span>
+                            </li>
+                        </ol>
+                        <p className="mt-4 border-t border-gray-100 pt-4 text-xs text-gray-400">
+                            Verifying your phone number now saves a step later.
+                        </p>
+                    </div>
+                </Reveal>
+            )}
 
             {auth.user && (
                 <VerifyPhoneModal

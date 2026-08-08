@@ -4,7 +4,7 @@ namespace App\Shared\Enums;
 
 /**
  * Lifecycle of a Paystack charge (docs/FirstMaket-Database_Schema.md
- * section 7). The wallet is credited only when a charge reaches Success via a
+ * section 7). Savings is credited only when a charge reaches Success via a
  * verified webhook — never from the browser callback.
  */
 enum PaystackTransactionStatus: string

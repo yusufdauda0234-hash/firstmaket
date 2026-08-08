@@ -1,7 +1,8 @@
+import { useAddToCart } from '@/Hooks/useAddToCart';
 import { ProductSummary } from '@/Types';
-import { formatNairaFromKobo } from '@/Utils/money';
+import { productLinkProps } from '@/Utils/links';
+import { useMoney } from '@/Hooks/useI18n';
 import { humanizeSlug } from '@/Utils/text';
-import { Link } from '@inertiajs/react';
 
 /** 5-star rating row with average and count — hidden when no rating exists. */
 export function RatingStars({
@@ -55,7 +56,11 @@ export function CartGlyph({ className = 'h-4 w-4' }: { className?: string }) {
 /**
  * Storefront product card (Temu/AliExpress anatomy): image with hover zoom
  * and Quick look, name, rating stars, app price with struck-through market
- * price, stock-left line, and a cart button that opens the quick view.
+ * price, stock-left line, and a cart button.
+ *
+ * The cart button adds the item there and then — one unit, a toast, no
+ * navigation — because that is what shoppers expect a cart icon on a grid to
+ * do. Quick look stays a separate affordance on the image.
  */
 export function ProductCard({
     product,
@@ -63,11 +68,13 @@ export function ProductCard({
     badge,
 }: {
     product: ProductSummary;
-    /** When provided, powers the Quick look overlay and the cart button. */
+    /** When provided, powers the Quick look overlay on the image. */
     onQuickView?: (product: ProductSummary) => void;
     /** Optional corner badge label, e.g. "DEAL". */
     badge?: string;
 }) {
+    const { money } = useMoney();
+    const { addToCart, adding } = useAddToCart();
     const hasDiscount =
         product.compareAtPriceKobo !== null &&
         product.compareAtPriceKobo !== undefined &&
@@ -75,8 +82,8 @@ export function ProductCard({
     const lowStock = product.stockQuantity !== undefined && product.stockQuantity <= 5;
 
     return (
-        <Link
-            href={route('catalog.product', { product: product.slug })}
+        <a
+            {...productLinkProps(product.slug)}
             className="group flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white transition-shadow hover:shadow-lg"
         >
             <div className="relative aspect-square overflow-hidden bg-gray-50">
@@ -146,11 +153,11 @@ export function ProductCard({
                     <span className="min-w-0">
                         <span className="flex flex-wrap items-baseline gap-x-1.5">
                             <span className="text-lg font-bold leading-tight text-brand-700">
-                                {formatNairaFromKobo(product.priceKobo)}
+                                {money(product.priceKobo)}
                             </span>
                             {hasDiscount && (
                                 <s className="text-xs text-gray-400">
-                                    {formatNairaFromKobo(product.compareAtPriceKobo as number)}
+                                    {money(product.compareAtPriceKobo as number)}
                                 </s>
                             )}
                         </span>
@@ -169,22 +176,21 @@ export function ProductCard({
                     <button
                         type="button"
                         aria-label={`Add ${product.name} to cart`}
+                        disabled={adding || product.stockQuantity === 0}
                         onClick={(e) => {
-                            // Without a quick-view handler the click falls
-                            // through to the card link (product page).
-                            if (onQuickView) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onQuickView(product);
-                            }
+                            // The whole card is a link to the product page —
+                            // adding to the cart must not follow it.
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart(product.uuid, { productName: product.name });
                         }}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:border-brand-600 hover:bg-brand-600 hover:text-white"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:border-brand-600 hover:bg-brand-600 hover:text-white active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <CartGlyph />
                     </button>
                 </span>
             </div>
-        </Link>
+        </a>
     );
 }
 

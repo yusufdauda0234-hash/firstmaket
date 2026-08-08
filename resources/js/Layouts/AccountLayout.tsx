@@ -13,10 +13,8 @@ import {
     MapPin,
     Package,
     PiggyBank,
-    ReceiptText,
     Settings,
     ShoppingBag,
-    Wallet,
 } from 'lucide-react';
 import { ComponentType, PropsWithChildren, ReactNode } from 'react';
 
@@ -92,24 +90,9 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                 { label: 'Recently Viewed', icon: Clock, soon: true },
             ],
         },
-        {
-            heading: 'Payments',
-            items: [
-                {
-                    label: 'My Wallet',
-                    icon: Wallet,
-                    href: route('wallet.index'),
-                    match: (p) =>
-                        p === '/wallet' || p.startsWith('/wallet/add-money') || p.startsWith('/wallet/receipts'),
-                },
-                {
-                    label: 'Transactions',
-                    icon: ReceiptText,
-                    href: route('wallet.transactions'),
-                    match: (p) => p.startsWith('/wallet/transactions'),
-                },
-            ],
-        },
+        // No "Payments" group: it held a second "My Savings" pointing at the
+        // same page as the one under Shopping — one destination listed twice,
+        // under a wallet icon this marketplace does not have.
         {
             heading: 'Account',
             items: [
