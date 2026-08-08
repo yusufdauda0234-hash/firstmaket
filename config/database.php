@@ -51,16 +51,20 @@ return [
              * without a CA every query fails with "Connections using insecure
              * transport are prohibited".
              *
-             * Deliberately no default path. array_filter drops the option
-             * entirely when MYSQL_ATTR_SSL_CA is unset, which is what local
-             * development needs — MariaDB on a laptop has no certificate to
-             * verify against, and hardcoding a path that does not exist there
-             * would break every developer instead of only production.
+             * The bundle in ssl/ carries both roots Azure MySQL chains to —
+             * DigiCert Global Root G2 and Microsoft RSA Root CA 2017 —
+             * because Microsoft rotates between them and pinning one breaks
+             * the day a server moves to the other.
              *
-             * On App Service set it to /etc/ssl/certs/ca-certificates.crt:
-             * Azure's certificate chains to a DigiCert root the system trust
-             * store already carries, so there is nothing to download and
-             * nothing to expire inside a deploy script.
+             * Shipped with the code rather than read from the operating
+             * system's trust store: the store works today on the Debian-based
+             * App Service image, but it is a property of the base image
+             * rather than of this application, and it changes without us.
+             *
+             * Still resolved through env(), and still absent locally —
+             * MariaDB on a laptop presents no certificate to verify, so
+             * MYSQL_ATTR_SSL_CA is left unset there and array_filter drops
+             * the option entirely. Set it in production to this file's path.
              */
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 // Same attribute, two spellings. PHP 8.4 introduced the
