@@ -1,10 +1,14 @@
 name: Deploy to Azure App Service
 
-# Pushes to develop go live. Nothing runs on pull requests — ci.yml covers
+# Pushes to main go live. Nothing runs on pull requests — ci.yml covers
 # those; this workflow only ships.
+#
+# This must match the branch App Service is pointed at. A mismatch is silent:
+# the push succeeds, no workflow runs, and the site keeps serving the previous
+# release with nothing to say why.
 on:
   push:
-    branches: [develop]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
