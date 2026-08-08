@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use Pdo\Mysql;
 
 return [
 
@@ -62,7 +63,14 @@ return [
              * nothing to expire inside a deploy script.
              */
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // Same attribute, two spellings. PHP 8.4 introduced the
+                // Pdo\Mysql subclass and 8.5 deprecated the old PDO:: form,
+                // which emits a notice on every connection; 8.2 and 8.3 have
+                // only the old one. Picking at runtime keeps every supported
+                // version quiet rather than trading one warning for a fatal.
+                (class_exists(Mysql::class)
+                    ? Mysql::ATTR_SSL_CA
+                    : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
