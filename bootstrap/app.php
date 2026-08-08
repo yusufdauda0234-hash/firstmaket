@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetLocale;
 use App\Modules\Orders\Commands\AutoConfirmDeliveredOrders;
 use App\Modules\Orders\Commands\FlagOverduePreparations;
+use App\Modules\Savings\Commands\RevokeUnpaidPlans;
+use App\Modules\Savings\Commands\SweepDormantPlans;
 use App\Providers\ModuleServiceProvider;
 use App\Shared\Enums\UserType;
+use App\Shared\Middleware\EnforceCanonicalHost;
 use App\Shared\Middleware\EnsureCorrectPortal;
 use App\Shared\Middleware\EnsureTwoFactorEnrolled;
 use App\Shared\Middleware\EnsureUserIsActive;
@@ -67,8 +71,45 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         AutoConfirmDeliveredOrders::class,
         FlagOverduePreparations::class,
+        RevokeUnpaidPlans::class,
+        SweepDormantPlans::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        /*
+         * Behind Azure the app never sees the real request.
+         *
+         * TLS is terminated at the load balancer and forwarded on as plain
+         * HTTP, so without this Laravel believes every request is insecure:
+         * it builds http:// URLs, EnforceCanonicalHost redirects against the
+         * proxy, and $request->ip() returns the balancer's address — which
+         * would put one IP on every row of the login audit trail and make the
+         * rate limiters throttle all users as if they were one.
+         *
+         * Trusting all proxies is correct here because nothing reaches the
+         * app except through Azure's front end; the day it is exposed
+         * directly, this becomes a header-spoofing hole and must be narrowed
+         * to the balancer's ranges.
+         */
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
+        // Global, not in the "web" group, so it runs BEFORE route matching:
+        // a mistyped hostname must be redirected even for a path that has no
+        // route, otherwise the visitor gets a 404 on the wrong origin and
+        // stays stranded there. Being global also puts it ahead of every
+        // group middleware, so no session cookie is ever issued for the wrong
+        // host.
+        $middleware->prepend(EnforceCanonicalHost::class);
+
+        // Applies the shopper's chosen language before anything renders, so
+        // server-side strings come back in the same language as the page.
+        $middleware->prepend(SetLocale::class);
+
         // Must run before Laravel's own StartSession middleware (appended by
         // the framework to the "web" group) so the admin subdomain gets its
         // own session cookie name/domain instead of the customer app's.

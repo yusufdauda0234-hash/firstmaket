@@ -1,0 +1,20 @@
+# Fires firstmaket-scheduler.service once a minute.
+
+[Unit]
+Description=Run FirstMaket scheduled tasks every minute
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+
+# Without this a missed run — a reboot, or the VM being stopped overnight to
+# save credit — is simply skipped, and the hourly jobs quietly lose an hour.
+Persistent=true
+
+# Every VM firing schedule:run on the same second is only a problem at scale,
+# but the jitter costs nothing and keeps the database from seeing a spike.
+AccuracySec=10s
+RandomizedDelaySec=5s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,36 @@
+# FirstMaket scheduler — one shot, fired every minute by the timer beside it.
+#
+# schedule:run must be invoked every minute regardless of what is due; Laravel
+# decides internally which of routes/console.php's entries should fire. What
+# it drives here is not cosmetic:
+#
+#   AutoConfirmDeliveredOrders  hourly       releases vendor earnings
+#   FlagOverduePreparations     hourly       flags vendors sitting on orders
+#   RevokeUnpaidPlans           hourly       returns unpaid plan money as credit
+#   SweepDormantPlans           daily 09:00  warns and revokes dormant plans
+#
+# Without it those never run, and a customer's plan money is neither taken nor
+# returned.
+#
+# Install:
+#   sudo cp deploy/systemd/firstmaket-scheduler.* /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now firstmaket-scheduler.timer
+#
+# A systemd timer rather than a crontab entry so the logs, failures and last
+# run time are visible through the same `systemctl status` as everything else.
+
+[Unit]
+Description=FirstMaket scheduled tasks
+After=network.target mysql.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/firstmaket
+
+ExecStart=/usr/bin/php artisan schedule:run
+
+StandardOutput=append:/var/log/firstmaket/scheduler.log
+StandardError=append:/var/log/firstmaket/scheduler.log

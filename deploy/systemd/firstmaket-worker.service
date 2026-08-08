@@ -1,0 +1,50 @@
+# FirstMaket queue worker
+#
+# Without this, QUEUE_CONNECTION must stay "sync" and every queued job runs
+# inside the web request that triggered it — a shopper waits on the AI listing
+# review, and a vendor waits on an email send. With it, set the production
+# .env to QUEUE_CONNECTION=database (the jobs table already exists).
+#
+# Install:
+#   sudo cp deploy/systemd/firstmaket-worker.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now firstmaket-worker
+#
+# After every deploy the worker must be restarted, or it keeps running the
+# code it booted with:
+#   sudo systemctl restart firstmaket-worker
+
+[Unit]
+Description=FirstMaket queue worker
+After=network.target mysql.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/firstmaket
+
+# --max-time recycles the process hourly. A long-lived PHP worker accumulates
+# memory and, worse, holds a stale copy of the container — recycling is the
+# cheapest guard against both.
+#
+# --tries=3 with a backoff so a transient Paystack or Resend timeout is
+# retried rather than dropped, but a genuinely broken job lands in
+# failed_jobs instead of looping forever.
+ExecStart=/usr/bin/php artisan queue:work \
+    --queue=default \
+    --sleep=3 \
+    --tries=3 \
+    --backoff=10 \
+    --max-time=3600 \
+    --max-jobs=500
+
+Restart=always
+RestartSec=5
+
+# One worker. This is a B1s with 1 GB of RAM shared with nginx and PHP-FPM;
+# a second worker buys little and risks the OOM killer taking out nginx.
+StandardOutput=append:/var/log/firstmaket/worker.log
+StandardError=append:/var/log/firstmaket/worker.log
+
+[Install]
+WantedBy=multi-user.target

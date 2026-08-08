@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Modules\Cart\Listeners\MergeGuestCartOnLogin;
 use App\Modules\Catalog\Listeners\DelistSuspendedVendorProducts;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\HomeDataService;
 use App\Modules\Catalog\Services\RuleBasedListingAnalyzer;
 use App\Modules\Notifications\Listeners\RecordNotificationDelivery;
 use App\Modules\Notifications\Services\SmsChannel;
@@ -13,7 +17,6 @@ use App\Modules\Orders\Events\OrderStatusChanged;
 use App\Modules\Orders\Listeners\NotifyCustomerOfOrderStatus;
 use App\Modules\Payments\Services\PaystackBankResolver;
 use App\Modules\Payments\Services\PaystackGateway;
-use App\Modules\Savings\Services\AiScoredPlanEligibilityChecker;
 use App\Modules\Vendor\Events\VendorSuspended;
 use App\Modules\Vendor\Listeners\CreditVendorEarnings;
 use App\Modules\Vendor\Listeners\NotifyVendorOfSale;
@@ -21,13 +24,13 @@ use App\Shared\Contracts\AiListingAnalyzerContract;
 use App\Shared\Contracts\AuditLoggerContract;
 use App\Shared\Contracts\BankAccountResolverContract;
 use App\Shared\Contracts\PaymentGatewayContract;
-use App\Shared\Contracts\PlanEligibilityContract;
 use App\Shared\Contracts\SmsSenderContract;
 use App\Shared\Features;
 use App\Shared\Services\AuditLogger;
 use App\Shared\Services\Sms\LogSmsSender;
 use App\Shared\Services\Sms\SmartSmsSolutionsSender;
 use GuzzleHttp\Client as GuzzleClient;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Mail\Transport\ResendTransport;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
@@ -35,6 +38,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Resend\Client as ResendClient;
@@ -42,6 +46,7 @@ use Resend\Transporters\HttpTransporter;
 use Resend\ValueObjects\ApiKey;
 use Resend\ValueObjects\Transporter\BaseUri;
 use Resend\ValueObjects\Transporter\Headers;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -63,12 +68,6 @@ class AppServiceProvider extends ServiceProvider
             PaystackBankResolver::class,
         );
 
-        // Multi-product plan bundling eligibility (Sprint 8, swapped Sprint
-        // 9 for an AI-scored implementation that keeps the rule-based
-        // checker as its explicit fallback/floor — see
-        // AiScoredPlanEligibilityChecker).
-        $this->app->bind(PlanEligibilityContract::class, AiScoredPlanEligibilityChecker::class);
-
         // Listing Review Assistant (Sprint 9) — advisory only, never
         // approves/rejects. No real provider is configured by default, so
         // this resolves to the deterministic rule-based driver; a future
@@ -83,12 +82,61 @@ class AppServiceProvider extends ServiceProvider
     {
         Features::register();
 
+        /*
+         * Production only, so local development is untouched.
+         *
+         * Every URL the app writes — password reset links, Paystack callback
+         * URLs, OAuth redirects — is built from the request. Behind a proxy
+         * that forwards plain HTTP those come out as http://, and a payment
+         * callback on http:// is one downgrade away from being read in
+         * transit. TrustProxies fixes the detection; this makes it explicit
+         * so a misconfigured proxy header cannot quietly produce insecure
+         * links.
+         */
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        /*
+         * Refuse to boot a production site with debug on.
+         *
+         * The debug page prints environment variables — database password,
+         * Paystack secret key, Resend key, OAuth secrets — to anyone who can
+         * provoke an exception. A deploy that forgets APP_DEBUG=false should
+         * fail loudly at startup rather than serve one 500 and hand over the
+         * keys.
+         */
+        if ($this->app->environment('production') && config('app.debug')) {
+            throw new RuntimeException(
+                'APP_DEBUG must be false in production — the error page leaks every secret in .env.'
+            );
+        }
+
         // Cross-module reactions travel through domain events, never direct
         // module-to-module calls (docs/FirstMaket_Developer_Guidelines.md).
         Event::listen(VendorSuspended::class, DelistSuspendedVendorProducts::class);
         Event::listen(OrderPaid::class, NotifyVendorOfSale::class);
         Event::listen(OrderDeliveryConfirmed::class, CreditVendorEarnings::class);
         Event::listen(OrderStatusChanged::class, NotifyCustomerOfOrderStatus::class);
+
+        /*
+         * Keep the storefront home page honest.
+         *
+         * Its strips are cached for five minutes and nothing used to clear
+         * them, so a listing that had just been approved stayed invisible —
+         * which reads as the approval not having worked. Three cache deletes
+         * on a product or category write is far cheaper than that confusion.
+         */
+        $forgetHomeCache = fn () => HomeDataService::forget();
+
+        Product::saved($forgetHomeCache);
+        Product::deleted($forgetHomeCache);
+        Category::saved($forgetHomeCache);
+        Category::deleted($forgetHomeCache);
+
+        // A guest fills a cart, then signs in to check out — carry the
+        // session cart over instead of letting it vanish (Sprint 8).
+        Event::listen(Login::class, MergeGuestCartOnLogin::class);
 
         // Sprint 7: SMS notification channel + delivery-failure monitoring.
         Notification::extend('sms', fn ($app) => new SmsChannel($app->make(SmsSenderContract::class)));

@@ -1,0 +1,81 @@
+name: Deploy to Azure App Service
+
+# Pushes to develop go live. Nothing runs on pull requests — ci.yml covers
+# those; this workflow only ships.
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  # A second push while the first is still deploying would have two jobs
+  # writing to the same App Service. Queue them instead, and do not cancel a
+  # deploy that is already uploading.
+  group: azure-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Must match the App Service runtime, or an extension the code relies
+      # on can be present here and missing there.
+      - name: PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, bcmath, pdo_mysql, gd, intl, zip
+          coverage: none
+
+      - name: Cache composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Install PHP dependencies
+        # --no-dev keeps Pest and the dev tooling off the server. The
+        # optimised autoloader matters because it is loaded on every request.
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Build front-end
+        # This is the step that produces public/build. Without it the site
+        # serves raw HTML with no styles and no React — and it fails silently,
+        # because Laravel renders fine and only the assets are missing.
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Verify the build produced assets
+        # A Vite failure that still exits 0 would otherwise ship a styleless
+        # site. Cheaper to fail here than to find out in a browser.
+        run: |
+          test -f public/build/manifest.json || {
+            echo "public/build/manifest.json missing — the Vite build did not produce assets."
+            exit 1
+          }
+
+      - name: Remove what the server does not need
+        # node_modules is large and useless at runtime; tests and CI config
+        # have no business on a public host.
+        run: rm -rf node_modules tests .github
+
+      - name: Deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: firstmaket-api
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
+
+# Migrations, caches and the storage symlink are handled by
+# deploy/azure/startup.sh on the server rather than here — the GitHub runner
+# has no route to the database, and Azure MySQL's firewall would have to allow
+# the whole of GitHub's dynamic IP range to give it one.
