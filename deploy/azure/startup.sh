@@ -48,10 +48,27 @@ chmod -R 775 "$STORAGE"
 cd "$WWWROOT"
 
 echo "==> Public storage symlink"
-# public/storage -> $STORAGE/app/public. Not in git, and wwwroot is replaced
-# on every deploy, so it has to be recreated each time or every product image
-# 404s. --force because a stale link may survive from the previous release.
-php artisan storage:link --force || true
+# public/storage -> $STORAGE/app/public. Recreated every deploy, because
+# wwwroot is replaced wholesale and the link is not in git.
+#
+# The directory is removed first. `storage:link --force` only replaces a
+# target that is already a symlink — against a real directory it prints
+# "The [public/storage] link already exists" and gives up, leaving no link
+# at all and every product image 404ing. That is exactly what a deploy
+# produces if anything ships a public/storage directory.
+if [ -d "$WWWROOT/public/storage" ] && [ ! -L "$WWWROOT/public/storage" ]; then
+    echo "    removing a real public/storage directory left by the deploy"
+    rm -rf "$WWWROOT/public/storage"
+fi
+
+php artisan storage:link --force
+
+# A missing link means uploads silently 404, which is easy to mistake for a
+# broken upload form. Fail the start instead.
+test -L "$WWWROOT/public/storage" || {
+    echo "    public/storage is not a symlink — uploads would 404"
+    exit 1
+}
 
 echo "==> Migrations"
 # --force because this is non-interactive. Migrations are idempotent, so

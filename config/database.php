@@ -44,6 +44,26 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+
+            /*
+             * Azure Database for MySQL refuses unencrypted connections, so
+             * without a CA every query fails with "Connections using insecure
+             * transport are prohibited".
+             *
+             * Deliberately no default path. array_filter drops the option
+             * entirely when MYSQL_ATTR_SSL_CA is unset, which is what local
+             * development needs — MariaDB on a laptop has no certificate to
+             * verify against, and hardcoding a path that does not exist there
+             * would break every developer instead of only production.
+             *
+             * On App Service set it to /etc/ssl/certs/ca-certificates.crt:
+             * Azure's certificate chains to a DigiCert root the system trust
+             * store already carries, so there is nothing to download and
+             * nothing to expire inside a deploy script.
+             */
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
         ],
 
         // Finance/Admin reporting and reconciliation queries should read

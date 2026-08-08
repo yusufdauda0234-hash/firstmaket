@@ -37,3 +37,8 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 
+
+# Created by "artisan storage:link" at deploy time. Committed as a real
+# directory it makes storage:link fail — --force only replaces an existing
+# symlink, never a directory — so no link is made and every upload 404s.
+/public/storage
