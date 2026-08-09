@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Support\Controllers\ContentPageController;
 use App\Modules\Support\Controllers\FaqController;
 use App\Modules\Support\Controllers\SupportCenterController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,23 @@ use Illuminate\Support\Facades\Route;
 
 // Public FAQ page (also linked from the storefront footer).
 Route::get('faq', FaqController::class)->name('faq');
+
+/*
+ * Admin-editable public pages.
+ *
+ * The first three URLs are fixed and must not be renamed: they are typed
+ * into the Google OAuth consent screen and Meta's app review, both of which
+ * fetch them and fail the integration on a 404. /legal/{slug} serves
+ * everything else and redirects these three to the URLs above, so each page
+ * has exactly one address.
+ */
+Route::get('terms', [ContentPageController::class, 'terms'])->name('legal.terms');
+Route::get('privacy-policy', [ContentPageController::class, 'privacy'])->name('legal.privacy');
+Route::get('data-deletion', [ContentPageController::class, 'dataDeletion'])->name('legal.data-deletion');
+Route::get('privacy', [ContentPageController::class, 'privacyAlias'])->name('legal.privacy-alias');
+Route::get('legal', [ContentPageController::class, 'index'])->name('legal.index');
+Route::get('legal/{slug}', [ContentPageController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+')->name('legal.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('support', [SupportCenterController::class, 'index'])->name('support.index');

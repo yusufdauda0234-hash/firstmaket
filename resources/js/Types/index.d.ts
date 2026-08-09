@@ -68,6 +68,11 @@ export interface PageProps {
     /** Lowest order value earning free delivery; 0 when none is offered. */
     freeDeliveryFromKobo: number;
     /**
+     * Published pages the admin has ticked for the footer (terms, privacy,
+     * and anything else). Empty on the admin and vendor subdomains.
+     */
+    legalLinks: { title: string; url: string }[];
+    /**
      * Language + display currency for the storefront. Null on the admin and
      * vendor subdomains, which stay in English naira — see useI18n().
      */

@@ -5,6 +5,7 @@ use App\Modules\Auth\Controllers\AccountSettingsController;
 use App\Modules\Auth\Controllers\AuthenticatedSessionController;
 use App\Modules\Auth\Controllers\AuthFlowController;
 use App\Modules\Auth\Controllers\EmailVerificationController;
+use App\Modules\Auth\Controllers\ProfileController;
 use App\Modules\Auth\Controllers\RegisteredUserController;
 use App\Modules\Auth\Controllers\SocialAuthController;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +47,8 @@ Route::middleware('auth')->group(function () {
 
     // "My Account" overview — the customer's account landing page.
     Route::get('account', [AccountOverviewController::class, 'show'])->name('account.overview');
+    Route::get('account/profile', [ProfileController::class, 'customer'])->name('account.profile');
+    Route::put('account/profile', [ProfileController::class, 'updateCustomer'])->name('account.profile.update');
 
     // Account settings (Sprint 2 Addendum): secondary identifier, password,
     // linked social accounts.

@@ -134,7 +134,7 @@ export default function VendorShow() {
                 <Card className="rounded-2xl shadow-sm lg:col-span-2">
                     <h2 className="mb-4 text-lg font-extrabold text-gray-900">Business details</h2>
                     <dl className="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
-                        <Detail icon={<span className="text-gray-400">👤</span>} label="Contact person" value={vendor.contactName} />
+                        <Detail icon={<span className="text-gray-400">👤</span>} label="Full Name" value={vendor.contactName} />
                         <Detail icon={<Mail className="h-4 w-4 text-gray-400" />} label="Email" value={vendor.email} />
                         <Detail icon={<Phone className="h-4 w-4 text-gray-400" />} label="Phone" value={vendor.phone} />
                         <Detail icon={<MapPin className="h-4 w-4 text-gray-400" />} label="Address" value={vendor.address ?? '—'} />

@@ -38,7 +38,7 @@ export default function AuthModal({
 
     return (
         <div
-            className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/80 p-4"
+            className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-slate-900/80 p-2 sm:p-4"
             onMouseDown={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
@@ -46,7 +46,7 @@ export default function AuthModal({
             aria-modal="true"
             aria-label="Sign in or register"
         >
-            <div className="relative w-full max-w-[480px] overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <div className="relative my-auto w-full max-w-[480px] overflow-hidden rounded-3xl bg-white shadow-2xl">
                 <button
                     type="button"
                     onClick={onClose}
@@ -58,7 +58,7 @@ export default function AuthModal({
                     </svg>
                 </button>
 
-                <div className="p-8 sm:p-10">
+                <div className="p-4 sm:p-10">
                     <div className="mb-6 text-center">
                         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gray-500">Welcome back</p>
                         <h1 className="mt-3 text-2xl font-extrabold text-gray-900">Sign in / Register</h1>
@@ -67,9 +67,7 @@ export default function AuthModal({
                         </p>
                     </div>
 
-                    <div className="rounded-2xl border border-gray-100 bg-slate-50 p-6 shadow-sm">
-                        <AuthPanel intended={intended} />
-                    </div>
+                    <AuthPanel intended={intended} />
                 </div>
             </div>
         </div>

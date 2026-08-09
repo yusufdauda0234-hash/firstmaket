@@ -154,7 +154,7 @@ export default function AccountOverview() {
                         </div>
                     </div>
                     <Link
-                        href={route('account.settings')}
+                        href={route('account.profile')}
                         className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-white backdrop-blur transition hover:bg-white/25"
                     >
                         <Pencil className="h-3.5 w-3.5" /> Edit profile
@@ -240,7 +240,7 @@ export default function AccountOverview() {
                     <header className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
                         <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Account details</h2>
                         <Link
-                            href={route('account.settings')}
+                            href={route('account.profile')}
                             className="text-xs font-semibold text-brand-600 hover:underline"
                         >
                             Edit

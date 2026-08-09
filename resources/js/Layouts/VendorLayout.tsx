@@ -12,6 +12,7 @@ import {
     Menu,
     Package,
     ShieldCheck,
+    UserRound,
     X,
 } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useState } from 'react';
@@ -78,6 +79,12 @@ export default function VendorLayout({ children }: PropsWithChildren) {
             href: route('vendor.dashboard'),
             icon: LayoutDashboard,
             active: path === '/dashboard' || path === '/',
+        },
+        {
+            label: 'Profile',
+            href: route('vendor.profile'),
+            icon: UserRound,
+            active: path.startsWith('/profile'),
         },
         ...(approved
             ? [

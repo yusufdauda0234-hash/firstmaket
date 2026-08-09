@@ -271,9 +271,29 @@ export default function AuthPanel({
                         </a>
                     </div>
 
+                    {/* Linked, not merely named. Telling somebody they have
+                        accepted a document while giving them no way to read it
+                        is not consent to anything. */}
                     <p className="mt-5 text-center text-[11px] leading-relaxed text-gray-500">
-                        By continuing, you confirm that you have read and accepted our Terms of Service and
-                        Privacy Policy. FirstMaket is not a loan app — no cash withdrawal.
+                        By continuing, you confirm that you have read and accepted our{' '}
+                        <a
+                            href={route('legal.terms')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-gray-700 underline underline-offset-2 hover:text-brand-700"
+                        >
+                            Terms of Service
+                        </a>{' '}
+                        and{' '}
+                        <a
+                            href={route('legal.privacy')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-gray-700 underline underline-offset-2 hover:text-brand-700"
+                        >
+                            Privacy Policy
+                        </a>
+                        . FirstMaket is not a loan app — no cash withdrawal.
                     </p>
                 </form>
             )}

@@ -2,7 +2,7 @@ import { cn } from '@/Utils/cn';
 import { useFlashToast } from '@/Components/ui/Toast';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { BookOpen, Banknote, BarChart3, CalendarClock, ChevronLeft, ClipboardList, Coins, FolderTree, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, Scale, Search, Send, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, Users, Wallet, X } from 'lucide-react';
+import { BookOpen, Banknote, BarChart3, CalendarClock, ChevronLeft, ClipboardList, Coins, FolderTree, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, Scale, ScrollText, Search, Send, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 interface NavItem {
@@ -81,6 +81,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
             {
                 label: 'Overview',
                 items: [
+                    {
+                        label: 'My profile',
+                        href: route('admin.profile'),
+                        icon: UserRound,
+                        active: path.startsWith('/profile'),
+                        show: true,
+                    },
                     {
                         label: 'Dashboard',
                         href: route('admin.dashboard'),
@@ -285,6 +292,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         icon: Sparkles,
                         active: path.startsWith('/settings/ai'),
                         show: can('ai_settings.manage'),
+                    },
+                    {
+                        label: 'Legal pages',
+                        href: route('admin.settings.pages'),
+                        icon: ScrollText,
+                        active: path.startsWith('/settings/pages'),
+                        show: can('settings.manage'),
                     },
                     {
                         label: 'How it works',

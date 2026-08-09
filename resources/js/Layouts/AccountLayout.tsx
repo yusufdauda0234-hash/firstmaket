@@ -15,6 +15,7 @@ import {
     PiggyBank,
     Settings,
     ShoppingBag,
+    UserRound,
 } from 'lucide-react';
 import { ComponentType, PropsWithChildren, ReactNode } from 'react';
 
@@ -96,6 +97,12 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
         {
             heading: 'Account',
             items: [
+                {
+                    label: 'Profile',
+                    icon: UserRound,
+                    href: route('account.profile'),
+                    match: (p) => p.startsWith('/account/profile'),
+                },
                 {
                     label: 'Notifications',
                     icon: Bell,

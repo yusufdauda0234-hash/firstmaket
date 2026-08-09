@@ -4,6 +4,7 @@ use App\Modules\Auth\Controllers\AuthenticatedSessionController;
 use App\Modules\Vendor\Controllers\EarningsController;
 use App\Modules\Vendor\Controllers\VendorDashboardController;
 use App\Modules\Vendor\Controllers\VendorPasswordResetController;
+use App\Modules\Auth\Controllers\ProfileController;
 use App\Shared\Middleware\EnsureVendorApproved;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,9 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('vendor.logout');
+    Route::get('profile', [ProfileController::class, 'vendor'])->name('vendor.profile');
+    Route::put('profile', [ProfileController::class, 'updateVendor'])->name('vendor.profile.update');
+    Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('vendor.profile.password');
 
     Route::get('/', fn () => redirect()->route('vendor.dashboard'));
 

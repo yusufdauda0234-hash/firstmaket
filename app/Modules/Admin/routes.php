@@ -3,6 +3,7 @@
 use App\Modules\Admin\Controllers\AiSettingsController;
 use App\Modules\Admin\Controllers\CategoryController;
 use App\Modules\Admin\Controllers\CommissionSettingsController;
+use App\Modules\Admin\Controllers\ContentPageController;
 use App\Modules\Admin\Controllers\CustomerLookupController;
 use App\Modules\Admin\Controllers\DeliveryRateController;
 use App\Modules\Admin\Controllers\DisplayCurrencyController;
@@ -277,4 +278,17 @@ Route::middleware('permission:ai_settings.manage')->group(function () {
 Route::middleware('permission:reports.view')->group(function () {
     Route::get('reports', [ReportingController::class, 'index'])->name('admin.reports.index');
     Route::get('reports/export/{report}', [ReportingController::class, 'export'])->name('admin.reports.export');
+});
+
+/*
+ * The wording of the terms, the privacy policy and the data-deletion
+ * instructions. Behind settings.manage: this is the text customers are held
+ * to and the text Google and Meta read during app review, so it belongs with
+ * whoever sets policy rather than with whoever answers tickets.
+ */
+Route::middleware('permission:settings.manage')->group(function () {
+    Route::get('settings/pages', [ContentPageController::class, 'index'])->name('admin.settings.pages');
+    Route::post('settings/pages', [ContentPageController::class, 'store'])->name('admin.settings.pages.store');
+    Route::put('settings/pages/{contentPage:uuid}', [ContentPageController::class, 'update'])->name('admin.settings.pages.update');
+    Route::delete('settings/pages/{contentPage:uuid}', [ContentPageController::class, 'destroy'])->name('admin.settings.pages.destroy');
 });

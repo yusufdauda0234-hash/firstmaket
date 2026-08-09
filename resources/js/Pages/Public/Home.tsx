@@ -251,14 +251,14 @@ function PromoPopup({ products }: { products: ProductSummary[] }) {
                     <Link
                         href={route('catalog.index')}
                         onClick={dismiss}
-                        className="mt-4 block w-full rounded-full bg-brand-600 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700"
+                        className="mt-4 inline-flex rounded-full bg-brand-600 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-brand-700 sm:px-5 sm:py-3 sm:text-sm"
                     >
                         Grab Now →
                     </Link>
                     <button
                         type="button"
                         onClick={dismiss}
-                        className="mt-2 w-full py-1.5 text-sm text-gray-400 transition-colors hover:text-gray-600"
+                        className="ml-2 mt-2 inline-flex px-2 py-1 text-xs text-gray-400 transition-colors hover:text-gray-600 sm:text-sm"
                     >
                         Keep browsing
                     </button>
@@ -385,7 +385,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                 return (
                     <div
                         key={slide.id}
-                        className={`absolute inset-0 grid grid-cols-[1.15fr_0.85fr] items-stretch bg-gradient-to-br transition-opacity duration-700 ${
+                        className={`absolute inset-0 grid grid-cols-1 items-stretch bg-gradient-to-br transition-opacity duration-700 sm:grid-cols-[1.15fr_0.85fr] ${
                             slide.bg
                         } ${i === current ? 'z-[1] opacity-100' : 'pointer-events-none opacity-0'}`}
                         aria-hidden={i !== current}
@@ -396,7 +396,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                             aria-hidden="true"
                         />
 
-                        <div className="flex h-full flex-col justify-center px-8 pb-12 pt-6 text-white sm:px-10">
+                        <div className="flex h-full flex-col justify-center px-5 pb-12 pt-6 text-white sm:px-10">
                             <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-brand-yellow">
                                 {slide.eyebrow}
                             </p>
@@ -409,18 +409,18 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
 
                             {/* Offer chip + CTA: one aligned flex row, pushed toward
                                 the bottom of the slide */}
-                            <div className="mt-8 flex flex-wrap items-center gap-3">
-                                <div className="inline-flex items-center gap-2.5 rounded-xl border-2 border-dashed border-white/60 bg-brand-yellow px-4 py-2.5 shadow-[0_4px_0_rgba(16,42,94,0.45)]">
-                                    <span className="text-[11px] font-bold uppercase leading-tight tracking-wide text-brand-800">
+                            <div className="mt-8 flex w-full flex-nowrap items-center justify-center gap-2 sm:justify-start sm:gap-3">
+                                <div className="inline-flex shrink items-center gap-1.5 rounded-xl border-2 border-dashed border-white/60 bg-brand-yellow px-2.5 py-2 shadow-[0_4px_0_rgba(16,42,94,0.45)] sm:shrink-0 sm:gap-2.5 sm:px-4 sm:py-2.5">
+                                    <span className="text-[8px] font-bold uppercase leading-tight tracking-wide text-brand-800 sm:text-[11px]">
                                         {slide.offerLabel}
                                     </span>
-                                    <span className="text-xl font-extrabold leading-none tracking-tight text-brand-900">
+                                    <span className="truncate text-sm font-extrabold leading-none tracking-tight text-brand-900 sm:text-xl">
                                         {offerValue}
                                     </span>
                                 </div>
                                 <AuthGateAction
                                     tabIndex={i === current ? 0 : -1}
-                                    className={`inline-block whitespace-nowrap rounded-full px-6 py-3 text-sm font-bold transition-colors ${slide.btnClass}`}
+                                    className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-[10px] font-bold transition-colors sm:px-6 sm:py-3 sm:text-sm ${slide.btnClass}`}
                                 >
                                     {slide.ctaLabel}
                                 </AuthGateAction>
@@ -705,7 +705,7 @@ function TrendingTicker({ products }: { products: ProductSummary[] }) {
                     </div>
                     <Link
                         href={route('catalog.index')}
-                        className="mt-2 flex items-center justify-center gap-1 rounded-full bg-brand-50 py-1.5 text-[11px] font-semibold text-brand-700 transition-colors hover:bg-brand-100"
+                        className="mx-auto mt-2 inline-flex items-center justify-center gap-1 rounded-full bg-brand-50 px-3 py-1.5 text-[11px] font-semibold text-brand-700 transition-colors hover:bg-brand-100"
                     >
                         and many more →
                     </Link>
@@ -847,7 +847,7 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                                 type="button"
                                 onClick={() => scrollDeals(-1)}
                                 aria-label="Previous deals"
-                                className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white text-lg text-gray-700 shadow-lg transition hover:text-brand-600 sm:opacity-0 sm:group-hover/deals:opacity-100"
+                                className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white text-base text-gray-700 shadow-lg transition hover:text-brand-600 sm:h-10 sm:w-10 sm:text-lg sm:opacity-0 sm:group-hover/deals:opacity-100"
                             >
                                 ‹
                             </button>
@@ -855,7 +855,7 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                                 type="button"
                                 onClick={() => scrollDeals(1)}
                                 aria-label="Next deals"
-                                className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white text-lg text-gray-700 shadow-lg transition hover:text-brand-600 sm:opacity-0 sm:group-hover/deals:opacity-100"
+                                className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white text-base text-gray-700 shadow-lg transition hover:text-brand-600 sm:h-10 sm:w-10 sm:text-lg sm:opacity-0 sm:group-hover/deals:opacity-100"
                             >
                                 ›
                             </button>
@@ -924,7 +924,7 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                                 <h2 className="text-lg font-bold text-gray-900">More to Love</h2>
                                 <p className="text-sm text-gray-500">Recommended products just for you</p>
                             </div>
-                            <AuthGateAction className="rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-700">
+                            <AuthGateAction className="inline-flex rounded-full bg-brand-600 px-3 py-1.5 text-[11px] font-bold text-white transition hover:bg-brand-700 sm:px-4 sm:py-2 sm:text-xs">
                                 Unlock Personalised Offers
                             </AuthGateAction>
                         </div>
@@ -971,13 +971,13 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                             <Reveal delay={200} className="flex flex-wrap items-center gap-4 lg:flex-col lg:items-stretch">
                                 <Link
                                     href={route('vendor.register')}
-                                    className="rounded-full bg-brand-yellow px-8 py-3.5 text-center text-sm font-bold text-brand-900 shadow-lg shadow-brand-900/30 transition hover:-translate-y-0.5 hover:bg-yellow-300 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
+                                    className="inline-flex rounded-full bg-brand-yellow px-4 py-2.5 text-center text-xs font-bold text-brand-900 shadow-lg shadow-brand-900/30 transition hover:-translate-y-0.5 hover:bg-yellow-300 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95 sm:px-8 sm:py-3.5 sm:text-sm"
                                 >
                                     Start Selling →
                                 </Link>
                                 <AuthGateAction
                                     tabIndex={0}
-                                    className="rounded-full border border-white/40 px-8 py-3.5 text-center text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-95"
+                                    className="inline-flex rounded-full border border-white/40 px-4 py-2.5 text-center text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-95 sm:px-8 sm:py-3.5 sm:text-sm"
                                 >
                                     Shop Deals
                                 </AuthGateAction>

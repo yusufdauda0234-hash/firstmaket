@@ -144,10 +144,10 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
             </button>
 
             {open && (
-                <div className="absolute left-0 z-50 mt-2 w-[70vw] min-w-[800px] max-w-[1100px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg shadow-slate-900/10">
-                    <div className="flex min-h-[65vh]">
+                <div className="absolute left-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-[1100px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg shadow-slate-900/10 sm:w-[70vw]">
+                    <div className="flex max-h-[75vh] min-h-[65vh] flex-col md:flex-row">
                         {/* Sidebar */}
-                        <div className="min-h-[65vh] max-h-[75vh] w-60 shrink-0 overflow-y-auto border-r border-slate-100 bg-slate-50 py-2">
+                        <div className="w-full shrink-0 overflow-x-auto border-b border-slate-100 bg-slate-50 py-2 md:min-h-[65vh] md:max-h-[75vh] md:w-60 md:overflow-x-hidden md:overflow-y-auto md:border-b-0 md:border-r">
                             {groups.map((group) => {
                                 const active = group.id === activeGroupId;
                                 return (
@@ -220,7 +220,7 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
                                 </div>
 
                                 {activeProducts === undefined ? (
-                                    <div className="grid grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                                         {Array.from({ length: 4 }).map((_, i) => (
                                             <div key={i} className="animate-pulse">
                                                 <div className="aspect-square rounded-xl bg-slate-100" />
@@ -234,7 +234,7 @@ export function CategoriesMenu({ categories, forceClose = false, onOpen }: Categ
                                         No products in this category yet — check back soon.
                                     </p>
                                 ) : (
-                                    <div className="grid grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                                         {activeProducts.map((product) => (
                                             <a
                                                 key={product.slug}
@@ -668,19 +668,6 @@ function QRCodeDisplay() {
 export function GetAppPopover() {
     const [open, setOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const clearCloseTimer = () => {
-        if (closeTimerRef.current) {
-            clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = null;
-        }
-    };
-
-    const scheduleClose = () => {
-        clearCloseTimer();
-        closeTimerRef.current = setTimeout(() => setOpen(false), 150);
-    };
 
     useEffect(() => {
         function handleOutsideClick(e: MouseEvent) {
@@ -692,14 +679,10 @@ export function GetAppPopover() {
         return () => document.removeEventListener('mousedown', handleOutsideClick);
     }, []);
 
-    useEffect(() => () => clearCloseTimer(), []);
-
     return (
         <div
             ref={wrapperRef}
             className="relative"
-            onMouseEnter={() => { clearCloseTimer(); setOpen(true); }}
-            onMouseLeave={scheduleClose}
         >
             {/* ── Trigger button — stands out from plain utility-bar links ── */}
             <button
@@ -713,7 +696,7 @@ export function GetAppPopover() {
             </button>
 
             {open && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-[380px] max-w-[94vw] rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-2xl">
+                <div className="fixed inset-x-2 top-16 z-50 max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-gray-100 bg-white p-5 text-center shadow-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px] sm:max-w-[94vw] sm:p-6">
                     {/* Title */}
                     <p className="mb-3 text-sm font-bold text-gray-900">Get the FirstMaket app</p>
 
@@ -779,7 +762,7 @@ export function HelpMenu({ hotline }: { hotline: string }) {
     const { auth } = usePage<PageProps>().props;
 
     return (
-        <div ref={ref} className="relative hidden sm:block">
+            <div ref={ref} className="relative">
             <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
@@ -793,7 +776,7 @@ export function HelpMenu({ hotline }: { hotline: string }) {
             {open && (
                 <div
                     role="menu"
-                    className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl border border-gray-100 bg-white p-2 text-left shadow-xl"
+                    className="fixed left-2 right-2 top-10 z-50 max-h-[calc(100dvh-3.5rem)] overflow-y-auto rounded-2xl border border-gray-100 bg-white p-2 text-left shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-none sm:w-64"
                 >
                     <a
                         href={`tel:${hotline.replace(/[^+\d]/g, '')}`}

@@ -6,6 +6,7 @@ use App\Modules\Cart\Services\CartService;
 use App\Modules\Catalog\Services\HomeDataService;
 use App\Modules\Catalog\Services\LocalePreference;
 use App\Modules\Orders\Services\DeliveryPricing;
+use App\Modules\Support\Models\ContentPage;
 use App\Shared\Enums\Locale;
 use App\Shared\Security\AdminDomain;
 use App\Shared\Security\VendorDomain;
@@ -40,6 +41,11 @@ class HandleInertiaRequests extends Middleware
             // when no rate offers free delivery at all, rather than promising
             // something the checkout will not honour.
             'freeDeliveryFromKobo' => $isPortal ? 0 : fn () => app(DeliveryPricing::class)->lowestFreeThresholdKobo(),
+            // Footer legal links. Shared rather than hardcoded in the layout
+            // so that publishing a page in admin puts it on the site, and
+            // unpublishing one takes the link away instead of leaving a 404
+            // in the footer of every page.
+            'legalLinks' => $isPortal ? [] : fn () => $this->legalLinks(),
             'auth' => [
                 'user' => $user ? [
                     'uuid' => $user->uuid,
@@ -71,6 +77,27 @@ class HandleInertiaRequests extends Middleware
             // constraint generate on the current origin.
             'mainSiteUrl' => rtrim(config('app.url'), '/'),
         ];
+    }
+
+    /**
+     * Published pages the admin has ticked for the footer.
+     *
+     * Cached: this runs on every storefront request and the answer changes a
+     * few times a year. Cleared by ContentPage's saved/deleted hooks, so an
+     * edit shows up immediately rather than whenever the hour turns over.
+     *
+     * @return array<int, array{title: string, url: string}>
+     */
+    private function legalLinks(): array
+    {
+        return Cache::remember(ContentPage::FOOTER_CACHE_KEY, now()->addDay(), fn () => ContentPage::query()
+            ->published()
+            ->where('show_in_footer', true)
+            ->orderBy('sort_order')
+            ->orderBy('title')
+            ->get()
+            ->map(fn (ContentPage $page) => ['title' => $page->title, 'url' => $page->url()])
+            ->all());
     }
 
     /**

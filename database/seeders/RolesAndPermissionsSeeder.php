@@ -70,6 +70,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'affiliates.manage',
             'affiliate_conversions.review',
             'staff.manage',
+            // The wording of the terms, privacy policy and data-deletion
+            // pages. An Administrator can already suspend a vendor and change
+            // what customers are charged; withholding the ability to correct
+            // a policy would only mean waiting on the one Super Administrator
+            // account to fix a sentence.
+            'settings.manage',
         ],
         'Support Agent' => [
             'customers.view',

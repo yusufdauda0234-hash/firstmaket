@@ -35,6 +35,13 @@ class DatabaseSeeder extends Seeder
             // shown in, and the help content the storefront links to.
             DisplayCurrencySeeder::class,
             FaqSeeder::class,
+
+            // The terms, privacy policy and data-deletion pages. Seeded for
+            // the same reason as the product fields: staff edit the wording,
+            // but the rows have to exist, because Google and Meta fetch those
+            // three URLs during sign-in review and a 404 fails it. Never
+            // overwrites an edited page.
+            ContentPageSeeder::class,
         ]);
     }
 }

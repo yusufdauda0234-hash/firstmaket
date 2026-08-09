@@ -660,6 +660,12 @@ Backend:
 - Run `composer audit` and `npm audit` (or Dependabot) to a clean state, or document accepted exceptions.
 - Confirm production secrets are sourced from the secrets manager, not a committed or shared `.env`.
 - Test the data export/deletion workflow and confirm the retention/purge job runs on schedule.
+  - Done: the published `/data-deletion` page, which is the instructions URL Meta
+    requires before it will review a Facebook login app. It routes a request through
+    the Support Center or the hotline.
+  - Outstanding: the workflow behind it is still manual. There is no self-service
+    export, no deletion request record, and no scheduled purge — the 30-day promise
+    on that page is currently kept by hand.
 - Confirm wallet ledger sum reconciles against the actual settled fund balance (fund safeguarding check).
 
 Frontend:

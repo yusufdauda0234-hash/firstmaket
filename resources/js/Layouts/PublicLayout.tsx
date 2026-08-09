@@ -33,6 +33,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
         categories: sharedCategories,
         cartCount,
         freeDeliveryFromKobo,
+        legalLinks,
     } = usePage<PageProps>().props;
     const categories = categoriesProp ?? sharedCategories ?? [];
     const hotline = supportHotline ?? '';
@@ -49,8 +50,8 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
         <div className="flex min-h-screen w-full flex-col bg-gray-50 text-gray-900">
             {/* Promo and utility top bar */}
             <div className="bg-slate-950 text-slate-100">
-                <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 text-xs sm:text-sm">
-                    <div className="flex flex-wrap items-center gap-3">
+                <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-2 text-xs sm:text-sm">
+                    <div className="scrollbar-none flex min-w-0 max-w-full flex-1 items-center gap-3 overflow-x-auto whitespace-nowrap">
                         {/* Only shown when a delivery rate actually offers it.
                             This was a hardcoded "NGN 15,000" that kept
                             promising free delivery after the rates screen had
@@ -68,9 +69,9 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                             {t('Delivery guarantee for all orders')}
                         </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-slate-200">
-                        <span className="hidden sm:inline">{t('Limited-time offer')}</span>
-                        <Link href={route('vendor.register')} className="font-medium text-brand-yellow hover:text-white">
+                    <div className="ml-auto flex shrink-0 items-center gap-3 text-slate-200 sm:gap-4">
+                        <span className="hidden lg:inline">{t('Limited-time offer')}</span>
+                        <Link href={route('vendor.register')} className="hidden font-medium text-brand-yellow hover:text-white sm:inline">
                             {t('Sell on FirstMaket')}
                         </Link>
                         <HelpMenu hotline={hotline} />
@@ -85,12 +86,12 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 whenever the account dropdown opens past its bounds. Global
                 horizontal overflow is already guarded on html/body. */}
             <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white shadow-sm">
-                <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-4 px-4 py-3 min-w-0">
-                    <Link href={route('home')} className="shrink-0" aria-label="FirstMaket home">
+                <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-3 px-4 py-3 min-w-0 lg:gap-4">
+                    <Link href={route('home')} className="order-1 shrink-0" aria-label="FirstMaket home">
                         <img src="/images/brand/logo-mark-dark.png" alt="FirstMaket" className="h-12 w-auto" />
                     </Link>
 
-                    <div className="flex flex-1 min-w-0 items-center gap-2">
+                    <div className="order-3 flex min-w-0 basis-full items-center gap-2 lg:order-2 lg:flex-1 lg:basis-auto">
                         {/* Categories mega menu + search suggestions dropdown */}
                         <CategoriesMenu
                             categories={categories}
@@ -104,7 +105,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                         />
                     </div>
 
-                    <nav className="flex shrink-0 items-center min-w-0 gap-4 text-sm font-medium text-gray-700">
+                    <nav className="order-2 ml-auto flex min-w-0 shrink-0 items-center gap-2 text-sm font-medium text-gray-700 lg:order-3 lg:ml-0 lg:gap-4">
                         <LocalePopover />
                         <AccountDropdown user={auth.user} onOpenAuth={openAuth} />
                         {/* Guests get a cart too — the sign-in gate is at
@@ -406,6 +407,28 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                         </div>
                     </div>
                 </div>
+
+                {/* Legal links. Driven by what the admin has published, so a
+                    new policy page appears here on its own and an unpublished
+                    one stops being linked rather than 404ing. */}
+                {(legalLinks ?? []).length > 0 && (
+                    <div className="border-t border-white/10">
+                        <nav
+                            aria-label="Legal"
+                            className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-4 text-xs"
+                        >
+                            {(legalLinks ?? []).map((link) => (
+                                <Link
+                                    key={link.url}
+                                    href={link.url}
+                                    className="text-brand-200 transition hover:text-brand-yellow"
+                                >
+                                    {link.title}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
+                )}
 
                 {/* Bottom bar */}
                 <div className="border-t border-white/10">

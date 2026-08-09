@@ -48,7 +48,7 @@ export default function AccountDropdown({
             {open && (
                 <div
                     role="menu"
-                    className="absolute right-0 top-full z-50 mt-3 w-80 min-w-[320px] rounded-2xl border border-gray-200 bg-white p-4 shadow-xl shadow-slate-900/10"
+                    className="fixed left-2 right-2 top-14 z-50 max-h-[calc(100dvh-4.5rem)] min-w-0 overflow-y-auto overflow-x-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-xl shadow-slate-900/10 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:max-h-[calc(100dvh-5rem)] sm:w-80 sm:p-4"
                 >
                     <PopoverCaret className="right-9" />
                     {user ? (
@@ -100,7 +100,7 @@ export default function AccountDropdown({
                     ) : (
                         <>
                             {/* ── Sign in / Register — own shadowed card at top ── */}
-                            <div className="rounded-xl border border-gray-100 bg-slate-50 p-3 shadow-md space-y-1.5">
+                            <div className="space-y-1.5 rounded-xl border border-gray-100 bg-slate-50 p-2.5 shadow-md sm:p-3">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -133,7 +133,7 @@ export default function AccountDropdown({
                                                 setOpen(false);
                                                 onOpenAuth();
                                             }}
-                                            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors hover:bg-slate-50 hover:text-brand-600"
+                                            className="flex w-full min-w-0 items-center gap-2.5 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-slate-50 hover:text-brand-600 sm:px-2.5"
                                         >
                                             {item.icon} {item.label}
                                         </button>
