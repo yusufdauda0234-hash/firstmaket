@@ -89,4 +89,18 @@ echo "==> Reload nginx"
 nginx -t
 service nginx reload
 
+echo "==> Background workers"
+# App Service does not provide Laravel's queue or scheduler automatically.
+# Keep one worker and one scheduler per instance; the pgrep guards make this
+# startup script safe to run again after an App Service restart.
+if ! pgrep -f "artisan queue:work" >/dev/null 2>&1; then
+    nohup php artisan queue:work database --sleep=3 --tries=3 --timeout=120 \
+        >> "$STORAGE/logs/queue-worker.log" 2>&1 &
+fi
+
+if ! pgrep -f "artisan schedule:work" >/dev/null 2>&1; then
+    nohup php artisan schedule:work \
+        >> "$STORAGE/logs/scheduler.log" 2>&1 &
+fi
+
 echo "==> FirstMaket is up"

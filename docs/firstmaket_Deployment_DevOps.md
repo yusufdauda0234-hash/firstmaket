@@ -72,6 +72,30 @@ A managed MySQL read replica (or ProxySQL with routed read queries) keeps heavy 
 - MySQL backup jobs
 - Object storage for uploaded product images and identity documents
 
+### Azure App Service deployment
+
+The Linux App Service deployment uses `deploy/azure/startup.sh` as its startup
+command. In addition to migrations, storage, and Laravel caches, the startup
+script launches one database queue worker and one Laravel scheduler per App
+Service instance. Configure these application settings in Azure:
+
+```text
+QUEUE_CONNECTION=database
+SESSION_DRIVER=database
+CACHE_STORE=database
+```
+
+The database must contain the `jobs`, `job_batches`, and `failed_jobs` tables
+before the first worker starts; the startup script runs migrations before
+launching the worker. Queue and scheduler output is written to the persistent
+storage mount at `/home/data/storage/logs/queue-worker.log` and
+`/home/data/storage/logs/scheduler.log`.
+
+Keep the App Service at one instance unless a separate worker deployment is
+configured. If the web app scales out, each instance will run its own worker
+and scheduler; move those processes into a dedicated worker App Service or
+Azure WebJob before enabling multiple web instances.
+
 ## 5. Deployment Flow
 
 Production deployment should:
@@ -103,6 +127,14 @@ Every PR should run:
 - `composer audit` for known PHP dependency vulnerabilities
 - `npm audit` (or Dependabot alerts) for known JS dependency vulnerabilities
 - Architecture test confirming no module queries another module's models directly (see Developer Guidelines)
+
+The pay-on-delivery browser smoke test is a release gate, not just a backend
+test. It must cover the delivered customer order's `Pay` action, the courier's
+cash/customer-online/courier-online choices, the courier-online payment
+redirect, and the handover lock until the payment webhook is verified. The
+current repository has the feature UI and focused Pest coverage, but no
+Playwright harness or authenticated browser fixture yet; do not mark this gate
+complete until those fixtures can run against a test Paystack environment.
 
 Critical smoke paths:
 
