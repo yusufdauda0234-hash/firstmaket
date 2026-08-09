@@ -489,18 +489,31 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                 );
             })}
 
-            {/* Slide dots (horizontal, like the flash-deal indicator) */}
-            <div className="absolute bottom-4 left-1/2 z-[2] flex -translate-x-1/2 items-center gap-2">
+            {/* Slide dots (horizontal, like the flash-deal indicator).
+
+                The dot itself is still 8px; the button around it is 24px,
+                because a finger is nowhere near accurate enough for an 8px
+                target — it was the one control on this page a phone user
+                could not reliably hit.
+
+                The hit areas now sit edge to edge and provide the spacing,
+                so the explicit gap is gone. The dots end up marginally
+                further apart than before; everything else is unchanged. */}
+            <div className="absolute bottom-3 left-1/2 z-[2] flex -translate-x-1/2 items-center">
                 {HERO_SLIDES.map((slide, i) => (
                     <button
                         key={slide.id}
                         aria-label={`Go to slide ${i + 1}`}
                         aria-current={i === current}
                         onClick={() => goTo(i)}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                            i === current ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
-                        }`}
-                    />
+                        className="flex h-6 w-6 items-center justify-center"
+                    >
+                        <span
+                            className={`block h-2 rounded-full transition-all duration-300 ${
+                                i === current ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+                            }`}
+                        />
+                    </button>
                 ))}
             </div>
         </div>
