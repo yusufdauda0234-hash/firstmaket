@@ -126,7 +126,7 @@ export default function RegisterVendor() {
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="contact_name" className={lightLabel}>Contact person</Label>
+                                    <Label htmlFor="contact_name" className={lightLabel}>Full Name</Label>
                                     <Input
                                         className={lightInput}
                                         id="contact_name"

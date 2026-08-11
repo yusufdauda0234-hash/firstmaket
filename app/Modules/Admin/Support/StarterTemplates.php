@@ -247,6 +247,69 @@ class StarterTemplates
     }
 
     /**
+     * Home page hero carousel slides.
+     *
+     * offer_value is left null for 'from_price' and 'campaign_discount' rows
+     * on purpose — those figures are computed from real catalog/campaign
+     * data when the page renders, never typed in here. A hero claiming "60%
+     * OFF" with nothing behind it is exactly what these templates replace.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function heroSlides(): array
+    {
+        return [
+            'classic' => [
+                'name' => 'Classic three',
+                'summary' => 'Deals, flash sale (once a campaign is live), and a seller pitch.',
+                'rows' => [
+                    [
+                        'eyebrow' => '🔥 Super Deals', 'title' => 'Grab trusted deals across Nigeria.',
+                        'description' => 'Verified vendors, locked prices, fast delivery nationwide.',
+                        'cta_label' => 'Grab It Now →', 'cta_target' => 'auth_gate', 'theme' => 'brand',
+                        'emoji' => '🛍️', 'offer_type' => 'from_price', 'offer_label' => 'Starting from',
+                        'offer_value' => null, 'sort_order' => 1,
+                    ],
+                    [
+                        'eyebrow' => '⚡ Flash Sale', 'title' => 'Electronics & appliances, priced to move.',
+                        'description' => 'Limited-time prices from verified Nigerian sellers.',
+                        'cta_label' => 'View Deals →', 'cta_target' => 'catalog', 'theme' => 'brand-reverse',
+                        'emoji' => '📺', 'offer_type' => 'campaign_discount', 'offer_label' => 'Up to',
+                        'offer_value' => null, 'sort_order' => 2,
+                    ],
+                    [
+                        'eyebrow' => '🏪 Sell with Us', 'title' => 'Launch your storefront on FirstMaket.',
+                        'description' => 'Zero listing fees, instant Paystack payouts, verified buyers.',
+                        'cta_label' => 'Start Selling →', 'cta_target' => 'vendor_register', 'theme' => 'brand-deep',
+                        'emoji' => '🚀', 'offer_type' => 'static', 'offer_label' => 'Sellers pay',
+                        'offer_value' => '₦0 fees', 'sort_order' => 3,
+                    ],
+                ],
+            ],
+            'minimal' => [
+                'name' => 'Two slides',
+                'summary' => 'Deals and a seller pitch — no flash-sale slide until a campaign is running.',
+                'rows' => [
+                    [
+                        'eyebrow' => '🔥 Super Deals', 'title' => 'Grab trusted deals across Nigeria.',
+                        'description' => 'Verified vendors, locked prices, fast delivery nationwide.',
+                        'cta_label' => 'Grab It Now →', 'cta_target' => 'auth_gate', 'theme' => 'brand',
+                        'emoji' => '🛍️', 'offer_type' => 'from_price', 'offer_label' => 'Starting from',
+                        'offer_value' => null, 'sort_order' => 1,
+                    ],
+                    [
+                        'eyebrow' => '🏪 Sell with Us', 'title' => 'Launch your storefront on FirstMaket.',
+                        'description' => 'Zero listing fees, instant Paystack payouts, verified buyers.',
+                        'cta_label' => 'Start Selling →', 'cta_target' => 'vendor_register', 'theme' => 'brand-deep',
+                        'emoji' => '🚀', 'offer_type' => 'static', 'offer_label' => 'Sellers pay',
+                        'offer_value' => '₦0 fees', 'sort_order' => 2,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * The list a page shows, without the rows themselves.
      *
      * @param  array<string, array<string, mixed>>  $templates

@@ -21,7 +21,7 @@ beforeEach(function () {
     Notification::fake();
 });
 
-function staffAdmin(string $role = 'Administrator'): User
+function staffAdmin(string $role = 'Super Administrator'): User
 {
     $user = User::factory()->create([
         'user_type' => UserType::Staff,
@@ -53,7 +53,7 @@ function courierPayload(array $overrides = []): array
 
 // ── Who may do it ───────────────────────────────────────────────────────
 
-it('shows the staff screen to an administrator', function () {
+it('shows the staff screen to a super administrator', function () {
     $this->actingAs(staffAdmin())
         ->get(staffUrl())
         ->assertOk()

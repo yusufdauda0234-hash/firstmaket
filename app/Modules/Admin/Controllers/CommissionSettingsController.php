@@ -187,4 +187,32 @@ class CommissionSettingsController extends Controller
             'note' => $validated['note'] ?? null,
         ];
     }
+
+    /**
+     * The rate used when no rule matches an order.
+     *
+     * It was read here and shown on the screen but never writable, so it sat
+     * at its 0 fallback unless somebody edited the database — meaning any
+     * order outside every rule earned the platform nothing.
+     */
+    public function updateDefaultRate(Request $request, AuditLoggerContract $auditLogger): RedirectResponse
+    {
+        $validated = $request->validate([
+            'default_rate_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+        ]);
+
+        Setting::set('orders.default_commission_percent', (float) $validated['default_rate_percent'], 'orders');
+
+        $auditLogger->log(
+            actor: $request->user(),
+            subject: Setting::query()->where('key', 'orders.default_commission_percent')->firstOrFail(),
+            action: 'admin.default_commission_updated',
+            newValues: $validated,
+        );
+
+        return back()->with(
+            'success',
+            'Default commission saved. Orders already placed keep the rate they were created with.',
+        );
+    }
 }

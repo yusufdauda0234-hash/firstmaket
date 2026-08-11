@@ -160,7 +160,7 @@ export default function CartIndex() {
         <PublicLayout>
             <Head title="My Cart" />
 
-            <div className="mx-auto max-w-7xl px-4 py-6">
+            <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4">
                 {items.length === 0 ? (
                     <EmptyCart />
                 ) : (
@@ -168,7 +168,7 @@ export default function CartIndex() {
                     <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
                         {/* ── Lines ── */}
                         <div className="space-y-4">
-                            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                                 <h1 className="text-xl font-extrabold tracking-tight text-gray-900">
                                     Cart ({summary.itemCount})
                                 </h1>
@@ -222,14 +222,14 @@ export default function CartIndex() {
 
                         {/* ── Summary rail ── */}
                         <div className="space-y-4 lg:sticky lg:top-24">
-                            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                                 <h2 className="text-lg font-extrabold text-gray-900">Summary</h2>
 
                                 {selectedItems.length > 0 && (
                                     <div className="mt-4 flex -space-x-2">
                                         {selectedItems.slice(0, 5).map((item) =>
                                             item.productImage ? (
-                                                <img
+                                                <img loading="lazy" decoding="async"
                                                     key={item.productUuid}
                                                     src={item.productImage}
                                                     alt=""
@@ -281,9 +281,13 @@ export default function CartIndex() {
                                     </p>
                                 )}
 
-                                <div className="mt-4 flex items-baseline justify-between border-t border-gray-100 pt-4">
+                                {/* Wraps rather than clips: a seven-figure naira
+                                    total beside its label is wider than a small
+                                    phone, and the amount is the one thing on
+                                    this card that must never be cut off. */}
+                                <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-gray-100 pt-4">
                                     <span className="text-base font-bold text-gray-900">Estimated total</span>
-                                    <span className="text-2xl font-extrabold tabular-nums tracking-tight text-gray-900">
+                                    <span className="text-xl font-extrabold tabular-nums tracking-tight text-gray-900 sm:text-2xl">
                                         {money(selectedTotals.total)}
                                     </span>
                                 </div>
@@ -299,7 +303,7 @@ export default function CartIndex() {
                                
                             </div>
 
-                            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                                 <h3 className="text-sm font-bold text-gray-900">Pay with</h3>
                                 <PaymentMarks />
 
@@ -350,17 +354,26 @@ function CartLine({
     const lowStock = item.stockQuantity <= 5;
 
     return (
-        <li className={`flex gap-4 px-4 py-4 transition-opacity ${pending ? 'opacity-50' : ''}`}>
+        /*
+         * Wraps on phones: the stepper and the money are a fixed ~110px that
+         * cannot shrink, so keeping them on the same line as the thumbnail
+         * pushed the row past the viewport and put a horizontal scrollbar
+         * under the whole page. Below `sm` they drop to their own full-width
+         * line; from `sm` up nothing wraps and the original rail returns.
+         */
+        <li
+            className={`flex flex-wrap gap-x-3 gap-y-3 px-3 py-4 transition-opacity sm:flex-nowrap sm:gap-x-4 sm:px-4 ${pending ? 'opacity-50' : ''}`}
+        >
             <span className="flex items-center">
                 <Checkbox checked={selected} onChange={onToggle} label={`Select ${item.productName}`} />
             </span>
 
             <a
                 {...productLinkProps(item.productSlug)}
-                className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50"
+                className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50 sm:h-24 sm:w-24"
             >
                 {item.productImage ? (
-                    <img src={item.productImage} alt="" className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={item.productImage} alt="" className="h-full w-full object-cover" />
                 ) : (
                     <ShoppingBag className="h-7 w-7 text-gray-300" />
                 )}
@@ -417,7 +430,7 @@ function CartLine({
                 </button>
             </div>
 
-            <div className="flex shrink-0 flex-col items-end gap-2 text-right">
+            <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:shrink-0 sm:flex-col sm:items-end sm:gap-2">
                 <QuantityStepper
                     value={item.quantity}
                     max={item.stockQuantity}
@@ -426,7 +439,7 @@ function CartLine({
                     label={`Quantity of ${item.productName}`}
                 />
 
-                <div>
+                <div className="text-right">
                     <span className="block text-base font-bold tracking-tight text-gray-900">
                         {money(item.lineTotalKobo)}
                     </span>
@@ -461,7 +474,7 @@ function YouMayAlsoLike({ products }: { products: Recommendation[] }) {
     const { addToCart, adding } = useAddToCart();
 
     return (
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
             <h2 className="text-base font-extrabold tracking-tight text-gray-900">You may also like</h2>
             <p className="mt-0.5 text-xs text-gray-400">Picked from the categories in your cart.</p>
 
@@ -473,7 +486,7 @@ function YouMayAlsoLike({ products }: { products: Recommendation[] }) {
                             className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50"
                         >
                             {product.image ? (
-                                <img
+                                <img loading="lazy" decoding="async"
                                     src={product.image}
                                     alt=""
                                     className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -526,10 +539,10 @@ function Row({
     strong?: boolean;
 }) {
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
             <dt className={strong ? 'font-semibold text-gray-900' : 'text-gray-500'}>{label}</dt>
             <dd
-                className={`tabular-nums ${
+                className={`shrink-0 text-right tabular-nums ${
                     tone === 'discount'
                         ? 'font-semibold text-red-600'
                         : strong

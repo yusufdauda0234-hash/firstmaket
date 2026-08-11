@@ -171,7 +171,7 @@ export default function CartDrawer({ cart }: { cart: CartDrawerData }) {
                                     className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50"
                                 >
                                     {line.productImage ? (
-                                        <img src={line.productImage} alt="" className="h-full w-full object-cover" />
+                                        <img loading="lazy" decoding="async" src={line.productImage} alt="" className="h-full w-full object-cover" />
                                     ) : (
                                         <ShoppingBag className="h-5 w-5 text-gray-300" />
                                     )}

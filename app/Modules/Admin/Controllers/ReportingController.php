@@ -23,6 +23,8 @@ class ReportingController extends Controller
     /** @var list<string> */
     private const REPORT_KEYS = [
         'signups', 'deposits', 'plan-completions', 'order-volume', 'vendor-activity', 'product-approvals',
+        // Phase 2D forecasting. Aggregates only — no customer identity.
+        'wishlist-demand', 'expected-completions', 'vendor-performance',
     ];
 
     public function index(Request $request, ReportingService $reports): Response
@@ -38,6 +40,11 @@ class ReportingController extends Controller
             'orderVolume' => $reports->orderVolume($from, $to),
             'vendorActivity' => $reports->vendorActivity($from, $to),
             'productApprovalOutcomes' => $reports->productApprovalOutcomes($from, $to),
+            // Forecasting looks forward, so it deliberately ignores the
+            // date range the backward-looking reports are filtered by.
+            'wishlistDemand' => $reports->wishlistDemand(),
+            'expectedCompletions' => $reports->expectedCompletions(),
+            'vendorPerformance' => $reports->vendorPerformance(),
         ]);
     }
 
@@ -54,6 +61,9 @@ class ReportingController extends Controller
             'order-volume' => $reports->orderVolume($from, $to)['rows'],
             'vendor-activity' => $reports->vendorActivity($from, $to)['rows'],
             'product-approvals' => $reports->productApprovalOutcomes($from, $to)['rows'],
+            'wishlist-demand' => $reports->wishlistDemand()['rows'],
+            'expected-completions' => $reports->expectedCompletions()['rows'],
+            'vendor-performance' => $reports->vendorPerformance()['rows'],
         };
 
         return response()->streamDownload(function () use ($rows) {

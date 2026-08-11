@@ -46,13 +46,20 @@ class CustomerLookupController extends Controller
             'query' => $term,
             'results' => $results,
             'customer' => $request->query('customer')
-                ? $this->customerContext((int) $request->query('customer'))
+                ? $this->customerContext(
+                    (int) $request->query('customer'),
+                    // What somebody has saved is more sensitive than the
+                    // ticket they opened, so it is held behind its own
+                    // permission rather than riding along with the rest of
+                    // the support context.
+                    showFinancials: $request->user()->can('savings.view'),
+                )
                 : null,
         ]);
     }
 
     /** @return array<string, mixed>|null */
-    private function customerContext(int $customerId): ?array
+    private function customerContext(int $customerId, bool $showFinancials): ?array
     {
         $user = User::query()
             ->where('user_type', UserType::Customer)
@@ -70,7 +77,10 @@ class CustomerLookupController extends Controller
             'emailVerified' => $user->hasVerifiedEmail(),
             'phoneVerified' => $user->hasVerifiedPhone(),
             'memberSince' => $user->created_at->format('j M Y'),
-            'savingsBalanceKobo' => (int) Savings::query()->where('user_id', $user->id)->value('balance_kobo'),
+            'canSeeFinancials' => $showFinancials,
+            'savingsBalanceKobo' => $showFinancials
+                ? (int) Savings::query()->where('user_id', $user->id)->value('balance_kobo')
+                : null,
             'orders' => Order::query()
                 ->where('customer_id', $user->id)
                 ->with('product:id,name')
@@ -85,18 +95,23 @@ class CustomerLookupController extends Controller
                     'lockedPriceKobo' => $order->locked_price_kobo,
                     'createdAt' => $order->created_at->format('j M Y'),
                 ]),
-            'savingsGoals' => SavingsGoal::query()
-                ->where('user_id', $user->id)
-                ->with('items.product:id,name')
-                ->orderByDesc('id')
-                ->limit(10)
-                ->get()
-                ->map(fn (SavingsGoal $goal) => [
-                    'uuid' => $goal->uuid,
-                    'productNames' => $goal->items->map(fn ($item) => $item->product->name)->implode(', '),
-                    'status' => $goal->status->value,
-                    'targetKobo' => $goal->target_kobo,
-                ]),
+            // Held behind plans.view for the same reason as the balance: an
+            // agent working a delivery complaint has no need to know what
+            // else somebody is saving towards.
+            'savingsGoals' => $showFinancials
+                ? SavingsGoal::query()
+                    ->where('user_id', $user->id)
+                    ->with('items.product:id,name')
+                    ->orderByDesc('id')
+                    ->limit(10)
+                    ->get()
+                    ->map(fn (SavingsGoal $goal) => [
+                        'uuid' => $goal->uuid,
+                        'productNames' => $goal->items->map(fn ($item) => $item->product->name)->implode(', '),
+                        'status' => $goal->status->value,
+                        'targetKobo' => $goal->target_kobo,
+                    ])
+                : collect(),
             'tickets' => SupportTicket::query()
                 ->where('customer_id', $user->id)
                 ->orderByDesc('id')

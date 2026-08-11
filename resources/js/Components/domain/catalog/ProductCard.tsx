@@ -1,8 +1,13 @@
 import { useAddToCart } from '@/Hooks/useAddToCart';
-import { ProductSummary } from '@/Types';
+import { useCompare } from '@/Hooks/useCompare';
+import { useToast } from '@/Components/ui/Toast';
+import { PageProps, ProductSummary } from '@/Types';
 import { productLinkProps } from '@/Utils/links';
 import { useMoney } from '@/Hooks/useI18n';
 import { humanizeSlug } from '@/Utils/text';
+import { router, usePage } from '@inertiajs/react';
+import { Check, GitCompareArrows } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 /** 5-star rating row with average and count — hidden when no rating exists. */
 export function RatingStars({
@@ -66,20 +71,96 @@ export function ProductCard({
     product,
     onQuickView,
     badge,
+    wishlistMode = 'save',
 }: {
     product: ProductSummary;
     /** When provided, powers the Quick look overlay on the image. */
     onQuickView?: (product: ProductSummary) => void;
     /** Optional corner badge label, e.g. "DEAL". */
     badge?: string;
+    wishlistMode?: 'save' | 'remove';
 }) {
     const { money } = useMoney();
+    const { auth, wishlistUuids = [] } = usePage<PageProps>().props;
     const { addToCart, adding } = useAddToCart();
+    const { has, toggle, max } = useCompare();
+    const toast = useToast();
+    const comparing = has(product.uuid);
+
+    /*
+     * Saved state comes from the server (a shared list of the customer's
+     * wishlisted uuids), with an optimistic local override so the heart fills
+     * on the tap rather than a round trip later.
+     *
+     * It used to be driven by a `wishlistMode` prop that defaulted to 'save'
+     * and was only ever overridden on the wishlist page itself. So on the
+     * catalogue the heart was drawn empty whether or not the item was already
+     * saved, and tapping it posted but changed nothing on screen — no fill,
+     * no toast, no way to tell it had worked, and no way to undo it.
+     */
+    const [optimisticSaved, setOptimisticSaved] = useState<boolean | null>(null);
+    const serverSaved = wishlistMode === 'remove' || wishlistUuids.includes(product.uuid);
+    const saved = optimisticSaved ?? serverSaved;
+
+    // The server is authoritative again once fresh props arrive.
+    useEffect(() => setOptimisticSaved(null), [serverSaved]);
+
+    function toggleSaved(event: React.MouseEvent<HTMLButtonElement>) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const next = !saved;
+        setOptimisticSaved(next);
+
+        const options = {
+            preserveScroll: true,
+            // Put the heart back if the server disagreed, rather than leaving
+            // it showing a state that was never saved.
+            onError: () => setOptimisticSaved(!next),
+        };
+
+        if (next) {
+            router.post(route('wishlist.store', product.uuid), {}, options);
+            toast(`${product.name} saved to your items.`);
+        } else {
+            router.delete(route('wishlist.destroy', product.uuid), options);
+            toast(`${product.name} removed from saved items.`);
+        }
+    }
     const hasDiscount =
         product.compareAtPriceKobo !== null &&
         product.compareAtPriceKobo !== undefined &&
         product.compareAtPriceKobo > product.priceKobo;
     const lowStock = product.stockQuantity !== undefined && product.stockQuantity <= 5;
+
+    /*
+     * Toggle membership of the comparison, and say what happened.
+     *
+     * This used to append to localStorage and, the moment the list reached
+     * two, redirect. Because the list was never shown and never cleared, a
+     * shopper who tapped Compare on one product landed on a page comparing it
+     * with three they had picked days before. Selecting is now a visible,
+     * reversible act, and going to the comparison is a separate decision they
+     * make from the tray.
+     */
+    function toggleCompare(event: React.MouseEvent<HTMLButtonElement>) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const result = toggle(product.uuid);
+
+        if (result === 'full') {
+            toast(`You can compare up to ${max} products. Remove one first.`, 'error');
+
+            return;
+        }
+
+        toast(
+            result === 'added'
+                ? `${product.name} added to compare.`
+                : `${product.name} removed from compare.`,
+        );
+    }
 
     return (
         <a
@@ -119,6 +200,46 @@ export function ProductCard({
                         {badge}
                     </span>
                 )}
+                {auth.user && (
+                    <button
+                        type="button"
+                        aria-label={
+                            saved
+                                ? `Remove ${product.name} from saved items`
+                                : `Save ${product.name} to saved items`
+                        }
+                        aria-pressed={saved}
+                        title={saved ? 'Saved — tap to remove' : 'Save for later'}
+                        onClick={toggleSaved}
+                        className={`absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition ${
+                            saved
+                                ? 'bg-rose-500 text-white'
+                                : 'bg-white/95 text-rose-500 hover:bg-rose-50'
+                        }`}
+                    >
+                        <HeartIcon filled={saved} />
+                    </button>
+                )}
+                {/* Reflects membership, so the shopper can see at a glance
+                    what is already queued rather than re-adding it. */}
+                <button
+                    type="button"
+                    aria-label={
+                        comparing
+                            ? `Remove ${product.name} from comparison`
+                            : `Add ${product.name} to comparison`
+                    }
+                    aria-pressed={comparing}
+                    title={comparing ? 'In your comparison — tap to remove' : 'Add to comparison'}
+                    onClick={toggleCompare}
+                    className={`absolute right-12 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition ${
+                        comparing
+                            ? 'bg-brand-600 text-white'
+                            : 'bg-white/95 text-gray-600 hover:bg-brand-50 hover:text-brand-600'
+                    }`}
+                >
+                    {comparing ? <Check className="h-4 w-4" /> : <GitCompareArrows className="h-4 w-4" />}
+                </button>
                 {lowStock && (
                     <span className="absolute bottom-2 right-2 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
                         Only {product.stockQuantity} left
@@ -203,6 +324,14 @@ function EyeIcon() {
                 d="M2.04 12.32a1.01 1.01 0 0 1 0-.64 10.06 10.06 0 0 1 19.92 0 1.01 1.01 0 0 1 0 .64 10.06 10.06 0 0 1-19.92 0Z"
             />
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+    );
+}
+
+function HeartIcon({ filled = false }: { filled?: boolean }) {
+    return (
+        <svg className="h-4 w-4" fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m20.84 4.61-1.49-1.42a5.5 5.5 0 0 0-7.35.12L12 3.31l-.1-.1a5.5 5.5 0 0 0-7.35-.12L3.06 4.61a5.5 5.5 0 0 0-.29 7.92L12 21.5l9.23-8.97a5.5 5.5 0 0 0-.39-7.92Z" />
         </svg>
     );
 }

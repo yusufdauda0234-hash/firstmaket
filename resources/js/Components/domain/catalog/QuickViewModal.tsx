@@ -125,7 +125,7 @@ export default function QuickViewModal({
                             onMouseLeave={() => setZoomOrigin(null)}
                         >
                             {activeImage ? (
-                                <img
+                                <img loading="lazy" decoding="async"
                                     src={activeImage}
                                     alt={product.name}
                                     style={

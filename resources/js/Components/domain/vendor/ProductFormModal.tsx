@@ -351,18 +351,36 @@ export default function ProductFormModal({
                                         form.setData('category_id', v === '' ? '' : Number(v))
                                     }
                                 />
+                               
                             </div>
                         )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 max-[639px]:grid-cols-1">
                         <div>
                             <Label htmlFor="pf-name" className="text-[13px]">{labelFor('name', 'Product name')}</Label>
                             <input
                                 id="pf-name"
                                 value={form.data.name}
                                 onChange={(e) => form.setData('name', e.target.value)}
-                                className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                                className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                                 required
                             />
                             <InputError message={form.errors.name} />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="pf-stock" className="text-[13px]">{labelFor('stock_quantity', 'Stock quantity')}</Label>
+                            <input
+                                id="pf-stock"
+                                type="number"
+                                min="1"
+                                value={form.data.stock_quantity}
+                                onChange={(e) => form.setData('stock_quantity', Number(e.target.value))}
+                                className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
+                                required
+                            />
+                            <InputError message={form.errors.stock_quantity} />
                         </div>
                     </div>
 
@@ -373,7 +391,7 @@ export default function ProductFormModal({
                             rows={3}
                             value={form.data.description}
                             onChange={(e) => form.setData('description', e.target.value)}
-                            className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                            className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                             required
                         />
                         <InputError message={form.errors.description} />
@@ -414,19 +432,6 @@ export default function ProductFormModal({
                             <p className="mt-1 text-[11px] text-gray-400">
                                 Shown struck through beside your price.
                             </p>
-                        </div>
-                        <div>
-                            <Label htmlFor="pf-stock" className="text-[13px]">{labelFor('stock_quantity', 'Stock quantity')}</Label>
-                            <input
-                                id="pf-stock"
-                                type="number"
-                                min="1"
-                                value={form.data.stock_quantity}
-                                onChange={(e) => form.setData('stock_quantity', Number(e.target.value))}
-                                className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
-                                required
-                            />
-                            <InputError message={form.errors.stock_quantity} />
                         </div>
                     </div>
 
@@ -502,7 +507,7 @@ export default function ProductFormModal({
                             <div className="mt-2 flex flex-wrap gap-2">
                                 {previews.map((url, i) => (
                                     <span key={url} className="group relative">
-                                        <img src={url} alt="" className="h-14 w-14 rounded-lg object-cover ring-1 ring-black/5" />
+                                        <img loading="lazy" decoding="async" src={url} alt="" className="h-14 w-14 rounded-lg object-cover ring-1 ring-black/5" />
                                         {i === 0 && (
                                             <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded bg-brand-600 px-1 py-0.5 text-[8px] font-bold text-white">
                                                 <Star className="h-2 w-2" /> Cover
@@ -537,7 +542,7 @@ export default function ProductFormModal({
                                 <p className="mb-1 text-xs font-medium text-gray-400">Current photos</p>
                                 <div className="flex flex-wrap gap-2">
                                     {product.images.map((img) => (
-                                        <img
+                                        <img loading="lazy" decoding="async"
                                             key={img.id}
                                             src={img.url}
                                             alt=""
@@ -567,7 +572,7 @@ export default function ProductFormModal({
                             value={form.data.video_url}
                             onChange={(e) => form.setData('video_url', e.target.value)}
                             placeholder="https://www.youtube.com/watch?v=..."
-                            className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                            className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                         />
                         <InputError message={form.errors.video_url} />
                         <p className="mt-1 text-[11px] text-gray-400">
@@ -597,7 +602,7 @@ export default function ProductFormModal({
                                                 value={option.value}
                                                 checked={form.data.tier === option.value}
                                                 onChange={() => form.setData('tier', option.value)}
-                                                className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                                                className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500/20"
                                             />
                                             {option.label}
                                         </span>

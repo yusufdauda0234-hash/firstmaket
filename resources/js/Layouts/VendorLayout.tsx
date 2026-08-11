@@ -11,6 +11,7 @@ import {
     LogOut,
     Menu,
     Package,
+    RotateCcw,
     ShieldCheck,
     UserRound,
     X,
@@ -101,6 +102,12 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                       active: path.startsWith('/orders'),
                   },
                   {
+                      label: 'Returns',
+                      href: route('vendor.returns.index'),
+                      icon: RotateCcw,
+                      active: path.startsWith('/returns'),
+                  },
+                  {
                       label: 'Earnings',
                       href: route('vendor.earnings'),
                       icon: Banknote,
@@ -151,6 +158,8 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                     <Link
                         key={item.label}
                         href={item.href}
+                        prefetch={['hover', 'click']}
+                        cacheFor="30s"
                         title={collapsed && !mobile ? item.label : undefined}
                         className={cn(
                             'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200',

@@ -161,7 +161,7 @@ export default function AddVendorModal({ open, onClose }: Props) {
                             type="checkbox"
                             checked={form.data.approve_now}
                             onChange={(e) => form.setData('approve_now', e.target.checked)}
-                            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                         />
                         <span className="text-sm">
                             <span className="font-semibold text-gray-800">Approve immediately</span>

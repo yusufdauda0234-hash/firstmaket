@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Services\OrderService;
 use App\Modules\Payments\Actions\StartPaystackPaymentAction;
+use App\Modules\Returns\Models\ReturnRequest;
+use App\Modules\Returns\Services\ReturnPolicy;
 use App\Shared\Enums\OrderStatus;
+use App\Shared\Enums\ReturnReason;
 use App\Shared\Enums\ShipmentStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -173,6 +176,16 @@ class OrderController extends Controller
                 'goodsDueKobo' => $order->shipment?->collect_on_delivery_kobo ?? 0,
                 'goodsPaidAt' => $order->shipment?->goods_paid_at?->format('j M Y, g:ia'),
                 'canConfirmReceipt' => $order->status === OrderStatus::Delivered && $order->delivery_confirmed_at === null,
+                // Phase 2E. `returnWindowClosesAt` is shown whether or not the
+                // window is still open: a customer who has just missed it is
+                // owed the date, not a silently absent button.
+                'returnWindowDays' => app(ReturnPolicy::class)->windowDays(),
+                'returnWindowClosesAt' => app(ReturnPolicy::class)->windowClosesAt($order)?->format('j M Y'),
+                'canOpenReturn' => app(ReturnPolicy::class)->canOpen($order, ReturnReason::Damaged),
+                'existingReturnUuid' => ReturnRequest::query()
+                    ->where('order_id', $order->id)
+                    ->latest('id')
+                    ->value('uuid'),
                 // The four digits the customer reads out at the door. Shown
                 // only while the parcel is actually on its way: before that it
                 // is noise, and afterwards it is spent (nulled on delivery).

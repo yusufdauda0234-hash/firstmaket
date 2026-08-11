@@ -497,7 +497,7 @@ export default function AdminProductFields() {
                                 checked={form.data.is_required}
                                 disabled={editingBuiltIn}
                                 onChange={(e) => form.setData('is_required', e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                             />
                             Vendors must fill this in
                         </label>
@@ -506,7 +506,7 @@ export default function AdminProductFields() {
                                 type="checkbox"
                                 checked={form.data.is_active}
                                 onChange={(e) => form.setData('is_active', e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                             />
                             Show on the form
                         </label>

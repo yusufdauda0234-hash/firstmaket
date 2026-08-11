@@ -9,6 +9,8 @@ use App\Modules\Support\Models\SupportTicketMessage;
 use App\Modules\Support\Notifications\TicketReplyNotification;
 use App\Shared\Contracts\AuditLoggerContract;
 use App\Shared\Enums\IvrReason;
+use App\Modules\Orders\Models\Order;
+use App\Shared\Enums\ComplaintCategory;
 use App\Shared\Enums\SupportChannel;
 use App\Shared\Enums\TicketPriority;
 use App\Shared\Enums\TicketStatus;
@@ -31,14 +33,17 @@ class SupportService
         string $subject,
         string $message,
         TicketPriority $priority = TicketPriority::Normal,
+        array $extra = [],
     ): SupportTicket {
-        return DB::transaction(function () use ($customer, $channel, $subject, $message, $priority) {
+        return DB::transaction(function () use ($customer, $channel, $subject, $message, $priority, $extra) {
             $ticket = SupportTicket::query()->create([
                 'customer_id' => $customer->id,
                 'channel' => $channel,
                 'subject' => $subject,
                 'status' => TicketStatus::Open,
                 'priority' => $priority,
+                // Complaint routing fields, absent on an ordinary ticket.
+                ...$extra,
             ]);
 
             SupportTicketMessage::query()->create([
@@ -137,5 +142,44 @@ class SupportService
 
             return $log;
         });
+    }
+
+    /**
+     * File a complaint.
+     *
+     * A complaint is a support ticket with a sharper category, not a separate
+     * system: staff work one inbox, and everything the ticket flow already
+     * does — threading, assignment, status, audit — comes along unchanged.
+     *
+     * The category sets the priority rather than asking the customer to rate
+     * their own urgency. Somebody whose money has gone missing should not have
+     * to pick "high" to be treated as urgent, and everybody picks "high"
+     * anyway when you offer the choice.
+     */
+    public function openComplaint(
+        User $customer,
+        ComplaintCategory $category,
+        string $subject,
+        string $message,
+        ?Order $aboutOrder = null,
+    ): SupportTicket {
+        if ($aboutOrder !== null && $aboutOrder->customer_id !== $customer->id) {
+            throw ValidationException::withMessages([
+                'order' => 'That order does not belong to you.',
+            ]);
+        }
+
+        return $this->openTicket(
+            customer: $customer,
+            channel: SupportChannel::Complaint,
+            subject: $subject,
+            message: $message,
+            priority: $category->isUrgent() ? TicketPriority::High : TicketPriority::Normal,
+            extra: [
+                'complaint_category' => $category->value,
+                'about_order_id' => $aboutOrder?->id,
+                'about_vendor_id' => $aboutOrder?->vendor_id,
+            ],
+        );
     }
 }

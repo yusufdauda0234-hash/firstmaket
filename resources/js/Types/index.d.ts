@@ -35,6 +35,10 @@ export interface ProductSummary {
     description?: string;
     stockQuantity?: number;
     vendorName?: string;
+    categoryName?: string;
+    priceAlertPercent?: number | null;
+    /** ISO timestamp when the live campaign pricing this product is present. Home-page campaign section only. */
+    campaignEndsAt?: string | null;
 }
 
 export interface Paginated<T> {
@@ -59,6 +63,20 @@ export interface PageProps {
         devOtpCode?: string | null;
     };
     supportHotline: string;
+    /** Days a customer has to report a problem; null on the staff portals. */
+    returnWindowDays?: number | null;
+    /** Live-chat widget config; null on the staff and vendor portals. */
+    supportChat?: {
+        provider: string;
+        propertyId: string;
+        widgetId: string;
+        forGuests: boolean;
+    } | null;
+    /**
+     * Product uuids this customer has saved. Empty for guests and on the
+     * staff/vendor portals — see HandleInertiaRequests.
+     */
+    wishlistUuids?: string[];
     /** Absolute URL of the main marketplace, for links from portal subdomains. */
     mainSiteUrl: string;
     /** Header categories, shared so any customer page can use PublicLayout. */

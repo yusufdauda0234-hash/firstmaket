@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware(EnsureVendorApproved::class)->group(function () {
         require app_path('Modules/Catalog/vendor-routes.php');
         require app_path('Modules/Orders/vendor-routes.php');
+        require app_path('Modules/Returns/vendor-routes.php');
 
         // Earnings, payout history, and the verified payout bank account.
         Route::get('earnings', [EarningsController::class, 'show'])->name('vendor.earnings');

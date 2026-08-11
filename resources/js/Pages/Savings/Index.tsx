@@ -2,7 +2,7 @@ import AccountLayout from '@/Layouts/AccountLayout';
 import { PageProps } from '@/Types';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { CalendarClock, CheckCircle2, PiggyBank, ShoppingBag } from 'lucide-react';
+import { CalendarClock, CheckCircle2, Lightbulb, PiggyBank, ShoppingBag } from 'lucide-react';
 
 interface PlanRow {
     uuid: string;
@@ -24,10 +24,19 @@ interface PlanRow {
     fulfilledAt: string | null;
 }
 
+interface AssistantNote {
+    key: string;
+    tone: 'neutral' | 'positive' | 'warning';
+    title: string;
+    body: string;
+}
+
 interface Props extends PageProps {
     goals: PlanRow[];
     activeCount: number;
     planCreditKobo: number;
+    /** Advisory only — worked out from this customer's own payments. */
+    assistantNotes: AssistantNote[];
 }
 
 /**
@@ -36,7 +45,7 @@ interface Props extends PageProps {
  * belongs to a specific product.
  */
 export default function SavingsIndex() {
-    const { goals, activeCount, planCreditKobo } = usePage<Props>().props;
+    const { goals, activeCount, planCreditKobo, assistantNotes = [] } = usePage<Props>().props;
 
     const running = goals.filter((goal) => goal.status === 'saving');
     const settled = goals.filter((goal) => goal.status !== 'saving');
@@ -64,6 +73,42 @@ export default function SavingsIndex() {
                     </p>
                 )}
             </div>
+
+            {/* ── Savings assistant ──
+                Suggestions from this customer's own payment history. Every
+                note is advice and nothing more: the panel has no buttons that
+                move money, because software guessing at somebody's budget
+                should not be able to act on the guess. */}
+            {assistantNotes.length > 0 && (
+                <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                        <Lightbulb className="h-4 w-4 shrink-0 text-brand-600" />
+                        Your saving, at a glance
+                    </h2>
+                    <p className="mt-1 text-xs text-gray-400">
+                        Worked out from what you have actually paid. Suggestions only — nothing here
+                        changes a plan.
+                    </p>
+
+                    <ul className="mt-4 space-y-2.5">
+                        {assistantNotes.map((note) => (
+                            <li
+                                key={note.key}
+                                className={`rounded-xl px-4 py-3 ${
+                                    note.tone === 'warning'
+                                        ? 'bg-amber-50 text-amber-900'
+                                        : note.tone === 'positive'
+                                          ? 'bg-emerald-50 text-emerald-900'
+                                          : 'bg-slate-50 text-gray-700'
+                                }`}
+                            >
+                                <p className="text-sm font-bold">{note.title}</p>
+                                <p className="mt-0.5 text-sm leading-relaxed opacity-90">{note.body}</p>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
 
             <section className="mt-6">
                 <h2 className="text-lg font-extrabold text-gray-900">Your plans</h2>
@@ -95,7 +140,7 @@ export default function SavingsIndex() {
                                 >
                                     <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50">
                                         {goal.image ? (
-                                            <img src={goal.image} alt="" className="h-full w-full object-cover" />
+                                            <img loading="lazy" decoding="async" src={goal.image} alt="" className="h-full w-full object-cover" />
                                         ) : (
                                             <ShoppingBag className="h-7 w-7 text-gray-300" />
                                         )}

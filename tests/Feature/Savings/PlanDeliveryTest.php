@@ -61,6 +61,31 @@ it('builds the target from the goods and the delivery fee', function () {
         ->and($goal->target_kobo)->toBe(41_500_00);
 });
 
+it('bundles multiple products into one plan with one delivery fee', function () {
+    $first = Product::factory()->approved()->create(['price_kobo' => 40_000_00]);
+    $second = Product::factory()->approved()->create(['price_kobo' => 20_000_00]);
+
+    $goal = app(SavingsGoalService::class)->createFromLines(
+        $this->customer,
+        collect([
+            ['cartItemId' => null, 'product' => $first, 'quantity' => 1],
+            ['cartItemId' => null, 'product' => $second, 'quantity' => 1],
+        ]),
+        [
+            'recipient_name' => 'Yakubu Dauda',
+            'recipient_phone' => '08031234567',
+            'delivery_address' => '12 Marina Road',
+            'state' => 'Lagos',
+            'lga' => 'Eti-Osa',
+        ],
+        deliveryTerm(),
+    );
+
+    expect($goal->items()->count())->toBe(2)
+        ->and($goal->delivery_fee_kobo)->toBe(1_500_00)
+        ->and($goal->target_kobo)->toBe(60_000_00 + 1_500_00);
+});
+
 it('charges a plan the same delivery as a card checkout', function () {
     $product = Product::factory()->approved()->create(['price_kobo' => 40_000_00]);
 

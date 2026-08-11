@@ -144,7 +144,7 @@ export default function AdminProductsIndex() {
                                             <td className="px-5 py-3.5">
                                                 <div className="flex items-center gap-3">
                                                     {product.imageUrl ? (
-                                                        <img
+                                                        <img loading="lazy" decoding="async"
                                                             src={product.imageUrl}
                                                             alt=""
                                                             className="h-9 w-9 shrink-0 rounded-lg object-cover ring-1 ring-black/5"
@@ -185,7 +185,7 @@ export default function AdminProductsIndex() {
                                     className="group flex flex-col overflow-hidden rounded-xl border border-gray-100 text-left transition hover:border-brand-200 hover:shadow-md hover:shadow-brand-600/5"
                                 >
                                     {product.imageUrl ? (
-                                        <img
+                                        <img loading="lazy" decoding="async"
                                             src={product.imageUrl}
                                             alt=""
                                             className="aspect-square w-full object-cover"

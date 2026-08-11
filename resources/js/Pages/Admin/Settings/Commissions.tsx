@@ -1,4 +1,5 @@
 import { Card } from '@/Components/ui/Card';
+import { Input } from '@/Components/ui/Input';
 import { InputError } from '@/Components/ui/InputError';
 import Modal from '@/Components/ui/Modal';
 import { MoneyInput } from '@/Components/ui/MoneyInput';
@@ -94,6 +95,7 @@ export default function CommissionSettings() {
 
     const [editing, setEditing] = useState<Rule | null>(null);
     const [adding, setAdding] = useState(false);
+    const defaultRateForm = useForm({ default_rate_percent: String(defaultRatePercent) });
     const [testPrice, setTestPrice] = useState<number | ''>('');
 
     function remove(rule: Rule) {
@@ -141,6 +143,59 @@ export default function CommissionSettings() {
                         <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-500">
                             {defaultRatePercent}% default
                         </span>
+                    </Card>
+
+                    {/* ── The fallback rate ──
+                        Shown on this page for a long time with no way to
+                        change it, which left it pinned at 0 — so any sale
+                        outside every rule earned nothing. */}
+                    <Card>
+                        <h2 className="text-sm font-bold text-gray-900">Default rate</h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Charged on any sale no rule below matches. Orders already placed keep the
+                            rate they were created with.
+                        </p>
+
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                defaultRateForm.post(route('admin.settings.commissions.default-rate'), {
+                                    preserveScroll: true,
+                                });
+                            }}
+                            className="mt-3 flex flex-wrap items-end gap-3"
+                        >
+                            <div className="w-40">
+                                <label
+                                    htmlFor="default_rate"
+                                    className="mb-1.5 block text-xs font-bold text-gray-700"
+                                >
+                                    Percent of each sale
+                                </label>
+                                <Input
+                                    id="default_rate"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value={defaultRateForm.data.default_rate_percent}
+                                    onChange={(event) =>
+                                        defaultRateForm.setData('default_rate_percent', event.target.value)
+                                    }
+                                />
+                                <InputError
+                                    message={defaultRateForm.errors.default_rate_percent}
+                                    className="mt-1"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={defaultRateForm.processing}
+                                className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
+                            >
+                                {defaultRateForm.processing ? 'Saving…' : 'Save default'}
+                            </button>
+                        </form>
                     </Card>
 
                     {/* ── The rules ── */}
@@ -618,7 +673,7 @@ function RuleForm({
                             step="0.01"
                             value={form.data.rate_percent}
                             onChange={(e) => form.setData('rate_percent', Number(e.target.value))}
-                            className="w-28 rounded-xl border border-gray-200 px-3.5 py-2.5 text-lg font-bold transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                            className="w-28 rounded-lg border border-gray-300 px-3.5 py-2.5 text-lg font-bold transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                         />
                         <span className="text-lg font-bold text-gray-400">%</span>
                         <span className="text-sm text-gray-500">of the item price</span>
@@ -728,7 +783,7 @@ function RuleForm({
                                 value={form.data.note}
                                 onChange={(e) => form.setData('note', e.target.value)}
                                 placeholder="Why this rule exists"
-                                className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                                className="w-full rounded-lg border border-gray-300 px-3.5 py-2 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                             />
                         </label>
                     </div>
@@ -739,7 +794,7 @@ function RuleForm({
                         type="checkbox"
                         checked={form.data.is_active}
                         onChange={(e) => form.setData('is_active', e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                     />
                     <span className="text-sm text-gray-700">Use this rule on new orders</span>
                 </label>

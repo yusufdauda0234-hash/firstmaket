@@ -6,12 +6,14 @@ use App\Modules\Cart\Models\CartItem;
 use App\Modules\Cart\Models\CheckoutSession;
 use App\Modules\Cart\Services\CartCheckoutService;
 use App\Modules\Cart\Services\CartService;
+use App\Modules\Catalog\Models\Campaign;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Customer\Models\CustomerProfile;
 use App\Modules\Orders\Models\Order;
 use App\Shared\Enums\ProductStatus;
 use App\Shared\Enums\VendorStatus;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -135,6 +137,53 @@ it('re-checks availability when the payment clears and leaves the failed item in
 
     // The unavailable item is still sitting in the cart.
     expect(CartItem::query()->where('product_id', $goesOutOfStock->id)->exists())->toBeTrue();
+});
+
+it('skips a campaign line whose stock cap ran out before the webhook completes, without aborting the whole checkout', function () {
+    $available = Product::factory()->approved()->create(['price_kobo' => 40_000_00, 'stock_quantity' => 5]);
+    $dealProduct = Product::factory()->approved()->create(['price_kobo' => 25_000_00, 'stock_quantity' => 5]);
+
+    $campaign = Campaign::query()->create([
+        'name' => 'Flash Sale',
+        'starts_at' => now()->subHour(),
+        'ends_at' => now()->addHour(),
+        'is_active' => true,
+    ]);
+    $campaign->products()->attach($dealProduct, [
+        'sale_price_kobo' => 20_000_00,
+        'stock_cap' => 1,
+        'sold_quantity' => 0,
+    ]);
+
+    addToCart($this->customer, $available);
+    addToCart($this->customer, $dealProduct);
+
+    $session = pendingSession($this->customer);
+
+    // Another shopper's webhook lands first and exhausts the campaign cap
+    // while this one is still on Paystack.
+    DB::table('campaign_products')
+        ->where('campaign_id', $campaign->id)
+        ->where('product_id', $dealProduct->id)
+        ->update(['sold_quantity' => 1]);
+
+    $result = app(CartCheckoutService::class)->completePaidSession($session);
+
+    expect($result['skippedProductNames'])->toHaveCount(1);
+
+    $orders = Order::query()->where('customer_id', $this->customer->id)->get();
+    expect($orders)->toHaveCount(1)
+        ->and($orders->first()->product_id)->toBe($available->id)
+        // The failed reservation did not roll back the rest of the
+        // transaction — the session still clears to paid.
+        ->and($session->refresh()->status)->toBe('paid');
+
+    // The exhausted campaign's stock counter was not double-incremented by
+    // the lost reservation attempt.
+    expect((int) DB::table('campaign_products')
+        ->where('campaign_id', $campaign->id)
+        ->where('product_id', $dealProduct->id)
+        ->value('sold_quantity'))->toBe(1);
 });
 
 it('refuses to start a checkout when nothing in the cart is available', function () {

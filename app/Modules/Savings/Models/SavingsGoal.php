@@ -2,6 +2,7 @@
 
 namespace App\Modules\Savings\Models;
 
+use App\Models\Setting;
 use App\Models\User;
 use App\Modules\Orders\Models\Order;
 use App\Shared\Enums\PlanCadence;
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $first_payment_due_at
  * @property int|null $missed_payments_allowed
  * @property Carbon|null $dormancy_warned_at
+ * @property Carbon|null $paused_at
  * @property Carbon|null $started_at
  * @property SavingsGoalStatus $status
  * @property string|null $delivery_address
@@ -86,6 +88,7 @@ class SavingsGoal extends Model
         'first_payment_due_at',
         'missed_payments_allowed',
         'dormancy_warned_at',
+        'paused_at',
         'started_at',
         'status',
         'delivery_address',
@@ -116,6 +119,7 @@ class SavingsGoal extends Model
             'first_payment_due_at' => 'datetime',
             'missed_payments_allowed' => 'integer',
             'dormancy_warned_at' => 'datetime',
+            'paused_at' => 'datetime',
             'started_at' => 'datetime',
             'fulfilled_at' => 'datetime',
         ];
@@ -149,6 +153,18 @@ class SavingsGoal extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'savings_goal_id');
+    }
+
+    /**
+     * The group funding this plan, where one exists. A plan has at most one:
+     * two groups on the same basket would make "whose money is this" answer
+     * differently depending on which group you asked.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<GroupPlan, $this>
+     */
+    public function groupPlan(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(GroupPlan::class, 'savings_goal_id');
     }
 
     public function isSaving(): bool
@@ -208,6 +224,50 @@ class SavingsGoal extends Model
         }
 
         return $this->missedPayments() > $allowed;
+    }
+
+    /**
+     * How long a pause may hold, in days.
+     *
+     * Read from settings so staff can tune it without a deploy; the config
+     * value is the fallback a fresh install runs on.
+     */
+    public static function maxPauseDays(): int
+    {
+        return (int) Setting::get('savings.max_pause_days', config('firstmaket.savings.max_pause_days', 60));
+    }
+
+    /**
+     * When an active pause runs out.
+     *
+     * A plan freezes its price at signup, so a pause that never ended would be
+     * an indefinite price lock. After this moment the plan is treated as
+     * running again — reminders resume and the dormancy sweep counts misses as
+     * usual. Nothing is charged or cancelled at the instant it expires.
+     */
+    public function pauseExpiresAt(): ?Carbon
+    {
+        return $this->paused_at?->copy()->addDays(self::maxPauseDays());
+    }
+
+    /**
+     * Paused *and* still inside the allowed window.
+     *
+     * Everything that should back off while a customer has paused — reminders,
+     * the dormancy sweep, automatic debit — asks this rather than reading
+     * `paused_at`, so an expired pause cannot go on suppressing them.
+     */
+    public function isPaused(): bool
+    {
+        $expiresAt = $this->pauseExpiresAt();
+
+        return $expiresAt !== null && $expiresAt->isFuture();
+    }
+
+    /** Paused at some point, but the window has since run out. */
+    public function pauseHasExpired(): bool
+    {
+        return $this->paused_at !== null && ! $this->isPaused();
     }
 
     public function isCovered(): bool

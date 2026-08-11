@@ -1,14 +1,22 @@
 <?php
 
 use App\Modules\Admin\Controllers\AiSettingsController;
+use App\Modules\Admin\Controllers\AutomationSettingsController;
 use App\Modules\Admin\Controllers\CategoryController;
+use App\Modules\Admin\Controllers\CampaignController;
 use App\Modules\Admin\Controllers\CommissionSettingsController;
 use App\Modules\Admin\Controllers\ContentPageController;
 use App\Modules\Admin\Controllers\CustomerLookupController;
+use App\Modules\Admin\Controllers\DatabaseBackupController;
 use App\Modules\Admin\Controllers\DeliveryRateController;
 use App\Modules\Admin\Controllers\DisplayCurrencyController;
 use App\Modules\Admin\Controllers\DocumentDownloadController;
 use App\Modules\Admin\Controllers\FeeSettingsController;
+use App\Modules\Admin\Controllers\FeatureController;
+use App\Modules\Admin\Controllers\GrowthSettingsController;
+use App\Modules\Admin\Controllers\HeroSlideController;
+use App\Modules\Admin\Controllers\OperationsSettingsController;
+use App\Modules\Admin\Controllers\SupportChannelSettingsController;
 use App\Modules\Admin\Controllers\GuideController;
 use App\Modules\Admin\Controllers\OrderAdminController;
 use App\Modules\Admin\Controllers\PhoneReviewController;
@@ -17,12 +25,17 @@ use App\Modules\Admin\Controllers\ProductApprovalController;
 use App\Modules\Admin\Controllers\ProductAttributeController;
 use App\Modules\Admin\Controllers\PromoCodeController;
 use App\Modules\Admin\Controllers\ReconciliationController;
+use App\Modules\Admin\Controllers\RoleController;
 use App\Modules\Admin\Controllers\ReportingController;
 use App\Modules\Admin\Controllers\StaffController;
 use App\Modules\Admin\Controllers\SupportAdminController;
 use App\Modules\Admin\Controllers\UserManagementController;
 use App\Modules\Admin\Controllers\VendorApprovalController;
 use App\Modules\Admin\Controllers\VendorPayoutController;
+use App\Modules\Affiliates\Controllers\AdminAffiliateController;
+use App\Modules\Affiliates\Controllers\AffiliatePayoutController;
+use App\Modules\Returns\Controllers\AdminReturnController;
+use App\Modules\Risk\Controllers\AdminRiskController;
 use App\Modules\Logistics\Controllers\CashController;
 use App\Modules\Logistics\Controllers\CourierTaskController;
 use App\Modules\Logistics\Controllers\DispatchController;
@@ -37,12 +50,95 @@ use Illuminate\Support\Facades\Route;
 // what the reader can actually open.
 Route::get('guide', GuideController::class)->name('admin.guide');
 
+Route::middleware('permission:catalog.manage')->group(function () {
+    Route::get('merchandising/campaigns', [CampaignController::class, 'index'])->name('admin.campaigns.index');
+    Route::post('merchandising/campaigns/quick-start', [CampaignController::class, 'quickStart'])->name('admin.campaigns.quick-start');
+    Route::post('merchandising/campaigns', [CampaignController::class, 'store'])->name('admin.campaigns.store');
+    Route::put('merchandising/campaigns/{campaign}', [CampaignController::class, 'update'])->name('admin.campaigns.update');
+    Route::delete('merchandising/campaigns/{campaign}', [CampaignController::class, 'destroy'])->name('admin.campaigns.destroy');
+
+    Route::get('merchandising/hero-slides', [HeroSlideController::class, 'index'])->name('admin.hero-slides.index');
+    // Before {heroSlide}, or 'template' binds as a slide id.
+    Route::post('merchandising/hero-slides/template', [HeroSlideController::class, 'applyTemplate'])->name('admin.hero-slides.template');
+    Route::post('merchandising/hero-slides', [HeroSlideController::class, 'store'])->name('admin.hero-slides.store');
+    Route::put('merchandising/hero-slides/{heroSlide}', [HeroSlideController::class, 'update'])->name('admin.hero-slides.update');
+    Route::delete('merchandising/hero-slides/{heroSlide}', [HeroSlideController::class, 'destroy'])->name('admin.hero-slides.destroy');
+});
+
+Route::middleware('permission:settings.manage')->group(function () {
+    Route::get('settings/features', [FeatureController::class, 'index'])->name('admin.settings.features');
+    Route::post('settings/features', [FeatureController::class, 'update'])->name('admin.settings.features.update');
+});
+
 Route::middleware('permission:vendors.view')->group(function () {
     Route::get('vendors', [VendorApprovalController::class, 'index'])->name('admin.vendors.index');
     Route::get('vendors/{vendorProfile}/details', [VendorApprovalController::class, 'details'])->name('admin.vendors.details');
     Route::get('vendors/{vendorProfile}', [VendorApprovalController::class, 'show'])->name('admin.vendors.show');
 
     Route::get('documents/{uploadedDocument}', DocumentDownloadController::class)->name('admin.documents.download');
+});
+
+Route::middleware('permission:affiliates.manage')->group(function () {
+    Route::get('affiliates', [AdminAffiliateController::class, 'index'])->name('admin.affiliates.index');
+    Route::post('affiliates/{affiliate}/approve', [AdminAffiliateController::class, 'approve'])->name('admin.affiliates.approve');
+    Route::post('affiliates/{affiliate}/reject', [AdminAffiliateController::class, 'reject'])->name('admin.affiliates.reject');
+    Route::post('affiliates/{affiliate}/suspend', [AdminAffiliateController::class, 'suspend'])->name('admin.affiliates.suspend');
+    Route::post('affiliates/{affiliate}/reinstate', [AdminAffiliateController::class, 'reinstate'])->name('admin.affiliates.reinstate');
+    Route::post('affiliates/bank-accounts/{account}/verify', [AdminAffiliateController::class, 'verifyBankAccount'])->name('admin.affiliates.bank-accounts.verify');
+});
+
+/*
+ * Reviewing a partner's conversions is its own permission, because it is the
+ * step that decides whether a commission exists at all.
+ */
+Route::middleware('permission:affiliate_conversions.review')->group(function () {
+    Route::post('affiliates/conversions/{conversion}/approve', [AdminAffiliateController::class, 'approveConversion'])->name('admin.affiliates.conversions.approve');
+    Route::post('affiliates/conversions/{conversion}/reject', [AdminAffiliateController::class, 'rejectConversion'])->name('admin.affiliates.conversions.reject');
+    Route::post('affiliates/flags/{flag}/resolve', [AdminAffiliateController::class, 'resolveFlag'])->name('admin.affiliates.flags.resolve');
+});
+
+/*
+ * Sending partner money is held apart from reviewing partner work — the same
+ * split as returns.manage versus refunds.issue.
+ */
+Route::middleware('permission:affiliate_payouts.approve')->group(function () {
+    Route::get('affiliates/payouts', [AffiliatePayoutController::class, 'index'])->name('admin.affiliates.payouts.index');
+    Route::post('affiliates/payouts/generate', [AffiliatePayoutController::class, 'generate'])->name('admin.affiliates.payouts.generate');
+    Route::post('affiliates/payouts/{batch:uuid}/approve', [AffiliatePayoutController::class, 'approve'])->name('admin.affiliates.payouts.approve');
+    Route::post('affiliates/payouts/items/{item}/reject', [AffiliatePayoutController::class, 'rejectItem'])->name('admin.affiliates.payouts.items.reject');
+    Route::post('affiliates/payouts/items/{item}/paid', [AffiliatePayoutController::class, 'markPaid'])->name('admin.affiliates.payouts.items.paid');
+    Route::post('affiliates/payouts/items/{item}/failed', [AffiliatePayoutController::class, 'markFailed'])->name('admin.affiliates.payouts.items.failed');
+});
+
+/*
+ * Returns. Two permissions, deliberately.
+ *
+ * `returns.manage` is queue work — read a case, approve it, refuse it with a
+ * reason. `refunds.issue` is the only thing in the system that sends money
+ * back out, so it is held separately: a support agent should be able to run
+ * the returns desk without also being able to pay money out of the business.
+ */
+Route::middleware('permission:returns.manage')->group(function () {
+    Route::get('returns', [AdminReturnController::class, 'index'])->name('admin.returns.index');
+
+    Route::post('returns/{return:uuid}/approve', [AdminReturnController::class, 'approve'])
+        ->name('admin.returns.approve');
+
+    Route::post('returns/{return:uuid}/reject', [AdminReturnController::class, 'reject'])
+        ->name('admin.returns.reject');
+});
+
+Route::middleware('permission:refunds.issue')->group(function () {
+    Route::post('returns/{return:uuid}/refund', [AdminReturnController::class, 'refund'])
+        ->middleware('throttle:20,1')
+        ->name('admin.returns.refund');
+});
+
+// Risk flags. Reviewing one records a judgement and closes the row; it never
+// suspends anything — that stays a deliberate act in user management.
+Route::middleware('permission:risk.review')->group(function () {
+    Route::get('risk', [AdminRiskController::class, 'index'])->name('admin.risk.index');
+    Route::post('risk/{flag:uuid}/review', [AdminRiskController::class, 'review'])->name('admin.risk.review');
 });
 
 Route::middleware('permission:identity.review')->group(function () {
@@ -164,6 +260,10 @@ Route::middleware('permission:orders.manage')->group(function () {
 });
 
 Route::middleware('permission:commissions.manage')->group(function () {
+    // The fallback rate when no rule matches. Displayed here for years with
+    // no way to change it.
+    Route::post('settings/commissions/default-rate', [CommissionSettingsController::class, 'updateDefaultRate'])
+        ->name('admin.settings.commissions.default-rate');
     Route::get('settings/commissions', [CommissionSettingsController::class, 'edit'])->name('admin.settings.commissions');
     Route::post('settings/commissions', [CommissionSettingsController::class, 'store'])->name('admin.settings.commissions.store');
     Route::put('settings/commissions/{commissionRule:uuid}', [CommissionSettingsController::class, 'update'])->name('admin.settings.commissions.update');
@@ -239,6 +339,19 @@ Route::middleware('permission:staff.manage')->group(function () {
         ->middleware('throttle:10,1')->name('admin.staff.resend-code');
 });
 
+Route::middleware('permission:roles.manage')->group(function () {
+    Route::get('roles', [RoleController::class, 'index'])->name('admin.roles.index');
+    Route::post('roles', [RoleController::class, 'store'])->name('admin.roles.store');
+    Route::put('roles/{role}', [RoleController::class, 'update'])->name('admin.roles.update');
+    Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('admin.roles.destroy');
+});
+
+Route::middleware('permission:system.backup')->group(function () {
+    Route::get('settings/backup', [DatabaseBackupController::class, 'index'])->name('admin.settings.backup');
+    Route::get('settings/backup/download', [DatabaseBackupController::class, 'download'])->name('admin.settings.backup.download');
+    Route::post('settings/backup/truncate', [DatabaseBackupController::class, 'truncate'])->name('admin.settings.backup.truncate');
+});
+
 Route::middleware('permission:vendor_payouts.approve')->group(function () {
     Route::get('payouts', [VendorPayoutController::class, 'index'])->name('admin.payouts.index');
     Route::post('payouts/generate', [VendorPayoutController::class, 'generate'])->name('admin.payouts.generate');
@@ -287,6 +400,22 @@ Route::middleware('permission:reports.view')->group(function () {
  * whoever sets policy rather than with whoever answers tickets.
  */
 Route::middleware('permission:settings.manage')->group(function () {
+    // Thresholds behind the scheduled jobs, ratings, risk flags and
+    // suggestions. Previously read from settings with nowhere to set them.
+    Route::get('settings/automation', [AutomationSettingsController::class, 'edit'])->name('admin.settings.automation');
+    Route::post('settings/automation', [AutomationSettingsController::class, 'update'])->name('admin.settings.automation.update');
+
+    // The operational numbers: returns window, pause ceiling, debit retries.
+    Route::get('settings/operations', [OperationsSettingsController::class, 'edit'])->name('admin.settings.operations');
+    Route::post('settings/operations', [OperationsSettingsController::class, 'update'])->name('admin.settings.operations.update');
+
+    // Which live-chat provider the storefront loads.
+    Route::get('settings/support-channels', [SupportChannelSettingsController::class, 'edit'])->name('admin.settings.support-channels');
+    Route::post('settings/support-channels', [SupportChannelSettingsController::class, 'update'])->name('admin.settings.support-channels.update');
+
+    Route::get('settings/growth', [GrowthSettingsController::class, 'edit'])->name('admin.settings.growth');
+    Route::post('settings/growth', [GrowthSettingsController::class, 'update'])->name('admin.settings.growth.update');
+    Route::put('settings/growth/reward-tiers/{rewardTier}', [GrowthSettingsController::class, 'updateTier'])->name('admin.settings.growth.reward-tiers.update');
     Route::get('settings/pages', [ContentPageController::class, 'index'])->name('admin.settings.pages');
     Route::post('settings/pages', [ContentPageController::class, 'store'])->name('admin.settings.pages.store');
     Route::put('settings/pages/{contentPage:uuid}', [ContentPageController::class, 'update'])->name('admin.settings.pages.update');

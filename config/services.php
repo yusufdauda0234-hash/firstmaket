@@ -32,6 +32,16 @@ return [
         'daily_budget_kobo' => (int) env('SMS_DAILY_BUDGET_KOBO', 0),
     ],
 
+    /*
+     * The savings assistant (Phase 3C). Defaults to the deterministic
+     * rules driver: it costs nothing per question, cannot invent a figure,
+     * and keeps financial data on the platform. Set a different value once
+     * a hosted-model driver exists and there is a reason to prefer it.
+     */
+    'assistant' => [
+        'driver' => env('ASSISTANT_DRIVER', 'rules'),
+    ],
+
     'ai' => [
         'driver' => env('AI_PROVIDER_DRIVER', 'openai'),
         'key' => env('AI_PROVIDER_KEY'),

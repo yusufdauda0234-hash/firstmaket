@@ -340,7 +340,7 @@ export default function SearchBox({ categories, forceClose = false, onOpen }: Se
             >
                 {imagePreview && (
                     <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-slate-100 py-1 pl-1 pr-2">
-                        <img src={imagePreview.url} alt="" className="h-6 w-6 rounded-full object-cover" />
+                        <img loading="lazy" decoding="async" src={imagePreview.url} alt="" className="h-6 w-6 rounded-full object-cover" />
                         <button
                             type="button"
                             onClick={clearImage}

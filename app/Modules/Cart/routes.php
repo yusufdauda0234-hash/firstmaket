@@ -14,9 +14,19 @@ use Illuminate\Support\Facades\Route;
  * ever reach lines in their own cart.
  */
 Route::get('cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
-Route::patch('cart/items/{product:uuid}', [CartController::class, 'update'])->name('cart.items.update');
-Route::delete('cart/items/{product:uuid}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+
+/*
+ * Throttled because these are the only writes in the app a stranger can make.
+ * A signed-in shopper's abuse is attributable and bounded by their account;
+ * an anonymous one is neither, and each request here creates or updates a
+ * row. The ceiling is far above real shopping — nobody adds sixty items a
+ * minute by hand — so it costs a genuine customer nothing.
+ */
+Route::middleware('throttle:60,1')->group(function () {
+    Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
+    Route::patch('cart/items/{product:uuid}', [CartController::class, 'update'])->name('cart.items.update');
+    Route::delete('cart/items/{product:uuid}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+});
 
 // Paying is where an account becomes mandatory: orders, savings debits and
 // savings goals all hang off a user.

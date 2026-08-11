@@ -141,7 +141,7 @@ export default function SupportIndex() {
                                 value={hotlineForm.data.phone}
                                 onChange={(e) => hotlineForm.setData('phone', e.target.value)}
                                 required
-                                className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                                className="border w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                             />
                             <InputError message={hotlineForm.errors.phone} className="mt-1" />
                         </div>
@@ -183,7 +183,7 @@ export default function SupportIndex() {
                                 value={ticketForm.data.subject}
                                 onChange={(e) => ticketForm.setData('subject', e.target.value)}
                                 required
-                                className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                                className="border w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                             />
                             <InputError message={ticketForm.errors.subject} className="mt-1" />
                         </div>
@@ -194,7 +194,7 @@ export default function SupportIndex() {
                                 value={ticketForm.data.message}
                                 onChange={(e) => ticketForm.setData('message', e.target.value)}
                                 required
-                                className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                                className="border w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                             />
                             <InputError message={ticketForm.errors.message} className="mt-1" />
                         </div>

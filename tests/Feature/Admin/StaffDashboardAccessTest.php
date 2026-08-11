@@ -5,10 +5,9 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 
 beforeEach(fn () => $this->seed(RolesAndPermissionsSeeder::class));
 
-function adminUrl(string $path = ''): string
-{
-    return 'http://'.config('app.admin_domain').'/'.ltrim($path, '/');
-}
+// adminUrl() lives in tests/Pest.php: it was declared here, which meant any
+// other file using it only worked when this one happened to be loaded too —
+// so running that file on its own failed with "undefined function".
 
 it('redirects guests away from the admin dashboard', function () {
     $this->get(adminUrl())->assertRedirect(adminUrl('login'));

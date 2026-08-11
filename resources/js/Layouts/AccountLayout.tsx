@@ -4,6 +4,8 @@ import { cn } from '@/Utils/cn';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
+    Award,
+    BarChart3,
     ChevronRight,
     Clock,
     Heart,
@@ -11,13 +13,20 @@ import {
     LifeBuoy,
     LogOut,
     MapPin,
+    MessageSquareWarning,
+    MoreHorizontal,
     Package,
     PiggyBank,
+    RotateCcw,
     Settings,
     ShoppingBag,
+    Share2,
+    Sparkles,
     UserRound,
+    Users,
+    X,
 } from 'lucide-react';
-import { ComponentType, PropsWithChildren, ReactNode } from 'react';
+import { ComponentType, PropsWithChildren, ReactNode, useEffect, useState } from 'react';
 
 interface AccountNavItem {
     label: string;
@@ -46,6 +55,24 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
         url,
     } = usePage<PageProps>();
     const path = url.split('?')[0];
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    // Any navigation closes the sheet — including a back-button move, which
+    // changes the url without unmounting this layout.
+    useEffect(() => setMenuOpen(false), [url]);
+
+    // The sheet scrolls its own list; letting the page behind scroll too is
+    // the classic "I closed it and lost my place" bug.
+    useEffect(() => {
+        if (!menuOpen) return;
+
+        const { overflow } = document.body.style;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = overflow;
+        };
+    }, [menuOpen]);
 
     const initials = (auth.user?.name ?? '')
         .split(/\s+/)
@@ -79,7 +106,20 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                     label: 'My Savings',
                     icon: PiggyBank,
                     href: route('savings.index'),
-                    match: (p) => p.startsWith('/savings') || p.startsWith('/checkout'),
+                    match: (p) =>
+                        (p.startsWith('/savings') && !p.startsWith('/savings/together')) || p.startsWith('/checkout'),
+                },
+                {
+                    label: 'Saving together',
+                    icon: Users,
+                    href: route('savings.together.index'),
+                    match: (p) => p.startsWith('/savings/together'),
+                },
+                {
+                    label: 'Savings assistant',
+                    icon: Sparkles,
+                    href: route('assistant.index'),
+                    match: (p) => p.startsWith('/account/assistant'),
                 },
                 {
                     label: 'My Orders',
@@ -87,7 +127,36 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                     href: route('orders.index'),
                     match: (p) => p.startsWith('/orders'),
                 },
-                { label: 'Saved Items', icon: Heart, soon: true },
+                {
+                    label: 'Returns',
+                    icon: RotateCcw,
+                    href: route('returns.index'),
+                    match: (p) => p.startsWith('/account/returns'),
+                },
+                {
+                    label: 'Rewards & badges',
+                    icon: Award,
+                    href: route('rewards.index'),
+                    match: (p) => p.startsWith('/account/rewards'),
+                },
+                {
+                    label: 'Referrals',
+                    icon: Share2,
+                    href: route('referrals.index'),
+                    match: (p) => p.startsWith('/account/referrals'),
+                },
+                {
+                    label: 'Affiliate program',
+                    icon: BarChart3,
+                    href: route('affiliates.index'),
+                    match: (p) => p.startsWith('/account/affiliate'),
+                },
+                {
+                    label: 'Saved Items',
+                    icon: Heart,
+                    href: route('wishlist.index'),
+                    match: (p) => p.startsWith('/account/wishlist'),
+                },
                 { label: 'Recently Viewed', icon: Clock, soon: true },
             ],
         },
@@ -125,18 +194,64 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                     label: 'Support Center',
                     icon: LifeBuoy,
                     href: route('support.index'),
-                    match: (p) => p.startsWith('/support'),
+                    match: (p) => p === '/support' || p.startsWith('/support/tickets'),
+                },
+                {
+                    label: 'Make a complaint',
+                    icon: MessageSquareWarning,
+                    href: route('support.complaints.create'),
+                    match: (p) => p.startsWith('/support/complaints'),
                 },
             ],
         },
     ];
 
-    // Flat list for the mobile horizontal scroller (links only — no "soon" clutter).
-    const mobileItems = groups.flatMap((g) => g.items).filter((i) => i.href);
+    /*
+     * The four destinations that earn a permanent thumb-reachable slot, plus
+     * a More tab for the rest.
+     *
+     * This replaced a horizontal scroller of ten identical pills: on a phone
+     * it hid most of itself off-screen, gave no sense of where you were, and
+     * put the whole account behind a sideways swipe. A fixed bar is the
+     * pattern every shopping app converges on because the common destinations
+     * stay one tap away from anywhere.
+     */
+    const bottomTabs: AccountNavItem[] = [
+        {
+            label: 'Account',
+            icon: LayoutDashboard,
+            href: route('account.overview'),
+            match: (p) => p === '/account' || p === '/account/',
+        },
+        {
+            label: 'Orders',
+            icon: Package,
+            href: route('orders.index'),
+            match: (p) => p.startsWith('/orders'),
+        },
+        {
+            label: 'Plans',
+            icon: PiggyBank,
+            href: route('savings.index'),
+            match: (p) => p.startsWith('/savings') || p.startsWith('/checkout'),
+        },
+        {
+            label: 'Saved',
+            icon: Heart,
+            href: route('wishlist.index'),
+            match: (p) => p.startsWith('/account/wishlist'),
+        },
+    ];
+
+    // Anything not on the bar is reachable from the sheet, so "More" is lit
+    // whenever the current page is one of those.
+    const onMoreSection = !bottomTabs.some((tab) => tab.match?.(path));
 
     return (
         <PublicLayout>
-            <div className="mx-auto w-full max-w-7xl px-4 py-6">
+            {/* Bottom padding clears the fixed mobile bar, which would
+                otherwise sit on top of the last card on every page. */}
+            <div className="mx-auto w-full max-w-7xl px-4 pb-28 pt-6 lg:pb-6">
                 {/* Breadcrumb */}
                 <nav className="mb-4 flex items-center gap-1.5 text-sm text-gray-400" aria-label="Breadcrumb">
                     <Link href={route('home')} className="hover:text-brand-600">
@@ -149,28 +264,6 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                     <ChevronRight className="h-3.5 w-3.5" />
                     <span className="font-medium text-gray-700">{title}</span>
                 </nav>
-
-                {/* Mobile nav scroller */}
-                <div className="mb-4 flex gap-2 overflow-x-auto pb-1 lg:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {mobileItems.map((item) => {
-                        const active = item.match ? item.match(path) : false;
-                        return (
-                            <Link
-                                key={item.label}
-                                href={item.href!}
-                                className={cn(
-                                    'flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-sm font-medium transition-colors',
-                                    active
-                                        ? 'border-brand-200 bg-brand-50 text-brand-700'
-                                        : 'border-gray-200 bg-white text-gray-600',
-                                )}
-                            >
-                                <item.icon className="h-4 w-4" />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </div>
 
                 <div className="grid gap-6 lg:grid-cols-[264px_1fr]">
                     {/* Sidebar (desktop) */}
@@ -219,6 +312,14 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                                                 <Link
                                                     key={item.label}
                                                     href={item.href!}
+                                                    /* Fetch on hover, and on
+                                                       pointer-down for touch
+                                                       where there is no hover
+                                                       to fetch on. By the time
+                                                       the click lands the page
+                                                       is usually already here. */
+                                                    prefetch={['hover', 'click']}
+                                                    cacheFor="30s"
                                                     className={cn(
                                                         'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                                                         active
@@ -258,6 +359,170 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                     <div className="min-w-0">{children}</div>
                 </div>
             </div>
+
+            {/* ── Mobile bottom navigation ── */}
+            <nav
+                aria-label="Account"
+                className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)] lg:hidden"
+            >
+                <div className="mx-auto flex max-w-lg items-stretch">
+                    {bottomTabs.map((tab) => {
+                        const active = tab.match ? tab.match(path) : false;
+
+                        return (
+                            <Link
+                                key={tab.label}
+                                href={tab.href!}
+                                prefetch={['hover', 'click']}
+                                cacheFor="30s"
+                                aria-current={active ? 'page' : undefined}
+                                className={cn(
+                                    'flex flex-1 flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-semibold transition-colors',
+                                    active ? 'text-brand-600' : 'text-gray-500',
+                                )}
+                            >
+                                {/* The pill behind the icon carries the active
+                                    state — colour alone is easy to miss at
+                                    this size, and fails for colour blindness. */}
+                                <span
+                                    className={cn(
+                                        'flex h-7 w-12 items-center justify-center rounded-full transition-colors',
+                                        active && 'bg-brand-50',
+                                    )}
+                                >
+                                    <tab.icon className="h-5 w-5" />
+                                </span>
+                                {tab.label}
+                            </Link>
+                        );
+                    })}
+
+                    <button
+                        type="button"
+                        onClick={() => setMenuOpen(true)}
+                        aria-expanded={menuOpen}
+                        aria-haspopup="dialog"
+                        className={cn(
+                            'flex flex-1 flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-semibold transition-colors',
+                            onMoreSection ? 'text-brand-600' : 'text-gray-500',
+                        )}
+                    >
+                        <span
+                            className={cn(
+                                'flex h-7 w-12 items-center justify-center rounded-full transition-colors',
+                                onMoreSection && 'bg-brand-50',
+                            )}
+                        >
+                            <MoreHorizontal className="h-5 w-5" />
+                        </span>
+                        More
+                    </button>
+                </div>
+            </nav>
+
+            {/* ── "More" sheet: everything not on the bar ── */}
+            {menuOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden">
+                    <div
+                        className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px]"
+                        onClick={() => setMenuOpen(false)}
+                        aria-hidden="true"
+                    />
+
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Account menu"
+                        className="absolute inset-x-0 bottom-0 flex max-h-[82vh] flex-col rounded-t-3xl bg-white shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                            <span className="flex min-w-0 items-center gap-3">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-900 text-xs font-extrabold text-white">
+                                    {initials || '?'}
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block truncate text-sm font-bold text-gray-900">
+                                        {auth.user?.name}
+                                    </span>
+                                    <span className="block truncate text-xs text-gray-400">
+                                        {auth.user?.email ?? 'Welcome back'}
+                                    </span>
+                                </span>
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setMenuOpen(false)}
+                                aria-label="Close menu"
+                                className="-mr-1 shrink-0 rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="overflow-y-auto overscroll-contain px-3 py-2 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                            {groups.map((group) => (
+                                <div key={group.heading} className="mb-1 last:mb-0">
+                                    <p className="px-3 pb-1 pt-3 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                                        {group.heading}
+                                    </p>
+                                    {group.items.map((item) => {
+                                        const active = item.match ? item.match(path) : false;
+
+                                        if (item.soon) {
+                                            return (
+                                                <span
+                                                    key={item.label}
+                                                    className="flex cursor-default items-center gap-3 rounded-xl px-3 py-3 text-sm text-gray-400"
+                                                >
+                                                    <item.icon className="h-[18px] w-[18px] shrink-0" />
+                                                    <span className="flex-1">{item.label}</span>
+                                                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-400">
+                                                        Soon
+                                                    </span>
+                                                </span>
+                                            );
+                                        }
+
+                                        return (
+                                            <Link
+                                                key={item.label}
+                                                href={item.href!}
+                                                prefetch={['hover', 'click']}
+                                                cacheFor="30s"
+                                                className={cn(
+                                                    'flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors',
+                                                    active
+                                                        ? 'bg-brand-50 text-brand-700'
+                                                        : 'text-gray-600 active:bg-gray-50',
+                                                )}
+                                            >
+                                                <item.icon
+                                                    className={cn(
+                                                        'h-[18px] w-[18px] shrink-0',
+                                                        active ? 'text-brand-600' : 'text-gray-400',
+                                                    )}
+                                                />
+                                                <span className="truncate">{item.label}</span>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+
+                            <div className="mt-2 border-t border-gray-100 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => router.post(route('logout'))}
+                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-gray-500 transition-colors active:bg-red-50 active:text-red-600"
+                                >
+                                    <LogOut className="h-[18px] w-[18px] shrink-0" />
+                                    Log out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PublicLayout>
     );
 }

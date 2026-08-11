@@ -17,6 +17,7 @@ Route::get('catalog/suggest', [CatalogController::class, 'suggest'])
     ->middleware('throttle:60,1')->name('catalog.suggest');
 Route::get('catalog/menu-products', [CatalogController::class, 'menuProducts'])
     ->middleware('throttle:60,1')->name('catalog.menu-products');
+Route::get('compare', [CatalogController::class, 'compare'])->name('catalog.compare');
 Route::get('product/{product:slug}', [CatalogController::class, 'show'])->name('catalog.product');
 
 // Language / display currency / ship-to. A real request because translation is

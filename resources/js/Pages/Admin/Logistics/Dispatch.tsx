@@ -205,7 +205,7 @@ export default function Dispatch() {
                                                 : [],
                                         )
                                     }
-                                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                                 />
                                 Select all
                             </label>
@@ -227,7 +227,7 @@ export default function Dispatch() {
                                             onChange={(event) =>
                                                 toggle(parcel.uuid, event.target.checked)
                                             }
-                                            className="mt-1 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                            className="mt-1 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                                         />
                                         <span className="min-w-0 flex-1">
                                             <span className="flex flex-wrap items-center gap-2">
@@ -296,7 +296,7 @@ export default function Dispatch() {
                                                 name="courier"
                                                 checked={courierId === courier.id}
                                                 onChange={() => setCourierId(courier.id)}
-                                                className="mt-1 text-brand-600 focus:ring-brand-500"
+                                                className="mt-1 text-brand-600 focus:ring-brand-500/20"
                                             />
                                             <span className="min-w-0 flex-1">
                                                 <span className="block truncate text-sm font-bold text-gray-900">
@@ -442,7 +442,7 @@ function ForceDeliverDialog({ parcel, onClose }: { parcel: InFlight; onClose: ()
                         onChange={(event) => form.setData('reason', event.target.value)}
                         placeholder="e.g. Customer confirmed receipt by phone; could not find the code in their email."
                         maxLength={300}
-                        className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500"
+                        className="border w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                     />
                     <InputError message={form.errors.reason} className="mt-1" />
                 </label>

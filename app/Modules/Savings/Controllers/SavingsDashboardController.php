@@ -3,6 +3,7 @@
 namespace App\Modules\Savings\Controllers;
 
 use App\Modules\Savings\Models\SavingsGoal;
+use App\Modules\Savings\Services\SavingsAssistant;
 use App\Modules\Savings\Services\SavingsService;
 use App\Shared\Enums\SavingsGoalStatus;
 use Illuminate\Http\Request;
@@ -56,6 +57,9 @@ class SavingsDashboardController
             'goals' => $goals,
             'activeCount' => $goals->where('status', SavingsGoalStatus::Saving->value)->count(),
             'planCreditKobo' => $savings->creditKobo($user),
+            // Phase 2C. Worked out from this customer's own payment history —
+            // no model, no third party, and purely advisory.
+            'assistantNotes' => app(SavingsAssistant::class)->adviceFor($user),
         ]);
     }
 }

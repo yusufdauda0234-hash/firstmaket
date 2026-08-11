@@ -3,6 +3,7 @@
 namespace App\Modules\Support\Models;
 
 use App\Models\User;
+use App\Shared\Enums\ComplaintCategory;
 use App\Shared\Enums\SupportChannel;
 use App\Shared\Enums\TicketPriority;
 use App\Shared\Enums\TicketStatus;
@@ -40,6 +41,9 @@ class SupportTicket extends Model
         'customer_id',
         'assigned_to',
         'channel',
+        'complaint_category',
+        'about_order_id',
+        'about_vendor_id',
         'subject',
         'status',
         'priority',
@@ -50,6 +54,7 @@ class SupportTicket extends Model
     {
         return [
             'channel' => SupportChannel::class,
+            'complaint_category' => ComplaintCategory::class,
             'status' => TicketStatus::class,
             'priority' => TicketPriority::class,
             'resolved_at' => 'datetime',

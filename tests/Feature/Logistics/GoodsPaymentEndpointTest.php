@@ -8,10 +8,12 @@ use App\Modules\Logistics\Services\DeliveryService;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Payments\Models\PaystackTransaction;
 use App\Shared\Enums\PaystackTransactionStatus;
+use App\Shared\Contracts\PaymentGatewayContract;
 use App\Shared\Enums\ShipmentStatus;
 use App\Shared\Enums\UserType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Notification;
+use Tests\Support\FakePaymentGateway;
 
 /**
  * Who is allowed to start a payment for a goods balance, and when.
@@ -32,6 +34,15 @@ uses()->group('goods-payment');
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
     Notification::fake();
+
+    /*
+     * Both endpoints under test end in a hand-off to Paystack's hosted
+     * checkout. Without this the suite makes a real HTTPS call to
+     * api.paystack.co and fails on a network timeout — a red build that says
+     * nothing about the code, and a test that cannot run offline.
+     */
+    $this->gateway = new FakePaymentGateway;
+    $this->app->instance(PaymentGatewayContract::class, $this->gateway);
 
     Setting::set('orders.pay_on_delivery_enabled', true);
 

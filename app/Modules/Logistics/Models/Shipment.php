@@ -12,6 +12,7 @@ use App\Shared\Enums\ShipmentStatus;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,6 +59,12 @@ class Shipment extends Model
 
     /** After this many failures the shipment stops going back on the van. */
     public const MAX_ATTEMPTS = 3;
+
+    /** Delivery attempts before a shipment goes back to the office. */
+    public static function maxAttempts(): int
+    {
+        return max(1, (int) Setting::get('logistics.max_delivery_attempts', self::MAX_ATTEMPTS));
+    }
 
     protected $fillable = [
         'checkout_session_id',
@@ -190,7 +197,7 @@ class Shipment extends Model
      */
     public function isExhausted(): bool
     {
-        return $this->attempt_count >= self::MAX_ATTEMPTS
+        return $this->attempt_count >= self::maxAttempts()
             && $this->status === ShipmentStatus::Failed;
     }
 

@@ -212,7 +212,7 @@ export default function Catalog({ products, categories, filters }: CatalogProps)
                             placeholder="Min"
                             min="0"
                             aria-label="Minimum price"
-                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                         />
                         <span className="text-gray-300">–</span>
                         <input
@@ -222,7 +222,7 @@ export default function Catalog({ products, categories, filters }: CatalogProps)
                             placeholder="Max"
                             min="0"
                             aria-label="Maximum price"
-                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                         />
                     </div>
                     <button

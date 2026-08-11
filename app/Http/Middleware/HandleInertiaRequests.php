@@ -2,10 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use App\Modules\Cart\Services\CartService;
 use App\Modules\Catalog\Services\HomeDataService;
 use App\Modules\Catalog\Services\LocalePreference;
+use App\Modules\Customer\Models\Wishlist;
 use App\Modules\Orders\Services\DeliveryPricing;
+use App\Modules\Returns\Services\ReturnPolicy;
 use App\Modules\Support\Models\ContentPage;
 use App\Shared\Enums\Locale;
 use App\Shared\Security\AdminDomain;
@@ -46,6 +49,29 @@ class HandleInertiaRequests extends Middleware
             // unpublishing one takes the link away instead of leaving a 404
             // in the footer of every page.
             'legalLinks' => $isPortal ? [] : fn () => $this->legalLinks(),
+            // Live-chat widget config. Storefront only: the staff and vendor
+            // portals do not get a customer support widget.
+            'supportChat' => $isPortal ? null : fn () => [
+                'provider' => (string) Setting::get('support.chat_provider', 'none'),
+                'propertyId' => (string) Setting::get('support.chat_property_id', ''),
+                'widgetId' => (string) Setting::get('support.chat_widget_id', ''),
+                'forGuests' => (bool) Setting::get('support.chat_for_guests', true),
+            ],
+            // Which products this customer has saved, so a product card can
+            // draw its heart in the right state. Shared rather than added to
+            // every product payload: the same card renders on the home page,
+            // the catalogue, search, a category, the cart's recommendations
+            // and quick view, and each of those would otherwise have to
+            // remember to join the wishlist. Closure-wrapped, so the query
+            // only runs for pages that read it, and it is uuids only — one
+            // indexed column, no rows to hydrate.
+            'wishlistUuids' => $isPortal || $user === null
+                ? []
+                : fn () => Wishlist::query()
+                    ->where('user_id', $user->id)
+                    ->join('products', 'products.id', '=', 'wishlists.product_id')
+                    ->pluck('products.uuid')
+                    ->all(),
             'auth' => [
                 'user' => $user ? [
                     'uuid' => $user->uuid,
@@ -68,6 +94,10 @@ class HandleInertiaRequests extends Middleware
                 'devOtpCode' => fn () => $request->session()->get('devOtpCode'),
             ],
             'supportHotline' => config('firstmaket.support.hotline'),
+            // The storefront advertised "30-day returns" as static text while
+            // the enforced window was 7 — a promise the system would refuse.
+            // Both now read the same setting.
+            'returnWindowDays' => $isPortal ? null : fn () => app(ReturnPolicy::class)->windowDays(),
             // Language + display currency. Portals stay in English naira:
             // they are staff tools reading the ledger, and a converted figure
             // on a payout or reconciliation screen would be actively harmful.

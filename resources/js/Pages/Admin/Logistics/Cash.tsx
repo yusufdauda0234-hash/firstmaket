@@ -352,7 +352,7 @@ function SettingsPanel({
                         type="checkbox"
                         checked={form.data.enabled}
                         onChange={(event) => form.setData('enabled', event.target.checked)}
-                        className="mt-0.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                        className="mt-0.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                     />
                     <span>
                         <span className="block text-sm font-bold text-gray-900">
@@ -394,7 +394,7 @@ function SettingsPanel({
                         max={20}
                         value={form.data.max_refusals}
                         onChange={(event) => form.setData('max_refusals', Number(event.target.value))}
-                        className="w-full rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500"
+                        className="border w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                     />
                     <p className="mt-1 text-[11px] text-gray-400">
                         Turning a courier away wastes a whole trip. They can still buy — just not
@@ -422,7 +422,7 @@ function SettingsPanel({
                                     type="checkbox"
                                     checked={form.data.states.includes(state)}
                                     onChange={() => toggleState(state)}
-                                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                                 />
                                 {state}
                             </label>

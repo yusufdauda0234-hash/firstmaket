@@ -127,7 +127,7 @@ export default function OrdersIndex() {
                                     <li key={item.uuid} className="flex items-center gap-4 px-4 py-3">
                                         <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50">
                                             {item.image ? (
-                                                <img
+                                                <img loading="lazy" decoding="async"
                                                     src={item.image}
                                                     alt=""
                                                     className="h-full w-full object-cover"

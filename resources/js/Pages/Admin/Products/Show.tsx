@@ -87,7 +87,7 @@ export default function AdminProductShow() {
                                         onClick={() => setLightbox(image.url)}
                                         className="group overflow-hidden rounded-xl ring-1 ring-black/5 transition hover:ring-2 hover:ring-brand-400"
                                     >
-                                        <img
+                                        <img loading="lazy" decoding="async"
                                             src={image.url}
                                             alt=""
                                             className="h-24 w-24 object-cover transition-transform duration-300 group-hover:scale-110"
@@ -306,7 +306,7 @@ export default function AdminProductShow() {
                             autoFocus
                             value={rejectForm.data.reason}
                             onChange={(e) => rejectForm.setData('reason', e.target.value)}
-                            className="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                            className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                             required
                         />
                         <InputError message={rejectForm.errors.reason} />
@@ -316,7 +316,7 @@ export default function AdminProductShow() {
 
             {/* Image lightbox */}
             <Modal open={lightbox !== null} onClose={() => setLightbox(null)} size="xl">
-                {lightbox && <img src={lightbox} alt="" className="mx-auto max-h-[75vh] w-auto rounded-xl" />}
+                {lightbox && <img loading="lazy" decoding="async" src={lightbox} alt="" className="mx-auto max-h-[75vh] w-auto rounded-xl" />}
             </Modal>
         </AdminLayout>
     );

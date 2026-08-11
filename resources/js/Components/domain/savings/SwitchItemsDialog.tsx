@@ -220,7 +220,7 @@ export default function SwitchItemsDialog({
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search the marketplace…"
-                            className="w-full rounded-xl border border-gray-200 py-2.5 pl-9 pr-3.5 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                            className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3.5 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                         />
                     </div>
 
@@ -283,7 +283,7 @@ export default function SwitchItemsDialog({
                                 >
                                     <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg bg-gray-50">
                                         {option.image ? (
-                                            <img
+                                            <img loading="lazy" decoding="async"
                                                 src={option.image}
                                                 alt=""
                                                 className="h-full w-full object-cover"
@@ -329,7 +329,7 @@ export default function SwitchItemsDialog({
                                     <div className="flex items-start gap-2">
                                         <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-50">
                                             {line.image ? (
-                                                <img
+                                                <img loading="lazy" decoding="async"
                                                     src={line.image}
                                                     alt=""
                                                     className="h-full w-full object-cover"

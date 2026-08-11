@@ -4,6 +4,7 @@ namespace App\Modules\Auth\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\Auth\Events\UserIdentifierVerified;
 use App\Modules\Auth\Services\AuthIdentifier;
 use App\Modules\Auth\Services\PostAuthRedirect;
 use App\Modules\Auth\Services\SessionAuthenticator;
@@ -188,8 +189,15 @@ class AuthFlowController extends Controller
     {
         $column = $identifier->isEmail() ? 'email_verified_at' : 'phone_verified_at';
 
-        if ($user->{$column} === null) {
-            $user->forceFill([$column => now()])->save();
+        if ($user->{$column} !== null) {
+            return;
         }
+
+        $user->forceFill([$column => now()])->save();
+
+        // A referred account reaching verified status is a stronger signal
+        // than a bare signup, and partners are measured on it. Recorded once,
+        // the first time either channel is proved.
+        event(new UserIdentifierVerified($user->id));
     }
 }

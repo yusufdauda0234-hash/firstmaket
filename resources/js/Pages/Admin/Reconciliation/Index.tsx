@@ -129,7 +129,7 @@ export default function ReconciliationIndex({ imports }: Props) {
                         value={form.data.settlement}
                         onChange={(e) => form.setData('settlement', e.target.value)}
                         placeholder={'reference,amount\nFMW_01hxx...,5000\nFMW_01hyy...,20000'}
-                        className="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 font-mono text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                        className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                     />
                     <InputError message={form.errors.settlement} />
                 </div>

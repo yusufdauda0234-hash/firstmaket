@@ -181,7 +181,7 @@ export default function FeeSettings() {
                                                 value={form.data[field.key]}
                                                 onChange={(e) => form.setData(field.key, Number(e.target.value))}
                                                 disabled={isFree}
-                                                className="w-full rounded-xl border-0 bg-transparent px-2 py-2.5 text-right text-sm font-semibold tabular-nums text-gray-900 focus:outline-none focus:ring-0 disabled:cursor-not-allowed"
+                                                className="w-full rounded-lg border-0 bg-transparent px-2 py-2.5 text-right text-sm font-semibold tabular-nums text-gray-900 focus:outline-none focus:ring-0 disabled:cursor-not-allowed"
                                             />
                                         </div>
                                         <InputError message={form.errors[field.key]} />

@@ -8,11 +8,17 @@ import { productLinkProps } from '@/Utils/links';
 import { useMoney } from '@/Hooks/useI18n';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import { heroTheme } from '@/Utils/heroThemes';
 
 interface HomeProps {
     categories: Category[];
     featuredProducts: ProductSummary[];
     newestProducts: ProductSummary[];
+    campaignProducts: ProductSummary[];
+    trendingProducts: ProductSummary[];
+    trendingSearches: string[];
+    heroSlides: HeroSlideDto[];
+    recentOrderCount: number;
     supportHotline: string;
 }
 
@@ -29,52 +35,57 @@ const categoryStyle: Record<string, { emoji: string; tile: string }> = {
 
 const SLIDE_DURATION = 5000;
 
-const HERO_SLIDES = [
-    {
-        id: 1,
-        eyebrow: '🔥 Super Deals',
-        title: 'Grab trusted deals across Nigeria.',
-        description: 'Verified vendors, locked prices, fast delivery nationwide.',
-        ctaLabel: 'Grab It Now →',
-        bg: 'from-brand-600 via-brand-700 to-brand-900',
-        btnClass: 'bg-brand-yellow text-brand-900 hover:bg-yellow-300',
-        emoji: '🛍️',
-        /** 'from-price' renders "Starting from ₦X" off real catalog prices. */
-        offer: 'from-price',
-        offerLabel: 'Starting from',
-    },
-    {
-        id: 2,
-        eyebrow: '⚡ Flash Sale',
-        title: 'Electronics & appliances, priced to move.',
-        description: 'Limited-time prices from verified Nigerian sellers.',
-        ctaLabel: 'View Deals →',
-        bg: 'from-brand-800 via-brand-600 to-brand-900',
-        btnClass: 'bg-white text-brand-700 hover:bg-brand-50',
-        emoji: '📺',
-        offer: 'static',
-        offerLabel: 'Up to',
-        offerValue: '60% OFF',
-    },
-    {
-        id: 3,
-        eyebrow: '🏪 Sell with Us',
-        title: 'Launch your storefront on FirstMaket.',
-        description: 'Zero listing fees, instant Paystack payouts, verified buyers.',
-        ctaLabel: 'Start Selling →',
-        bg: 'from-brand-900 via-brand-700 to-brand-600',
-        btnClass: 'bg-brand-yellow text-brand-900 hover:bg-yellow-300',
-        emoji: '🚀',
-        offer: 'static',
-        offerLabel: 'Sellers pay',
-        offerValue: '₦0 fees',
-    },
-] as const;
+/** Raw slide content as authored on Admin/Merchandising/HeroSlides. */
+interface HeroSlideDto {
+    eyebrow: string;
+    title: string;
+    description: string;
+    ctaLabel: string;
+    ctaTarget: 'auth_gate' | 'catalog' | 'vendor_register';
+    theme: string;
+    emoji: string;
+    offerType: 'from_price' | 'campaign_discount' | 'static';
+    offerLabel: string;
+    offerValue: string | null;
+}
 
-const TRENDING_SEARCHES = [
-    'iPhone 15', 'Solar panels', 'Standing desk', 'Generator',
-    'Smart TV', 'Office chair', 'Gas cooker', 'Laptop', 'Refrigerator', 'Printer',
-];
+interface ResolvedHeroSlide extends HeroSlideDto {
+    resolvedOfferValue: string;
+}
+
+/**
+ * Turns admin-authored slide copy into slides ready to render, by filling in
+ * the one thing this app never lets an admin type by hand: the number.
+ *
+ * A 'from_price' slide only appears once there is a real cheapest price to
+ * show; a 'campaign_discount' slide only appears while a live campaign
+ * actually beats the sticker price. No product, no campaign — no slide,
+ * rather than a claim with nothing behind it.
+ */
+function resolveHeroSlides(
+    slides: HeroSlideDto[],
+    featuredProducts: ProductSummary[],
+    campaignProducts: ProductSummary[],
+    money: (kobo: number) => string,
+): ResolvedHeroSlide[] {
+    const cheapestKobo = featuredProducts.length > 0 ? Math.min(...featuredProducts.map((p) => p.priceKobo)) : null;
+
+    const discountPercents = campaignProducts
+        .filter((product) => typeof product.compareAtPriceKobo === 'number' && product.compareAtPriceKobo > product.priceKobo)
+        .map((product) => Math.round((1 - product.priceKobo / (product.compareAtPriceKobo as number)) * 100));
+    const bestDiscount = discountPercents.length > 0 ? Math.max(...discountPercents) : null;
+
+    return slides.flatMap((slide) => {
+        if (slide.offerType === 'from_price') {
+            return cheapestKobo !== null ? [{ ...slide, resolvedOfferValue: money(cheapestKobo) }] : [];
+        }
+        if (slide.offerType === 'campaign_discount') {
+            return bestDiscount !== null ? [{ ...slide, resolvedOfferValue: `${bestDiscount}% OFF` }] : [];
+        }
+
+        return [{ ...slide, resolvedOfferValue: slide.offerValue ?? '' }];
+    });
+}
 
 // ─── AuthGateAction ──────────────────────────────────────────────────────────
 
@@ -109,6 +120,27 @@ function AuthGateAction({
     );
 }
 
+/**
+ * A real count of orders placed platform-wide in the last hour — never
+ * shown when there is nothing to show, since a "0 orders" banner is worse
+ * than no banner at all.
+ */
+function RecentOrdersBanner({ count }: { count: number }) {
+    if (count <= 0) return null;
+
+    return (
+        <div className="mt-3 inline-flex items-center gap-3 rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 px-4 py-3 text-white shadow-sm">
+            <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-brand-yellow" aria-hidden="true" />
+            <span>
+                <span className="block text-xl font-extrabold leading-none tabular-nums">{count.toLocaleString()}</span>
+                <span className="mt-1 block text-xs text-white/70">
+                    order{count === 1 ? '' : 's'} placed in the last hour
+                </span>
+            </span>
+        </div>
+    );
+}
+
 // ─── Hero sub-components ─────────────────────────────────────────────────────
 
 function secondsUntilMidnight() {
@@ -116,6 +148,34 @@ function secondsUntilMidnight() {
     const midnight = new Date(now);
     midnight.setHours(24, 0, 0, 0);
     return Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+}
+
+function secondsUntil(target: string | null | undefined): number {
+    if (!target) return 0;
+    return Math.max(0, Math.floor((new Date(target).getTime() - Date.now()) / 1000));
+}
+
+/** Live seconds remaining until a campaign's real `ends_at`, ticking down. */
+function useCountdown(target: string | null | undefined): number {
+    const [remaining, setRemaining] = useState(() => secondsUntil(target));
+
+    useEffect(() => {
+        setRemaining(secondsUntil(target));
+        if (!target) return;
+        const id = window.setInterval(() => setRemaining(secondsUntil(target)), 1000);
+        return () => window.clearInterval(id);
+    }, [target]);
+
+    return remaining;
+}
+
+function formatCountdown(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return hours > 0
+        ? `${hours}h ${String(minutes).padStart(2, '0')}m left`
+        : `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')} left`;
 }
 
 /** Live HH:MM:SS chips counting down to midnight — deals reset daily. */
@@ -322,13 +382,31 @@ function ShowcaseImage({ product }: { product: ProductSummary }) {
     );
 }
 
-function HeroCarousel({ products }: { products: ProductSummary[] }) {
+/** Routes a slide's button by its admin-chosen destination, not one fixed behavior for every slide. */
+function HeroCta({ target, tabIndex, className, children }: { target: HeroSlideDto['ctaTarget']; tabIndex?: number; className: string; children: ReactNode }) {
+    if (target === 'catalog') {
+        return <Link href={route('catalog.index')} tabIndex={tabIndex} className={className}>{children}</Link>;
+    }
+    if (target === 'vendor_register') {
+        return <Link href={route('vendor.register')} tabIndex={tabIndex} className={className}>{children}</Link>;
+    }
+
+    return <AuthGateAction tabIndex={tabIndex} className={className}>{children}</AuthGateAction>;
+}
+
+function HeroCarousel({ products, slides: heroSlides }: { products: ProductSummary[]; slides: ResolvedHeroSlide[] }) {
     const { money } = useMoney();
     const [current, setCurrent] = useState(0);
     // Progress only drives the auto-advance timing now (dots replaced the rail).
     const [, setProgress] = useState(0);
     const [paused, setPaused] = useState(false);
     const tickRef = useRef<number | null>(null);
+
+    // The flash-sale slide only exists when a live campaign backs it, so the
+    // slide count can change between loads — keep `current` in range.
+    useEffect(() => {
+        if (current >= heroSlides.length) setCurrent(0);
+    }, [heroSlides.length, current]);
 
     // Three real products per slide (hot deals / new items) so shoppers see
     // merchandise, not just a slogan. Wraps around when the catalog is small
@@ -340,13 +418,10 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                   { length: Math.min(3, products.length) },
                   (_, k) => products[(offset + k) % products.length],
               );
-    const showcases = [pick(0), pick(3), pick(6)];
-
-    // Real number for the "Starting from ₦X" offer chip — never a made-up discount.
-    const cheapestKobo = products.length > 0 ? Math.min(...products.map((p) => p.priceKobo)) : null;
+    const showcases = heroSlides.map((_, i) => pick(i * 3));
 
     function goTo(i: number) {
-        setCurrent(((i % HERO_SLIDES.length) + HERO_SLIDES.length) % HERO_SLIDES.length);
+        setCurrent(((i % heroSlides.length) + heroSlides.length) % heroSlides.length);
         setProgress(0);
     }
 
@@ -355,7 +430,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
         tickRef.current = window.setInterval(() => {
             setProgress((p) => {
                 if (p + 50 >= SLIDE_DURATION) {
-                    setCurrent((c) => (c + 1) % HERO_SLIDES.length);
+                    setCurrent((c) => (c + 1) % heroSlides.length);
                     return 0;
                 }
                 return p + 50;
@@ -364,7 +439,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
         return () => {
             if (tickRef.current) window.clearInterval(tickRef.current);
         };
-    }, [paused]);
+    }, [paused, heroSlides.length]);
 
     return (
         <div
@@ -372,21 +447,16 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
         >
-            {HERO_SLIDES.map((slide, i) => {
+            {heroSlides.map((slide, i) => {
                 const showcase = showcases[i] ?? [];
                 const hero = showcase[0];
-                const offerValue =
-                    slide.offer === 'from-price'
-                        ? cheapestKobo !== null
-                            ? money(cheapestKobo)
-                            : 'Best prices daily'
-                        : slide.offerValue;
+                const theme = heroTheme(slide.theme);
 
                 return (
                     <div
-                        key={slide.id}
+                        key={i}
                         className={`absolute inset-0 grid grid-cols-1 items-stretch bg-gradient-to-br transition-opacity duration-700 sm:grid-cols-[1.15fr_0.85fr] ${
-                            slide.bg
+                            theme.bg
                         } ${i === current ? 'z-[1] opacity-100' : 'pointer-events-none opacity-0'}`}
                         aria-hidden={i !== current}
                     >
@@ -415,15 +485,16 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                                         {slide.offerLabel}
                                     </span>
                                     <span className="truncate text-sm font-extrabold leading-none tracking-tight text-brand-900 sm:text-xl">
-                                        {offerValue}
+                                        {slide.resolvedOfferValue}
                                     </span>
                                 </div>
-                                <AuthGateAction
+                                <HeroCta
+                                    target={slide.ctaTarget}
                                     tabIndex={i === current ? 0 : -1}
-                                    className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-[10px] font-bold transition-colors sm:px-6 sm:py-3 sm:text-sm ${slide.btnClass}`}
+                                    className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-[10px] font-bold transition-colors sm:px-6 sm:py-3 sm:text-sm ${theme.btnClass}`}
                                 >
                                     {slide.ctaLabel}
-                                </AuthGateAction>
+                                </HeroCta>
                             </div>
                         </div>
 
@@ -435,7 +506,7 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                                 className="group/hero relative hidden h-full overflow-hidden sm:block"
                             >
                                 {hero.imageUrl ? (
-                                    <img
+                                    <img loading="lazy" decoding="async"
                                         src={hero.imageUrl}
                                         alt={hero.name}
                                         className="h-full w-full object-cover transition-transform duration-500 group-hover/hero:scale-105"
@@ -500,9 +571,9 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
                 so the explicit gap is gone. The dots end up marginally
                 further apart than before; everything else is unchanged. */}
             <div className="absolute bottom-3 left-1/2 z-[2] flex -translate-x-1/2 items-center">
-                {HERO_SLIDES.map((slide, i) => (
+                {heroSlides.map((_, i) => (
                     <button
-                        key={slide.id}
+                        key={i}
                         aria-label={`Go to slide ${i + 1}`}
                         aria-current={i === current}
                         onClick={() => goTo(i)}
@@ -520,56 +591,25 @@ function HeroCarousel({ products }: { products: ProductSummary[] }) {
     );
 }
 
-function PulseStat() {
-    const [count, setCount] = useState(1284);
-    useEffect(() => {
-        const id = window.setInterval(
-            () => setCount((c) => c + Math.floor(Math.random() * 3)),
-            4000,
-        );
-        return () => window.clearInterval(id);
-    }, []);
-
-    return (
-        <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-brand-700 to-brand-900 p-4 text-white">
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-yellow opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand-yellow" />
-            </span>
-            <div>
-                <div key={count} className="animate-countUp font-mono text-lg font-bold">
-                    {count.toLocaleString()}
-                </div>
-                <div className="text-[11px] leading-tight text-white/70">orders placed in the last hour</div>
-            </div>
-        </div>
-    );
-}
-
-/** Rotating flash-deal spotlight: cycles through the featured deals. */
+/** Rotating spotlight over products in a live campaign — real deal price, real countdown. */
 function FlashSpotlight({ products }: { products: ProductSummary[] }) {
     const { money } = useMoney();
-    const [seconds, setSeconds] = useState(2 * 3600 + 14 * 60 + 9);
     const [index, setIndex] = useState(0);
 
-    useEffect(() => {
-        const id = window.setInterval(() => setSeconds((s) => Math.max(0, s - 1)), 1000);
-        return () => window.clearInterval(id);
-    }, []);
+    // campaignEndsAt is only set by HomeDataService when this product's
+    // priceKobo actually reflects a live, cheaper campaign price.
+    const saleProducts = products.filter((product) => product.campaignEndsAt != null);
 
     // Rotate to the next deal every few seconds, wrapping around.
     useEffect(() => {
-        if (products.length < 2) return;
-        const id = window.setInterval(() => setIndex((i) => (i + 1) % products.length), 5000);
+        if (saleProducts.length < 2) return;
+        const id = window.setInterval(() => setIndex((i) => (i + 1) % saleProducts.length), 5000);
         return () => window.clearInterval(id);
-    }, [products.length]);
+    }, [saleProducts.length]);
 
-    const product = products[index % Math.max(products.length, 1)];
+    const product = saleProducts[index % Math.max(saleProducts.length, 1)];
+    const remaining = useCountdown(product?.campaignEndsAt);
     if (!product) return null;
-
-    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-    const s = String(seconds % 60).padStart(2, '0');
 
     return (
         <a
@@ -578,7 +618,7 @@ function FlashSpotlight({ products }: { products: ProductSummary[] }) {
         >
             <div key={product.uuid} className="flex min-w-0 flex-1 animate-countUp items-center gap-4">
                 {product.imageUrl ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={product.imageUrl}
                         alt=""
                         className="h-20 w-20 shrink-0 rounded-xl object-cover"
@@ -593,32 +633,36 @@ function FlashSpotlight({ products }: { products: ProductSummary[] }) {
                     </div>
                 )}
                 <div className="min-w-0">
-                    <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-orange-500">
-                        ⚡ Flash deal
+                    <p className="mb-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-bold uppercase tracking-wide text-orange-500">
+                        <span>⚡ Flash deal</span>
+                        {remaining > 0 && (
+                            <span className="rounded bg-orange-50 px-1.5 py-0.5 font-mono text-[10px] normal-case text-orange-600">
+                                {formatCountdown(remaining)}
+                            </span>
+                        )}
                     </p>
                     <p className="truncate text-[15px] font-semibold text-gray-900 group-hover:text-brand-700">
                         {product.name}
                     </p>
-                    <p className="font-mono text-lg font-bold text-brand-600">
-                        {money(product.priceKobo)}
-                    </p>
-                    <p className="mt-1 font-mono text-xs text-gray-400">
-                        Ends in{' '}
-                        <span className="rounded bg-brand-900 px-1.5 py-0.5 font-bold text-brand-yellow">
-                            {h}:{m}:{s}
+                    <p className="flex flex-wrap items-baseline gap-x-2">
+                        <span className="font-mono text-lg font-bold text-brand-600">
+                            {money(product.priceKobo)}
                         </span>
+                        {product.compareAtPriceKobo != null && product.compareAtPriceKobo > product.priceKobo && (
+                            <s className="text-xs text-gray-400">{money(product.compareAtPriceKobo)}</s>
+                        )}
                     </p>
                 </div>
             </div>
 
             {/* Rotation dots */}
-            {products.length > 1 && (
+            {saleProducts.length > 1 && (
                 <span className="flex shrink-0 flex-col gap-1" aria-hidden="true">
-                    {products.slice(0, Math.min(products.length, 5)).map((p, dotIndex) => (
+                    {saleProducts.slice(0, Math.min(saleProducts.length, 5)).map((p, dotIndex) => (
                         <span
                             key={p.uuid}
                             className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                                dotIndex === index % Math.min(products.length, 5)
+                                dotIndex === index % Math.min(saleProducts.length, 5)
                                     ? 'bg-brand-600'
                                     : 'bg-gray-200'
                             }`}
@@ -630,9 +674,9 @@ function FlashSpotlight({ products }: { products: ProductSummary[] }) {
     );
 }
 
-function TrendingTicker({ products }: { products: ProductSummary[] }) {
+function TrendingTicker({ products, searches }: { products: ProductSummary[]; searches: string[] }) {
     const { money } = useMoney();
-    const doubled = [...TRENDING_SEARCHES, ...TRENDING_SEARCHES];
+    const doubled = searches.length > 0 ? [...searches, ...searches] : [];
     const [offset, setOffset] = useState(0);
 
     // Rotate the 3-product window so shoppers see the whole catalog over time.
@@ -649,28 +693,37 @@ function TrendingTicker({ products }: { products: ProductSummary[] }) {
                   { length: Math.min(3, products.length) },
                   (_, k) => products[(offset + k) % products.length],
               );
+
+    // Nothing real to show yet (fresh install, no searches logged) — no card
+    // rather than a shell with fabricated content inside it.
+    if (doubled.length === 0 && visible.length === 0) return null;
+
     return (
         <div className="min-w-0 max-w-full overflow-hidden rounded-xl border border-gray-200 bg-white p-3.5">
-            <p className="mb-2 px-0.5 text-[10.5px] font-bold uppercase tracking-wide text-gray-400">
-                Trending searches
-            </p>
-            <div className="group flex overflow-hidden">
-                <div className="flex animate-marquee gap-2 whitespace-nowrap pr-2 group-hover:[animation-play-state:paused]">
-                    {doubled.map((term, i) => (
-                        <Link
-                            key={`${term}-${i}`}
-                            href={route('catalog.index', { query: term })}
-                            className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100"
-                        >
-                            {term}
-                        </Link>
-                    ))}
-                </div>
-            </div>
+            {doubled.length > 0 && (
+                <>
+                    <p className="mb-2 px-0.5 text-[10.5px] font-bold uppercase tracking-wide text-gray-400">
+                        Trending searches
+                    </p>
+                    <div className="group flex overflow-hidden">
+                        <div className="flex animate-marquee gap-2 whitespace-nowrap pr-2 group-hover:[animation-play-state:paused]">
+                            {doubled.map((term, i) => (
+                                <Link
+                                    key={`${term}-${i}`}
+                                    href={route('catalog.index', { query: term })}
+                                    className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100"
+                                >
+                                    {term}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* What those searches lead to — real items, then the catalog */}
             {visible.length > 0 && (
-                <div className="mt-3 border-t border-gray-100 pt-3">
+                <div className={doubled.length > 0 ? 'mt-3 border-t border-gray-100 pt-3' : ''}>
                     <div key={offset} className="grid animate-countUp grid-cols-3 gap-2">
                         {visible.map((product) => (
                             <a
@@ -715,9 +768,10 @@ function TrendingTicker({ products }: { products: ProductSummary[] }) {
     );
 }
 
-export default function Home({ categories, featuredProducts, newestProducts, supportHotline }: HomeProps) {
+export default function Home({ categories, featuredProducts, newestProducts, campaignProducts = [], trendingProducts = [], trendingSearches = [], heroSlides = [], recentOrderCount = 0, supportHotline }: HomeProps) {
     const [quickView, setQuickView] = useState<ProductSummary | null>(null);
     const dealsRef = useRef<HTMLDivElement>(null);
+    const { money } = useMoney();
 
     function scrollDeals(direction: 1 | -1) {
         const el = dealsRef.current;
@@ -728,6 +782,8 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
     const quickViewPool = [...featuredProducts, ...newestProducts].filter(
         (product, index, all) => all.findIndex((p) => p.uuid === product.uuid) === index,
     );
+
+    const resolvedHeroSlides = resolveHeroSlides(heroSlides, featuredProducts, campaignProducts, money);
 
     return (
         <PublicLayout categories={categories}>
@@ -764,20 +820,26 @@ export default function Home({ categories, featuredProducts, newestProducts, sup
                     </a>
                 </div>
 
+                <RecentOrdersBanner count={recentOrderCount} />
+
                 {/* -- Hero: Carousel + right rail + promo cards + category dock -- */}
                 <section className="mt-4" aria-label="Hero">
                     {/* FirstMaket's own hero: wide carousel + live rail — no
                         category sidebar (that lives in the mega menu + dock).
                         minmax(0,…) + min-w-0: the marquee's nowrap track must
                         never dictate a column width. */}
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-                        <HeroCarousel products={featuredProducts} />
+                    <div className={`grid gap-4 ${resolvedHeroSlides.length > 0 ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''}`}>
+                        {resolvedHeroSlides.length > 0 && (
+                            <HeroCarousel products={featuredProducts} slides={resolvedHeroSlides} />
+                        )}
 
                         {/* Right rail */}
                         <div className="flex min-w-0 flex-col gap-3">
-                            <PulseStat />
-                            <FlashSpotlight products={featuredProducts} />
-                            <TrendingTicker products={newestProducts} />
+                            <FlashSpotlight products={campaignProducts} />
+                            <TrendingTicker
+                                products={trendingProducts.length ? trendingProducts : newestProducts}
+                                searches={trendingSearches}
+                            />
                         </div>
                     </div>
 

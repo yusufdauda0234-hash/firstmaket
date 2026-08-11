@@ -7,9 +7,9 @@ import QuantityStepper from '@/Components/ui/QuantityStepper';
 import Reveal from '@/Components/ui/Reveal';
 import { useAddToCart } from '@/Hooks/useAddToCart';
 import PublicLayout from '@/Layouts/PublicLayout';
-import { Category, ProductSummary } from '@/Types';
+import { Category, PageProps, ProductSummary } from '@/Types';
 import { useMoney, useTranslation } from '@/Hooks/useI18n';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronRight, Heart, ShieldCheck, ShoppingBag, Store, Truck, Undo2, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -37,6 +37,7 @@ interface ProductShowProps {
         }[];
         /** Null unless the vendor added a link the page can embed. */
         video: ProductVideo | null;
+        isWishlisted: boolean;
     };
     relatedProducts: ProductSummary[];
     moreToLove: ProductSummary[];
@@ -55,6 +56,7 @@ export default function ProductShow({
 }: ProductShowProps) {
     const { t } = useTranslation();
     const { money } = useMoney();
+    const { auth } = usePage<PageProps>().props;
     const [activeImage, setActiveImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
@@ -156,7 +158,7 @@ export default function ProductShow({
                                 </span>
                             )}
                             {activeUrl ? (
-                                <img
+                                <img fetchPriority="high" decoding="async"
                                     src={activeUrl}
                                     alt={product.name}
                                     style={
@@ -185,7 +187,7 @@ export default function ProductShow({
                                         }`}
                                         aria-label={`Image ${index + 1}`}
                                     >
-                                        <img src={image.url} alt="" className="h-full w-full object-cover" />
+                                        <img loading="lazy" decoding="async" src={image.url} alt="" className="h-full w-full object-cover" />
                                     </button>
                                 ))}
                             </div>
@@ -201,9 +203,25 @@ export default function ProductShow({
                             {product.category.name}
                         </Link>
 
-                        <h1 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-3xl">
-                            {product.name}
-                        </h1>
+                        <div className="mt-3 flex items-start gap-3">
+                            <h1 className="min-w-0 flex-1 text-2xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+                                {product.name}
+                            </h1>
+                            {auth.user && (
+                                <button
+                                    type="button"
+                                    aria-label={product.isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+                                    onClick={() =>
+                                        product.isWishlisted
+                                            ? router.delete(route('wishlist.destroy', product.uuid), { preserveScroll: true })
+                                            : router.post(route('wishlist.store', product.uuid), {}, { preserveScroll: true })
+                                    }
+                                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 text-rose-500 transition hover:border-rose-200 hover:bg-rose-50"
+                                >
+                                    <Heart className="h-5 w-5" fill={product.isWishlisted ? 'currentColor' : 'none'} />
+                                </button>
+                            )}
+                        </div>
 
                         <div className="mt-2 flex flex-wrap items-center gap-3">
                             {product.ratingAverage !== null ? (

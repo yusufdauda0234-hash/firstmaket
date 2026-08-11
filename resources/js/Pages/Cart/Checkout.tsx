@@ -2,6 +2,7 @@ import PromoCodeBox, { AppliedPromo } from '@/Components/domain/cart/PromoCodeBo
 import { Input } from '@/Components/ui/Input';
 import { InputError } from '@/Components/ui/InputError';
 import Modal from '@/Components/ui/Modal';
+import { Radio } from '@/Components/ui/Radio';
 import { Select } from '@/Components/ui/Select';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { PageProps } from '@/Types';
@@ -11,6 +12,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     CreditCard,
+    Info,
     Lock,
     MapPin,
     PiggyBank,
@@ -215,7 +217,7 @@ export default function CartCheckout() {
         <PublicLayout>
             <Head title="Checkout" />
 
-            <form onSubmit={submit} className="mx-auto max-w-7xl px-4 py-6">
+            <form onSubmit={submit} className="mx-auto max-w-7xl px-3 py-6 sm:px-4">
                 <Link
                     href={route('cart.index')}
                     className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition hover:text-brand-700"
@@ -226,7 +228,7 @@ export default function CartCheckout() {
                 <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
                     <div className="space-y-4">
                         {/* ── Delivery address ── */}
-                        <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+                        <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5 sm:p-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <h2 className="flex items-center gap-2 text-base font-extrabold text-gray-900">
@@ -416,7 +418,7 @@ export default function CartCheckout() {
                         </section>
 
                         {/* ── Payment methods ── */}
-                        <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                             <h2 className="flex items-center gap-2 text-base font-extrabold text-gray-900">
                                 <StepNumber n={2} /> Payment method
                             </h2>
@@ -636,18 +638,25 @@ export default function CartCheckout() {
                             category, and the shopper has just read exactly
                             this layout on the previous page. */}
                         <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-                            <h2 className="flex items-center gap-2 border-b border-gray-100 px-5 py-4 text-base font-extrabold text-gray-900">
+                            <h2 className="flex items-center gap-2 border-b border-gray-100 px-4 py-4 text-base font-extrabold text-gray-900 sm:px-5">
                                 <StepNumber n={3} /> Your order ({summary.itemCount})
                             </h2>
                             <ul className="divide-y divide-gray-100">
                                 {items.map((item) => (
-                                    <li key={item.productUuid} className="flex gap-4 px-5 py-4">
+                                    /* Same wrapping rule as the cart line: the
+                                       money column cannot shrink, so below `sm`
+                                       it drops to its own row instead of
+                                       pushing the page into a sideways scroll. */
+                                    <li
+                                        key={item.productUuid}
+                                        className="flex flex-wrap gap-x-3 gap-y-2 px-3 py-4 sm:flex-nowrap sm:gap-x-4 sm:px-5"
+                                    >
                                         <a
                                             {...productLinkProps(item.productSlug)}
-                                            className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50"
+                                            className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50 sm:h-24 sm:w-24"
                                         >
                                             {item.productImage ? (
-                                                <img
+                                                <img loading="lazy" decoding="async"
                                                     src={item.productImage}
                                                     alt=""
                                                     className="h-full w-full object-cover"
@@ -680,12 +689,12 @@ export default function CartCheckout() {
                                             </div>
                                         </div>
 
-                                        <div className="flex shrink-0 flex-col items-end text-right">
+                                        <div className="flex w-full flex-row items-baseline justify-end gap-2 text-right sm:w-auto sm:shrink-0 sm:flex-col sm:items-end sm:gap-0">
                                             <span className="text-base font-bold tracking-tight text-gray-900">
                                                 {money(item.lineTotalKobo)}
                                             </span>
                                             {item.quantity > 1 && (
-                                                <span className="mt-0.5 text-[11px] text-gray-400">
+                                                <span className="text-[11px] text-gray-400 sm:mt-0.5">
                                                     {money(item.priceKobo)} each
                                                 </span>
                                             )}
@@ -698,25 +707,25 @@ export default function CartCheckout() {
 
                     {/* ── Summary rail ── */}
                     <div className="space-y-4 lg:sticky lg:top-24">
-                        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                             <h2 className="text-lg font-extrabold text-gray-900">Summary</h2>
 
                             <dl className="mt-4 space-y-2.5 text-sm">
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-3">
                                     <dt className="text-gray-500">Subtotal ({summary.itemCount} items)</dt>
                                     <dd className="tabular-nums text-gray-700">
                                         {money(summary.subtotalKobo)}
                                     </dd>
                                 </div>
                                 {summary.discountKobo > 0 && (
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-3">
                                         <dt className="text-gray-500">Items discount</dt>
                                         <dd className="font-semibold tabular-nums text-red-600">
                                             −{money(summary.discountKobo)}
                                         </dd>
                                     </div>
                                 )}
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-3">
                                     <dt className="text-gray-500">Delivery fee</dt>
                                     <dd className="tabular-nums text-gray-700">
                                         {summary.shippingKobo - deliveryDiscountKobo === 0 ? (
@@ -727,7 +736,7 @@ export default function CartCheckout() {
                                     </dd>
                                 </div>
                                 {promoSavingKobo > 0 && (
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-3">
                                         <dt className="font-semibold text-emerald-700">
                                             {promo?.code} ({promo?.label})
                                         </dt>
@@ -740,9 +749,11 @@ export default function CartCheckout() {
 
                             <PromoCodeBox promo={promo} disabled={payingSmallSmall} />
 
-                            <div className="mt-4 flex items-baseline justify-between border-t border-gray-100 pt-4">
+                            {/* Wraps rather than clips — the amount is the one
+                                thing on this card that must stay readable. */}
+                            <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-gray-100 pt-4">
                                 <span className="text-base font-bold text-gray-900">Total</span>
-                                <span className="text-2xl font-extrabold tabular-nums tracking-tight text-gray-900">
+                                <span className="text-xl font-extrabold tabular-nums tracking-tight text-gray-900 sm:text-2xl">
                                     {naira(payableKobo)}
                                 </span>
                             </div>
@@ -815,7 +826,7 @@ export default function CartCheckout() {
                             </p>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                             <h3 className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
                                 <Lock className="h-4 w-4 text-brand-600" /> FirstMaket keeps you safe
                             </h3>
@@ -871,34 +882,66 @@ function PaymentOption({
     onSelect: () => void;
 }) {
     const Icon = METHOD_ICONS[method.value] ?? CreditCard;
+    const disabled = !method.available;
 
     return (
+        /*
+         * `items-start`, and every muted state spelled out per element rather
+         * than an `opacity-50` on the row.
+         *
+         * The reason a method is unavailable used to be a `shrink-0` pill at
+         * the end of this row. It is a full sentence, so it claimed the whole
+         * width and squeezed the label column — which could shrink, being
+         * `min-w-0 flex-1` — down to one word per line, with the pill printed
+         * over the top of it. It now sits inside the text column, under the
+         * description, where it wraps like the prose it is.
+         *
+         * Dropping the row-wide opacity matters too: it was dimming the very
+         * explanation the shopper needs to read.
+         */
         <label
-            className={`flex items-center gap-3 py-3.5 ${
-                method.available ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+            className={`flex items-start gap-3 py-3.5 ${
+                disabled ? 'cursor-not-allowed' : 'cursor-pointer'
             }`}
         >
-            <Input
-                type="radio"
+            {/* A plain radio, not the text-field <Input>: that component's
+                base style is a full-width box with padding and a shadow, and
+                layering `h-4 w-4` over it left a padded, rounded control that
+                matched no other radio in the app. */}
+            <Radio
                 name="payment_method"
                 value={method.value}
                 checked={checked}
-                disabled={!method.available}
+                disabled={disabled}
                 onChange={onSelect}
-                className="h-4 w-4 shrink-0 border-gray-300 text-brand-600 focus:ring-brand-500/30"
+                className="mt-0.5"
             />
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-600">
+            <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                    disabled ? 'bg-gray-100 text-gray-300' : 'bg-gray-50 text-gray-600'
+                }`}
+            >
                 <Icon className="h-4 w-4" />
             </span>
             <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-gray-900">{method.label}</span>
-                <span className="block text-xs text-gray-400">{method.description}</span>
-            </span>
-            {!method.available && method.unavailableReason && (
-                <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                    {method.unavailableReason}
+                <span
+                    className={`block text-sm font-semibold ${
+                        disabled ? 'text-gray-400' : 'text-gray-900'
+                    }`}
+                >
+                    {method.label}
                 </span>
-            )}
+                <span className={`block text-xs ${disabled ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {method.description}
+                </span>
+
+                {disabled && method.unavailableReason && (
+                    <span className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-100">
+                        <Info className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
+                        <span className="min-w-0">{method.unavailableReason}</span>
+                    </span>
+                )}
+            </span>
         </label>
     );
 }

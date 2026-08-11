@@ -2,7 +2,7 @@ import { cn } from '@/Utils/cn';
 import { useFlashToast } from '@/Components/ui/Toast';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { BookOpen, Banknote, BarChart3, CalendarClock, ChevronLeft, ClipboardList, Coins, FolderTree, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, Scale, ScrollText, Search, Send, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
+import { BookOpen, Banknote, BarChart3, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 interface NavItem {
@@ -119,6 +119,20 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         href: route('admin.catalog.categories'),
                         icon: FolderTree,
                         active: path.startsWith('/catalog/categories'),
+                        show: can('catalog.manage'),
+                    },
+                    {
+                        label: 'Merchandising',
+                        href: route('admin.campaigns.index'),
+                        icon: TicketPercent,
+                        active: path.startsWith('/merchandising/campaigns'),
+                        show: can('catalog.manage'),
+                    },
+                    {
+                        label: 'Hero slides',
+                        href: route('admin.hero-slides.index'),
+                        icon: GalleryHorizontal,
+                        active: path.startsWith('/merchandising/hero-slides'),
                         show: can('catalog.manage'),
                     },
                     {
@@ -249,6 +263,20 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         show: can('staff.manage'),
                     },
                     {
+                        label: 'Risk flags',
+                        href: route('admin.risk.index'),
+                        icon: ShieldAlert,
+                        active: path.startsWith('/risk'),
+                        show: can('risk.review'),
+                    },
+                    {
+                        label: 'Returns',
+                        href: route('admin.returns.index'),
+                        icon: RotateCcw,
+                        active: path.startsWith('/returns'),
+                        show: can('returns.manage'),
+                    },
+                    {
                         label: 'Support',
                         href: route('admin.support.index'),
                         icon: LifeBuoy,
@@ -284,6 +312,53 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                 ],
             },
             {
+                label: 'Growth',
+                items: [
+                    {
+                        label: 'Affiliate partners',
+                        href: route('admin.affiliates.index'),
+                        icon: Handshake,
+                        active: path === '/affiliates',
+                        show: can('affiliates.manage'),
+                    },
+                    {
+                        label: 'Affiliate payouts',
+                        href: route('admin.affiliates.payouts.index'),
+                        icon: Banknote,
+                        active: path.startsWith('/affiliates/payouts'),
+                        show: can('affiliate_payouts.approve'),
+                    },
+                    {
+                        label: 'Automation & rules',
+                        href: route('admin.settings.automation'),
+                        icon: SlidersHorizontal,
+                        active: path.startsWith('/settings/automation'),
+                        show: can('settings.manage'),
+                    },
+                    {
+                        label: 'Operations settings',
+                        href: route('admin.settings.operations'),
+                        icon: SlidersHorizontal,
+                        active: path.startsWith('/settings/operations'),
+                        show: can('settings.manage'),
+                    },
+                    {
+                        label: 'Support channels',
+                        href: route('admin.settings.support-channels'),
+                        icon: LifeBuoy,
+                        active: path.startsWith('/settings/support-channels'),
+                        show: can('settings.manage'),
+                    },
+                    {
+                        label: 'Growth settings',
+                        href: route('admin.settings.growth'),
+                        icon: BarChart3,
+                        active: path.startsWith('/settings/growth'),
+                        show: can('settings.manage'),
+                    },
+                ],
+            },
+            {
                 label: 'System',
                 items: [
                     {
@@ -292,6 +367,27 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         icon: Sparkles,
                         active: path.startsWith('/settings/ai'),
                         show: can('ai_settings.manage'),
+                    },
+                    {
+                        label: 'Feature flags',
+                        href: route('admin.settings.features'),
+                        icon: SlidersHorizontal,
+                        active: path.startsWith('/settings/features'),
+                        show: can('settings.manage'),
+                    },
+                    {
+                        label: 'Staff roles',
+                        href: route('admin.roles.index'),
+                        icon: ShieldCheck,
+                        active: path.startsWith('/roles'),
+                        show: can('roles.manage'),
+                    },
+                    {
+                        label: 'Database backups',
+                        href: route('admin.settings.backup'),
+                        icon: Database,
+                        active: path.startsWith('/settings/backup'),
+                        show: can('system.backup'),
                     },
                     {
                         label: 'Legal pages',
@@ -396,6 +492,12 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                                 <Link
                                     key={item.label}
                                     href={item.href}
+                                    // Staff work the sidebar all day and the
+                                    // same handful of screens repeatedly, so
+                                    // fetching on hover turns most of those
+                                    // clicks into an instant render.
+                                    prefetch={['hover', 'click']}
+                                    cacheFor="30s"
                                     title={collapsed && !mobile ? item.label : undefined}
                                     className={cn(
                                         'group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200',

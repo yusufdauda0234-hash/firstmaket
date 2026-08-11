@@ -2,7 +2,9 @@
 
 Pay small small, collect with peace of mind.
 
-FirstMaket is a commerce platform for customers who want either to save gradually toward products or pay the full product price at once. It is not a loan app, bank, BNPL product, or cash-withdrawal wallet. Customers fund a deposit-only wallet through Paystack, allocate money to Open Savings, Product Target Plans, or Pay At Once checkout, and receive products after the target price is fully paid.
+FirstMaket is a commerce platform for customers who want either to save gradually toward a product or pay for it outright. It is not a loan app, a bank, a BNPL product, or a wallet.
+
+There is no customer balance. Money is paid **into one specific thing and nothing else** — a Pay Small Small plan, or an order — through Paystack, and it is credited only by a signature-verified webhook. It leaves as goods, as credit toward another plan if one is cancelled, or as a refund that reverses the exact charge that brought it in. A plan freezes its price on the day it starts, so saving up cannot be outrun by a price rise.
 
 ## Product Surfaces
 
@@ -31,12 +33,26 @@ FirstMaket is a commerce platform for customers who want either to save graduall
 
 ## Delivery Phases
 
-1. Phase 1: MVP transactional platform
-2. Phase 2: Growth features
-3. Phase 3: Scale features
-4. Phase 4: Public website
+| Phase | State |
+| --- | --- |
+| 1 — MVP transactional platform | **Done** |
+| 2 — Growth (2A–2E) | **Done** |
+| 2F — Staff roles you can create | **Next** |
+| 2G — Real merchandising | Planned |
+| 3 — Scale (advanced affiliates, cooperative savings, full AI) | Planned |
+| 4 — Public website | Planned |
+| 5 — Native mobile apps | Future |
+| 6 — Agent network | Future |
 
-The public website is intentionally last so marketing content can reflect the real completed product, not planned screens.
+The public website is intentionally late so marketing content reflects the real completed product, not planned screens. The mobile apps are later still: they are a second front end onto the same rules, and every phase before them changes those rules, so building once the rules have settled means one port rather than a moving target.
+
+See `docs/firstmaket_Implementation_Plan.md` → "Where The Build Actually Is" for what shipped, what changed, and what was deliberately dropped.
+
+### What Phase 2 actually delivered
+
+Beyond the original plan: **returns, refunds and disputes** (the storefront was publishing a returns policy nothing implemented), and **runtime configuration** — roughly fifty operational values moved out of code into two admin screens, so the returns window, rating weights, risk thresholds, retry timings and merchandising limits are changed by staff rather than by a deploy.
+
+Two deliberate substitutions: the savings assistant and product recommendations are **deterministic rules over the customer's own history**, not AI — explainable, free to run, and no financial data leaves the platform. Live chat is a **named third-party provider plus an id**, never a pasted script tag, because that would be arbitrary JavaScript on pages where customers enter card details.
 
 ## Start-to-End Project Roadmap
 
@@ -45,26 +61,32 @@ The public website is intentionally last so marketing content can reflect the re
 | 1 | Project foundation | Laravel/Inertia app, RBAC, modules, database baseline, admin shell, audit logging |
 | 2 | Identity and onboarding | Customer/vendor registration, OTP, email verification, vendor approval |
 | 3 | Catalog and vendor listing | Categories, vendor products, pricing, approval queue, posting fees, AI review logs |
-| 4 | Wallet and Paystack | Deposit-only wallet, webhook-confirmed credits, receipts, transaction history, finance reconciliation |
+| 4 | Payments and Paystack | Webhook-confirmed payments against a plan or order, receipts, transaction history, finance reconciliation |
 | 5 | Purchase and savings engine | Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target locking, progress tracking, redirection |
 | 6 | Orders and logistics | Ready-for-delivery orders, address capture, admin confirmation, vendor preparation, delivery tracking |
 | 7 | Support and notifications | Preferences, email/SMS/browser notifications, support tickets, hotline logs, IVR routing |
 | 8 | AI/reporting/controls | Listing review assistant, reports, vendor suspension, user suspension, operational dashboards |
 | 9 | MVP hardening and pilot launch | Security review, ledger tests, Paystack replay tests, E2E flows, production rehearsal |
-| 10 | Growth | Wishlist, rewards, referrals, basic affiliate tracking, automatic debit, pause/resume, live chat, AI assistance, risk dashboards |
-| 11 | Scale | Agent network, advanced affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
-| 12 | Public website | Marketing website using the completed product, real workflows, vendor CTA, SEO, public launch |
+| 10 | Growth — done | Wishlist, rewards, referrals, affiliates, automatic debit, pause/resume, chat widget, rules-based assistant, vendor tiers, risk flags, forecasting, returns and refunds |
+| 11 | Staff roles — next | Roles an administrator can create, with permissions picked per role and no deploy |
+| 12 | Merchandising | Real flash deals with a clock, deal pricing, measured trending, personalised picks |
+| 13 | Scale | Advanced affiliates, group/family/cooperative savings, full AI assistant |
+| 14 | Public website | Marketing website using the completed product, real workflows, vendor CTA, SEO, public launch |
+| 15 | Mobile apps | Native iOS/Android on the reserved `/api/v1`, once the rules have settled |
+| 16 | Agent network | Agent-assisted plan payments — the deposit-based design predates the wallet being removed |
 
 ## Core Rules
 
-- No withdrawal endpoint exists anywhere in the backend.
-- Wallet balance is credited only after a verified Paystack webhook.
+- There is no wallet and no customer balance. Money enters against one specific plan or order, and leaves only as goods, as plan credit, or as a refund reversing the original charge.
+- No withdrawal or deposit endpoint exists anywhere in the backend; an architecture test fails the build if one appears.
+- A plan is credited only after a verified Paystack webhook — never from a browser callback.
 - Every ledger-affecting write uses a database transaction.
-- Customer wallet has no cashout or withdrawal path.
-- Affiliate commissions are separate partner payouts, not customer wallet withdrawals.
+- Affiliate commissions are separate partner payouts, never taken from a customer's plan.
 - Product target price is locked when a plan is created.
 - Vendors never see customer identity or delivery details.
-- Admin access is permission-based, not hard-coded by role name.
+- Admin access is permission-based, not hard-coded by role name (Phase 2F makes the roles themselves staff-editable).
+- Operational thresholds live in settings, not constants: a value staff cannot change is a deploy waiting to happen.
+- Money can only move outward by reversing the charge that brought it in — admin-only, capped, and idempotent.
 - Sensitive identity fields are encrypted at rest.
 - All money, plan, listing, vendor, and order state changes are audited.
 - Modules communicate through domain events or shared contracts, never by querying another module's models directly.
@@ -94,7 +116,6 @@ app/
     Customer/
     Vendor/
     Catalog/
-    Wallet/
     Savings/
     Payments/
     Orders/
@@ -119,6 +140,10 @@ app/
 ```
 
 ## Current Status
+
+**Phases 1 and 2 (2A–2E) are complete.** Next up is **Phase 2F — staff roles an administrator can create**; see `docs/firstmaket_Implementation_Plan.md`.
+
+> **On the sprint notes below.** They are a changelog: each entry describes the system *as it was built at the time*, and several have since been superseded. The largest is the wallet — Sprints 4 and 5 describe a deposit-only wallet, Open Savings balances and wallet-funded contributions, **none of which exist any more**. Money now enters only against a specific plan or order, and there is no customer balance at all. Where a note and the code disagree, the code and the "Where The Build Actually Is" section of the implementation plan are correct.
 
 Sprint 1 foundation is complete: Laravel 12 + Inertia + React + TypeScript + Tailwind, the `app/Modules`/`app/Shared` architecture, RBAC (Spatie Permission) with the seven core roles, audit logging, login-event tracking, core settings table, feature flags (Pennant), the `/api/v1` reservation, and the admin-subdomain isolation with mandatory 2FA for Administrator/Super Administrator/Finance Officer.
 
@@ -240,3 +265,5 @@ For automated testing, create a separate `FirstMaket_testing` database (`created
 
 
 but my model should be like those bigg companies aliexpress and the rest for the first, means checkout-paid-shipped.
+
+

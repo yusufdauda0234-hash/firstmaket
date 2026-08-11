@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Modules\Cart\Models\CartItem;
 use App\Modules\Cart\Models\CheckoutSession;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\CampaignService;
 use App\Modules\Logistics\Services\ShipmentBuilder;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Services\OrderService;
@@ -40,6 +41,7 @@ class CartCheckoutService
         private readonly PromoRedeemer $promoRedeemer,
         private readonly ShipmentBuilder $shipmentBuilder,
         private readonly AuditLoggerContract $auditLogger,
+        private readonly CampaignService $campaignService,
     ) {}
 
     /**
@@ -63,7 +65,13 @@ class CartCheckoutService
             throw ValidationException::withMessages(['cart' => 'Your cart is empty.']);
         }
 
-        $purchasable = $this->purchasableFrom($lines);
+        $purchasable = collect($this->purchasableFrom($lines))->map(function (array $line) {
+            $pricing = $this->campaignService->priceFor($line['product'], $line['quantity']);
+            return $line + [
+                'unitPriceKobo' => $pricing['unitPriceKobo'],
+                'campaignProductId' => $pricing['campaignProductId'],
+            ];
+        })->all();
 
         if ($purchasable === []) {
             throw ValidationException::withMessages([
@@ -73,7 +81,7 @@ class CartCheckoutService
 
         // The address is in hand here, so this is the authoritative price —
         // it is what the customer is actually charged.
-        $summary = CartSummary::fromLines($lines, $address['state'] ?? null);
+        $summary = CartSummary::fromLines(collect($purchasable), $address['state'] ?? null);
 
         $promo = $promoCode === null ? null : $this->promoRedeemer->quote(
             $user,
@@ -116,7 +124,8 @@ class CartCheckoutService
             'items_snapshot' => collect($purchasable)->map(fn (array $item) => [
                 'product_id' => $item['product']->id,
                 'quantity' => $item['quantity'],
-                'unit_price_kobo' => $item['product']->price_kobo,
+                'unit_price_kobo' => $item['unitPriceKobo'],
+                'campaign_product_id' => $item['campaignProductId'],
                 // Remembered so the webhook can clear exactly the rows this
                 // checkout came from. A Buy-now line stores null and therefore
                 // never touches the cart.
@@ -170,6 +179,7 @@ class CartCheckoutService
                     'quantity' => $line['quantity'],
                     // Charge what they were shown, not what it costs today.
                     'unitPriceKobo' => $line['unit_price_kobo'],
+                    'campaignProductId' => $line['campaign_product_id'] ?? null,
                     // Absent on sessions frozen before Buy-now existed.
                     'cartItemId' => $line['cart_item_id'] ?? null,
                     'hasCartItemKey' => array_key_exists('cart_item_id', $line),
@@ -188,6 +198,26 @@ class CartCheckoutService
                     $session->promo_discount_kobo,
                 );
             }
+
+            // A lost stock-cap race here must not abort the transaction: this
+            // runs inside the verified webhook, and an uncaught exception
+            // would roll back the `status = paid` write too, leaving the
+            // customer charged with no order and the webhook retrying
+            // forever. Treat it like any other line that turned out to be
+            // unavailable between checkout start and payment completion.
+            $purchasable = array_values(array_filter($purchasable, function (array $line) use (&$skipped) {
+                if (($line['campaignProductId'] ?? null) === null) {
+                    return true;
+                }
+
+                if ($this->campaignService->reserve($line['campaignProductId'], $line['quantity'])) {
+                    return true;
+                }
+
+                $skipped[] = $line['product']->name;
+
+                return false;
+            }));
 
             $orders = $purchasable === []
                 ? collect()

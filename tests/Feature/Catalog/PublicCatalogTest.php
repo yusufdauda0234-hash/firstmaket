@@ -1,7 +1,11 @@
 <?php
 
 use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Campaign;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductAttribute;
+use App\Modules\Catalog\Models\ProductAttributeValue;
+use App\Shared\Enums\AttributeType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -42,6 +46,25 @@ it('filters the catalog by search query and category', function () {
         ->assertInertia(fn (Assert $page) => $page->has('products.data', 2));
 });
 
+it('shows a live campaign price in public catalog results', function () {
+    $product = Product::factory()->approved()->create([
+        'category_id' => $this->category->id,
+        'price_kobo' => 100_000,
+    ]);
+    $campaign = Campaign::query()->create([
+        'name' => 'Weekend Sale',
+        'starts_at' => now()->subHour(),
+        'ends_at' => now()->addHour(),
+        'is_active' => true,
+    ]);
+    $campaign->products()->attach($product, ['sale_price_kobo' => 75_000]);
+
+    $this->get('/catalog')
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('products.data.0.priceKobo', 75_000)
+            ->where('products.data.0.compareAtPriceKobo', 100_000));
+});
+
 it('sorts the catalog by price', function () {
     Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'CHEAP', 'price_kobo' => 100000]);
     Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'Costly', 'price_kobo' => 900000]);
@@ -61,6 +84,107 @@ it('serves an approved product detail page to guests', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/ProductShow')
             ->where('product.name', $product->name));
+});
+
+it('compares approved products in the requested order', function () {
+    $first = Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'First Product']);
+    $second = Product::factory()->approved()->create(['category_id' => $this->category->id, 'name' => 'Second Product']);
+    $hidden = Product::factory()->pending()->create(['category_id' => $this->category->id, 'name' => 'Hidden Product']);
+
+    $this->get("/compare?products={$second->uuid},{$hidden->uuid},{$first->uuid}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Compare')
+            ->has('products', 2)
+            ->where('products.0.uuid', $second->uuid)
+            ->where('products.1.uuid', $first->uuid));
+});
+
+it('lines admin-defined fields up across the compared products', function () {
+    $ram = ProductAttribute::query()->create([
+        'category_id' => $this->category->id,
+        'key' => 'ram',
+        'label' => 'RAM',
+        'type' => AttributeType::Number,
+        'unit' => 'GB',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $colour = ProductAttribute::query()->create([
+        'category_id' => $this->category->id,
+        'key' => 'colour',
+        'label' => 'Colour',
+        'type' => AttributeType::Text,
+        'is_active' => true,
+        'sort_order' => 2,
+    ]);
+
+    $a = Product::factory()->approved()->create(['category_id' => $this->category->id]);
+    $b = Product::factory()->approved()->create(['category_id' => $this->category->id]);
+
+    // Differs between the two.
+    ProductAttributeValue::query()->create(['product_id' => $a->id, 'product_attribute_id' => $ram->id, 'value' => 8]);
+    ProductAttributeValue::query()->create(['product_id' => $b->id, 'product_attribute_id' => $ram->id, 'value' => 12]);
+    // Identical, so the row should mark itself as such.
+    ProductAttributeValue::query()->create(['product_id' => $a->id, 'product_attribute_id' => $colour->id, 'value' => 'Black']);
+    ProductAttributeValue::query()->create(['product_id' => $b->id, 'product_attribute_id' => $colour->id, 'value' => 'Black']);
+
+    $this->get("/compare?products={$a->uuid},{$b->uuid}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Compare')
+            ->has('specRows', 2)
+            ->where('specRows.0.label', 'RAM')
+            ->where('specRows.0.same', false)
+            ->where("specRows.0.values.{$a->uuid}", '8 GB')
+            ->where("specRows.0.values.{$b->uuid}", '12 GB')
+            ->where('specRows.1.label', 'Colour')
+            ->where('specRows.1.same', true));
+});
+
+it('keeps a field one product left blank, showing the gap as a difference', function () {
+    $warranty = ProductAttribute::query()->create([
+        'category_id' => $this->category->id,
+        'key' => 'warranty',
+        'label' => 'Warranty',
+        'type' => AttributeType::Text,
+        'is_active' => true,
+    ]);
+
+    $a = Product::factory()->approved()->create(['category_id' => $this->category->id]);
+    $b = Product::factory()->approved()->create(['category_id' => $this->category->id]);
+
+    ProductAttributeValue::query()->create([
+        'product_id' => $a->id,
+        'product_attribute_id' => $warranty->id,
+        'value' => '2 years',
+    ]);
+
+    $this->get("/compare?products={$a->uuid},{$b->uuid}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('specRows', 1)
+            ->where("specRows.0.values.{$a->uuid}", '2 years')
+            ->where("specRows.0.values.{$b->uuid}", null)
+            ->where('specRows.0.same', false));
+});
+
+it('leaves out a field none of the compared products filled in', function () {
+    ProductAttribute::query()->create([
+        'category_id' => $this->category->id,
+        'key' => 'unused',
+        'label' => 'Unused',
+        'type' => AttributeType::Text,
+        'is_active' => true,
+    ]);
+
+    $a = Product::factory()->approved()->create(['category_id' => $this->category->id]);
+    $b = Product::factory()->approved()->create(['category_id' => $this->category->id]);
+
+    $this->get("/compare?products={$a->uuid},{$b->uuid}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('specRows', 0));
 });
 
 it('returns 404 for a product that is not approved', function () {

@@ -120,7 +120,7 @@ export default function TicketShow() {
                             value={form.data.message}
                             onChange={(e) => form.setData('message', e.target.value)}
                             required
-                            className="w-full rounded-2xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                            className="border w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                         />
                         <InputError message={form.errors.message} className="mt-1" />
                     </div>

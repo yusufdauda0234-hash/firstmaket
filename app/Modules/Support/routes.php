@@ -2,6 +2,7 @@
 
 use App\Modules\Support\Controllers\ContentPageController;
 use App\Modules\Support\Controllers\FaqController;
+use App\Modules\Support\Controllers\ComplaintController;
 use App\Modules\Support\Controllers\SupportCenterController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,12 @@ Route::middleware('auth')->group(function () {
     Route::post('support/tickets', [SupportCenterController::class, 'storeTicket'])
         ->middleware('throttle:10,60')->name('support.tickets.store');
     Route::get('support/tickets/{ticket:uuid}', [SupportCenterController::class, 'showTicket'])->name('support.tickets.show');
+
+    // Complaint Centre. Opens a ticket on the Complaint channel, so it lands
+    // in the queue staff already work rather than a second inbox.
+    Route::get('support/complaints', [ComplaintController::class, 'create'])->name('support.complaints.create');
+    Route::post('support/complaints', [ComplaintController::class, 'store'])
+        ->middleware('throttle:10,60')->name('support.complaints.store');
     Route::post('support/tickets/{ticket:uuid}/reply', [SupportCenterController::class, 'reply'])
         ->middleware('throttle:30,60')->name('support.tickets.reply');
     Route::post('support/hotline', [SupportCenterController::class, 'requestHotline'])

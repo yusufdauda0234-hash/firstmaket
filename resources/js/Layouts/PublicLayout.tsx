@@ -8,6 +8,7 @@ import { useFlashToast } from '@/Components/ui/Toast';
 import { Category, PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
 import { PropsWithChildren, useState } from 'react';
+import ChatWidget from '@/Components/domain/support/ChatWidget';
 import { useTranslation } from '@/Hooks/useI18n';
 import { formatNairaFromKobo } from '@/Utils/money';
 
@@ -34,6 +35,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
         cartCount,
         freeDeliveryFromKobo,
         legalLinks,
+        returnWindowDays,
     } = usePage<PageProps>().props;
     const categories = categoriesProp ?? sharedCategories ?? [];
     const hotline = supportHotline ?? '';
@@ -146,7 +148,7 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                         <TruckIcon /> FirstMaket delivery guarantee
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 lg:flex">
-                        <ReturnIcon /> {t('30-day returns')}
+                        <ReturnIcon /> {returnWindowDays ?? 7}-day returns
                     </span>
                 </div>
             </div>
@@ -319,9 +321,9 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                                 )}
                             </li>
                             <li>
-                                <span className="cursor-default text-brand-100" title="Coming soon">
-                                    30-day returns
-                                </span>
+                                <Link href={route('returns.index')} className="hover:text-white">
+                                    {returnWindowDays ?? 7}-day returns
+                                </Link>
                             </li>
                             <li>
                                 <Link
@@ -442,6 +444,9 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
                 </div>
             </footer>
 
+            {/* Third-party chat, loaded only when staff have configured a
+                provider. Renders nothing otherwise. */}
+            <ChatWidget />
         </div>
     );
 }

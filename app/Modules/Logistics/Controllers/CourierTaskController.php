@@ -251,7 +251,7 @@ class CourierTaskController extends Controller
         return back()->with(
             'success',
             $shipment->isExhausted()
-                ? 'Recorded. This one has failed '.Shipment::MAX_ATTEMPTS.' times, so it has gone to the office to sort out.'
+                ? 'Recorded. This one has failed '.Shipment::maxAttempts().' times, so it has gone to the office to sort out.'
                 : 'Recorded. It goes back in the queue for another run.',
         );
     }

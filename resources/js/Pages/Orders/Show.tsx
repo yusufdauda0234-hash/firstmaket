@@ -1,9 +1,23 @@
 import { Card } from '@/Components/ui/Card';
+import { InputError } from '@/Components/ui/InputError';
+import { Select } from '@/Components/ui/Select';
+import { Textarea } from '@/Components/ui/Textarea';
 import AccountLayout from '@/Layouts/AccountLayout';
 import { cn } from '@/Utils/cn';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, KeyRound, MapPin, Package, PartyPopper } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, KeyRound, MapPin, Package, PartyPopper, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+
+/** Mirrors App\Shared\Enums\ReturnReason — the server revalidates it. */
+const RETURN_REASONS = [
+    { value: 'damaged', label: 'Arrived damaged' },
+    { value: 'faulty', label: 'Faulty or not working' },
+    { value: 'not_as_described', label: 'Not what was described' },
+    { value: 'wrong_item', label: 'Wrong item sent' },
+    { value: 'missing_parts', label: 'Parts or accessories missing' },
+    { value: 'changed_mind', label: 'Changed my mind' },
+] as const;
 
 interface TimelineEntry {
     id: number;
@@ -27,6 +41,10 @@ interface Props {
         lga: string;
         createdAt: string;
         deliveredAt: string | null;
+        returnWindowDays: number;
+        returnWindowClosesAt: string | null;
+        canOpenReturn: boolean;
+        existingReturnUuid: string | null;
         confirmedAt: string | null;
         canConfirmReceipt: boolean;
         goodsDueKobo: number;
@@ -44,6 +62,12 @@ const CHAIN = ['pending', 'processing', 'ready_for_pickup', 'packed', 'shipped',
 export default function OrderShow() {
     const { order } = usePage<Props>().props;
     const confirmForm = useForm({});
+    const [returning, setReturning] = useState(false);
+    const returnForm = useForm<{ reason: string; note: string; photos: File[] }>({
+        reason: 'damaged',
+        note: '',
+        photos: [],
+    });
     const payGoodsForm = useForm({});
 
     const chainIndex = CHAIN.indexOf(order.status);
@@ -65,7 +89,7 @@ export default function OrderShow() {
                 <div className="flex flex-wrap items-center gap-4">
                     <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50">
                         {order.productImage ? (
-                            <img src={order.productImage} alt="" className="h-full w-full object-cover" />
+                            <img loading="lazy" decoding="async" src={order.productImage} alt="" className="h-full w-full object-cover" />
                         ) : (
                             <Package className="h-7 w-7 text-gray-300" />
                         )}
@@ -166,6 +190,163 @@ export default function OrderShow() {
                     >
                         {confirmForm.processing ? 'Confirming…' : 'Confirm receipt'}
                     </button>
+                </div>
+            )}
+
+            {/* ── Report a problem (Phase 2E) ──
+                Sits below "confirm receipt" on purpose: most deliveries are
+                fine, and leading with a returns form invites problems that
+                are not there. */}
+            {order.status === 'delivered' && (
+                <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                    {order.existingReturnUuid ? (
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-sm text-gray-600">
+                                You have already reported a problem with this order.
+                            </p>
+                            <Link
+                                href={route('returns.show', order.existingReturnUuid)}
+                                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-bold text-gray-700 transition hover:border-brand-300 hover:text-brand-700"
+                            >
+                                View return
+                            </Link>
+                        </div>
+                    ) : order.canOpenReturn ? (
+                        <>
+                            <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                                <RotateCcw className="h-4 w-4 shrink-0 text-brand-600" />
+                                Something wrong with this order?
+                            </h2>
+                            <p className="mt-1 text-sm leading-relaxed text-gray-500">
+                                You have {order.returnWindowDays} days from delivery to report a problem
+                                {order.returnWindowClosesAt && <> — until {order.returnWindowClosesAt}</>}.
+                                If it arrived damaged, faulty or is not what was described, we cover the
+                                return delivery and refund you in full.
+                            </p>
+
+                            {!returning ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setReturning(true)}
+                                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-bold text-gray-700 transition hover:border-brand-300 hover:text-brand-700 active:scale-95"
+                                >
+                                    <RotateCcw className="h-4 w-4" /> Report a problem
+                                </button>
+                            ) : (
+                                <form
+                                    onSubmit={(event) => {
+                                        event.preventDefault();
+                                        returnForm.post(route('returns.store', order.uuid), {
+                                            forceFormData: true,
+                                        });
+                                    }}
+                                    className="mt-4 space-y-4"
+                                >
+                                    <div>
+                                        <label
+                                            htmlFor="return_reason"
+                                            className="mb-1.5 block text-xs font-bold text-gray-700"
+                                        >
+                                            What went wrong?
+                                        </label>
+                                        <Select
+                                            id="return_reason"
+                                            value={returnForm.data.reason}
+                                            onChange={(event) =>
+                                                returnForm.setData('reason', event.target.value)
+                                            }
+                                        >
+                                            {RETURN_REASONS.map((reason) => (
+                                                <option key={reason.value} value={reason.value}>
+                                                    {reason.label}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                        <InputError message={returnForm.errors.reason} className="mt-1" />
+
+                                        {/* Saying this up front, before they
+                                            commit, rather than in the rejection
+                                            three days later. */}
+                                        {returnForm.data.reason === 'changed_mind' && (
+                                            <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                                                For a change of mind the return delivery is yours to pay,
+                                                and the item must come back unopened.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            htmlFor="return_note"
+                                            className="mb-1.5 block text-xs font-bold text-gray-700"
+                                        >
+                                            Tell us a bit more
+                                        </label>
+                                        <Textarea
+                                            id="return_note"
+                                            rows={3}
+                                            value={returnForm.data.note}
+                                            onChange={(event) => returnForm.setData('note', event.target.value)}
+                                            placeholder="What is wrong with it?"
+                                        />
+                                        <InputError message={returnForm.errors.note} className="mt-1" />
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            htmlFor="return_photos"
+                                            className="mb-1.5 block text-xs font-bold text-gray-700"
+                                        >
+                                            Photos <span className="font-normal text-gray-400">Optional</span>
+                                        </label>
+                                        <input
+                                            id="return_photos"
+                                            type="file"
+                                            multiple
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={(event) =>
+                                                returnForm.setData(
+                                                    'photos',
+                                                    Array.from(event.target.files ?? []),
+                                                )
+                                            }
+                                            className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-xs file:font-bold file:text-brand-700"
+                                        />
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            A photo of the problem settles most cases straight away.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            type="submit"
+                                            disabled={returnForm.processing}
+                                            className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
+                                        >
+                                            {returnForm.processing ? 'Sending…' : 'Send return request'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setReturning(false)}
+                                            className="rounded-full px-5 py-2.5 text-sm font-bold text-gray-500 transition hover:bg-gray-100"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </>
+                    ) : (
+                        <p className="text-sm text-gray-500">
+                            The {order.returnWindowDays}-day window to report a problem with this order
+                            {order.returnWindowClosesAt && <> closed on {order.returnWindowClosesAt}</>}. If
+                            you still need help,{' '}
+                            <Link href={route('support.index')} className="font-semibold text-brand-600 underline">
+                                contact support
+                            </Link>
+                            .
+                        </p>
+                    )}
                 </div>
             )}
 

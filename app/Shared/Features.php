@@ -2,6 +2,7 @@
 
 namespace App\Shared;
 
+use App\Models\Setting;
 use Laravel\Pennant\Feature;
 
 /**
@@ -29,8 +30,20 @@ final class Features
     public static function register(): void
     {
         foreach (self::all() as $feature) {
-            Feature::define($feature, fn () => false);
+            Feature::define($feature, fn () => (bool) Setting::get('feature.'.$feature, false));
         }
+    }
+
+    public static function enabled(string $feature): bool
+    {
+        return (bool) Setting::get('feature.'.$feature, false);
+    }
+
+    public static function set(string $feature, bool $enabled): void
+    {
+        abort_unless(in_array($feature, self::all(), true), 404);
+        Setting::set('feature.'.$feature, $enabled, 'features');
+        Feature::forget($feature);
     }
 
     /**

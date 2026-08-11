@@ -6,7 +6,7 @@ import { PageProps } from '@/Types';
 import { productLinkProps } from '@/Utils/links';
 import { formatNairaFromKobo, formatNumber } from '@/Utils/money';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, CalendarClock, CheckCircle2, Lock, Repeat, ShoppingBag, Truck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarClock, CheckCircle2, CreditCard, Lock, PauseCircle, PlayCircle, Repeat, ShoppingBag, Truck } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 import { MoneyInput } from '@/Components/ui/MoneyInput';
 
@@ -69,6 +69,24 @@ interface Props extends PageProps {
         canReschedule: boolean;
         extensionUsed: boolean;
         behindOnPayments: boolean;
+        /** Reminders and automatic debit are suspended; the plan itself is not. */
+        isPaused: boolean;
+        pausedUntil: string | null;
+        canPause: boolean;
+        automaticDebit: {
+            status: string;
+            statusLabel: string;
+            isOn: boolean;
+            needsReauthorization: boolean;
+            amountKobo: number;
+            nextRunAt: string | null;
+            lastError: string | null;
+            /** Last four digits only — the number itself is never stored. */
+            cardLast4: string | null;
+            cardBrand: string | null;
+            canEnable: boolean;
+            hasSavedCard: boolean;
+        };
         durationMonths: number | null;
         items: GoalItem[];
         payments: Payment[];
@@ -241,7 +259,7 @@ export default function GoalShow() {
                                     className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50"
                                 >
                                     {item.productImage ? (
-                                        <img src={item.productImage} alt="" className="h-full w-full object-cover" />
+                                        <img loading="lazy" decoding="async" src={item.productImage} alt="" className="h-full w-full object-cover" />
                                     ) : (
                                         <ShoppingBag className="h-6 w-6 text-gray-300" />
                                     )}
@@ -370,6 +388,167 @@ export default function GoalShow() {
                 option underneath. Both keep the money — but "cancel" reads as
                 loss, and most people reaching for it want a different item,
                 not their money back (which they cannot have as cash anyway). */}
+            {/* ── Automatic payments ── */}
+            {isRunning && (
+                <div
+                    className={`mt-6 rounded-2xl border p-5 shadow-sm ${
+                        goal.automaticDebit.needsReauthorization
+                            ? 'border-amber-200 bg-amber-50/60'
+                            : 'border-gray-200 bg-white'
+                    }`}
+                >
+                    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                        <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                            <CreditCard className="h-4 w-4 shrink-0 text-brand-600" />
+                            Automatic payments
+                        </h2>
+                        <span
+                            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                                goal.automaticDebit.isOn
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : goal.automaticDebit.needsReauthorization
+                                      ? 'bg-amber-200 text-amber-900'
+                                      : 'bg-gray-100 text-gray-600'
+                            }`}
+                        >
+                            {goal.automaticDebit.statusLabel}
+                        </span>
+                    </div>
+
+                    {goal.automaticDebit.needsReauthorization ? (
+                        <>
+                            <p className="mt-2 text-sm leading-relaxed text-amber-900">
+                                We tried your saved card twice and it did not go through
+                                {goal.automaticDebit.lastError && (
+                                    <> — {goal.automaticDebit.lastError.toLowerCase()}</>
+                                )}
+                                . Nothing has been charged and your plan is untouched. Pay one
+                                instalment by card below and automatic payments can start again from
+                                that card.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.post(route('savings.goals.automatic-debit.enable', goal.uuid))
+                                }
+                                className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
+                            >
+                                <CreditCard className="h-4 w-4" /> Use my latest card
+                            </button>
+                        </>
+                    ) : goal.automaticDebit.isOn ? (
+                        <>
+                            <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                                {formatNairaFromKobo(goal.automaticDebit.amountKobo)} comes off your
+                                card
+                                {goal.automaticDebit.cardLast4 && (
+                                    <>
+                                        {' '}
+                                        ending {goal.automaticDebit.cardLast4}
+                                    </>
+                                )}{' '}
+                                each time an instalment falls due
+                                {goal.automaticDebit.nextRunAt && (
+                                    <>, next on {goal.automaticDebit.nextRunAt}</>
+                                )}
+                                . {goal.isPaused ? 'Paused along with the plan.' : 'You can turn it off any time.'}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.delete(route('savings.goals.automatic-debit.disable', goal.uuid))
+                                }
+                                className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-bold text-gray-700 transition hover:border-red-200 hover:text-red-600 active:scale-95"
+                            >
+                                Turn off automatic payments
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                                Let each instalment come off your saved card on its due date, so a
+                                missed payment cannot cost you the plan. Nothing is ever taken early,
+                                and you can turn it off whenever you like.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.post(route('savings.goals.automatic-debit.enable', goal.uuid))
+                                }
+                                disabled={!goal.automaticDebit.canEnable}
+                                className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+                            >
+                                <CreditCard className="h-4 w-4" /> Turn on automatic payments
+                            </button>
+                            {!goal.automaticDebit.hasSavedCard && (
+                                <p className="mt-2 text-xs text-gray-400">
+                                    Pay one instalment by card first — that is what saves the card, and
+                                    we never store the number itself.
+                                </p>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* Pausing sits above cancelling on purpose. Someone who needs a
+                month off has, until now, had only "cancel" to reach for — and
+                cancelling gives up the locked price. */}
+            {isRunning && (
+                <div
+                    className={`mt-6 rounded-2xl border p-5 shadow-sm ${
+                        goal.isPaused ? 'border-amber-200 bg-amber-50/60' : 'border-gray-200 bg-white'
+                    }`}
+                >
+                    {goal.isPaused ? (
+                        <>
+                            <h2 className="flex flex-wrap items-center gap-2 text-sm font-bold text-amber-900">
+                                <PauseCircle className="h-4 w-4 shrink-0" />
+                                Plan paused
+                            </h2>
+                            <p className="mt-1 text-sm leading-relaxed text-amber-800">
+                                Reminders and automatic payments are off. Your{' '}
+                                {formatNairaFromKobo(goal.paidKobo)} and your locked price are untouched,
+                                and you can still pay in any time.
+                                {goal.pausedUntil && (
+                                    <> The pause lifts by itself on {goal.pausedUntil}.</>
+                                )}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => router.post(route('savings.goals.resume', goal.uuid))}
+                                className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
+                            >
+                                <PlayCircle className="h-4 w-4" /> Resume this plan
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className="text-sm font-bold text-gray-900">Need a break?</h2>
+                            <p className="mt-1 text-sm leading-relaxed text-gray-500">
+                                Pausing stops the reminders and any automatic payments. The plan itself
+                                carries on — same price, same amount saved — and you can resume whenever
+                                you like.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => router.post(route('savings.goals.pause', goal.uuid))}
+                                disabled={!goal.canPause}
+                                className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-bold text-gray-700 transition hover:border-brand-300 hover:text-brand-700 active:scale-95 disabled:cursor-not-allowed disabled:text-gray-300"
+                            >
+                                <PauseCircle className="h-4 w-4" /> Pause this plan
+                            </button>
+                            {!goal.canPause && (
+                                <p className="mt-2 text-xs text-gray-400">
+                                    Make your first payment before pausing — the price is locked from the
+                                    moment the plan starts.
+                                </p>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+
             {isRunning && (
                 <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                     <h2 className="text-sm font-bold text-gray-900">Stop this plan</h2>

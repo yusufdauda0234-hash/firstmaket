@@ -18,7 +18,7 @@ beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 });
 
-function pagesAdmin(string $role = 'Administrator'): User
+function pagesAdmin(string $role = 'Super Administrator'): User
 {
     $admin = User::factory()->create([
         'user_type' => UserType::Staff,

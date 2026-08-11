@@ -157,7 +157,7 @@ export default function VendorOrdersIndex() {
                                                 <div className="flex items-center gap-3">
                                                     <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-50">
                                                         {order.productImage ? (
-                                                            <img
+                                                            <img loading="lazy" decoding="async"
                                                                 src={order.productImage}
                                                                 alt=""
                                                                 className="h-full w-full object-cover"
@@ -236,7 +236,7 @@ export default function VendorOrdersIndex() {
                                     )}
                                     <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50">
                                         {order.productImage ? (
-                                            <img src={order.productImage} alt="" className="h-full w-full object-cover" />
+                                            <img loading="lazy" decoding="async" src={order.productImage} alt="" className="h-full w-full object-cover" />
                                         ) : (
                                             <Package className="h-6 w-6 text-gray-300" />
                                         )}
@@ -346,7 +346,7 @@ export default function VendorOrdersIndex() {
                                             onChange={(e) => actionForm.setData('reason', e.target.value)}
                                             required
                                             autoFocus
-                                            className="min-w-[240px] flex-1 rounded-full border-red-200 text-sm focus:border-red-400 focus:ring-red-400/20"
+                                            className="border min-w-[240px] flex-1 rounded-full border-red-200 text-sm focus:border-red-400 focus:ring-red-400/20 px-4 py-2 shadow-sm"
                                         />
                                         <button
                                             type="submit"

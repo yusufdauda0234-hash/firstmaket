@@ -155,6 +155,18 @@ function walkParcel(User $courier, Shipment $shipment, ShipmentStatus $to): Ship
  * defined in a sibling file only exists when that file happens to be loaded —
  * so running one directory alone made every caller fatal.
  */
+/**
+ * A URL on the isolated staff subdomain.
+ *
+ * Shared here rather than inside one test file: it used to be declared in
+ * StaffDashboardAccessTest, so every other file that called it only worked
+ * when that file happened to be loaded in the same run.
+ */
+function adminUrl(string $path = ''): string
+{
+    return 'http://'.config('app.admin_domain').'/'.ltrim($path, '/');
+}
+
 function postWebhook(array $payload, ?string $signature = null): TestResponse
 {
     $json = json_encode($payload) ?: '';

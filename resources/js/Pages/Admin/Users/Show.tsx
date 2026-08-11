@@ -217,7 +217,7 @@ export default function UserShow() {
                             autoFocus
                             value={reasonForm.data.reason}
                             onChange={(e) => reasonForm.setData('reason', e.target.value)}
-                            className="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                            className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                             required
                         />
                         <InputError message={reasonForm.errors.reason} />

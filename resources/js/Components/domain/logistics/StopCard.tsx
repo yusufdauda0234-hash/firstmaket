@@ -85,7 +85,7 @@ export default function StopCard({ stop, failureReasons, selected, onSelect }: P
                         type="checkbox"
                         checked={selected}
                         onChange={(event) => onSelect(stop.uuid, event.target.checked)}
-                        className="mt-1 h-5 w-5 shrink-0 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                        className="mt-1 h-5 w-5 shrink-0 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                         aria-label={`Select ${stop.contents}`}
                     />
                 )}
@@ -218,7 +218,7 @@ export default function StopCard({ stop, failureReasons, selected, onSelect }: P
                                                     value={value}
                                                     checked={collectionMethod === value}
                                                     onChange={() => setCollectionMethod(value as typeof collectionMethod)}
-                                                    className="text-brand-600 focus:ring-brand-500"
+                                                    className="text-brand-600 focus:ring-brand-500/20"
                                                 />
                                                 {label}
                                             </label>
@@ -251,7 +251,7 @@ export default function StopCard({ stop, failureReasons, selected, onSelect }: P
                                     )
                                 }
                                 placeholder="0000"
-                                className="w-28 rounded-xl border-emerald-300 text-center text-lg font-bold tracking-[0.4em] tabular-nums focus:border-emerald-500 focus:ring-emerald-500"
+                                className="border w-28 rounded-lg border-emerald-300 text-center text-lg font-bold tracking-[0.4em] tabular-nums focus:border-emerald-500 focus:ring-emerald-500 px-3 py-2 shadow-sm"
                             />
                             <button
                                 type="button"
@@ -330,7 +330,7 @@ export default function StopCard({ stop, failureReasons, selected, onSelect }: P
                             onChange={(event) => fail.setData('note', event.target.value)}
                             placeholder="Anything the office should know (optional)"
                             maxLength={300}
-                            className="mt-2 w-full rounded-xl border-amber-300 text-sm focus:border-amber-500 focus:ring-amber-500"
+                            className="border mt-2 w-full rounded-lg border-amber-300 text-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 shadow-sm"
                         />
                         <div className="mt-2 flex gap-2">
                             <button

@@ -214,4 +214,95 @@ class ProductAttributeService
 
         return $rows;
     }
+
+    /**
+     * Specification rows aligned across several products, for the comparison
+     * table.
+     *
+     * Unlike {@see specificationsFor()}, which walks one product's own fields,
+     * this walks the union of the compared products' fields so a row exists
+     * wherever *any* of them has a value — an attribute one phone declares and
+     * another leaves blank is exactly the difference worth seeing, and hiding
+     * the row would silently drop it.
+     *
+     * Products from different categories therefore compare cleanly: shared
+     * fields line up, and anything only one side defines shows as "—" for the
+     * rest.
+     *
+     * Deliberately no winner is declared on these rows. A winner needs a
+     * direction, and the direction is not derivable from the type: more RAM is
+     * better, less weight is better, and "Colour: red" has no better at all.
+     * Guessing would be worse than not marking one — so the table shows the
+     * differences and dims the rows where every product agrees. Marking these
+     * properly needs a `winner_rule` on the attribute definition (highest /
+     * lowest / none), set by staff who know what the field means.
+     *
+     * @param  Collection<int, Product>  $products
+     * @return array<int, array{key: string, label: string, values: array<string, string|null>, same: bool}>
+     */
+    public function comparisonRows(Collection $products): array
+    {
+        if ($products->isEmpty()) {
+            return [];
+        }
+
+        $valuesByProduct = ProductAttributeValue::query()
+            ->whereIn('product_id', $products->pluck('id'))
+            ->get()
+            ->groupBy('product_id')
+            ->map(fn (Collection $rows) => $rows->keyBy('product_attribute_id'));
+
+        // Union of every compared product's fields, keeping each category's
+        // own ordering and never listing the same key twice.
+        $attributes = collect();
+
+        foreach ($products as $product) {
+            foreach ($this->forCategory($product->category) as $attribute) {
+                if (! $attributes->has($attribute->key)) {
+                    $attributes->put($attribute->key, $attribute);
+                }
+            }
+        }
+
+        $rows = [];
+
+        foreach ($attributes as $attribute) {
+            $values = [];
+            $anyPresent = false;
+
+            foreach ($products as $product) {
+                $row = $valuesByProduct->get($product->id)?->get($attribute->id);
+                $raw = $row?->value;
+
+                if ($raw === null || $raw === '' || $raw === []) {
+                    $values[$product->uuid] = null;
+
+                    continue;
+                }
+
+                $anyPresent = true;
+                $display = $attribute->type->display($raw);
+                $values[$product->uuid] = $attribute->unit ? "{$display} {$attribute->unit}" : $display;
+            }
+
+            // No product filled this one in — nothing to compare.
+            if (! $anyPresent) {
+                continue;
+            }
+
+            $rows[] = [
+                'key' => $attribute->key,
+                'label' => $attribute->label,
+                'values' => $values,
+                // Every product gave the same answer, so the row can recede
+                // and let the real differences carry the eye.
+                'same' => count(array_unique(array_map(
+                    fn ($value) => $value === null ? '' : $value,
+                    $values,
+                ), SORT_REGULAR)) === 1,
+            ];
+        }
+
+        return $rows;
+    }
 }

@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Payments\Actions\StartPaystackPaymentAction;
+use App\Modules\Payments\Models\AutomaticDebit;
+use App\Modules\Payments\Models\PaymentAuthorization;
+use App\Modules\Payments\Services\AutomaticDebitService;
 use App\Modules\Savings\Models\PlanPayment;
 use App\Modules\Savings\Models\PlanTerm;
 use App\Modules\Savings\Models\SavingsGoal;
@@ -63,11 +66,17 @@ class SavingsGoalController extends Controller
                 // left, so the page can say why an option is unavailable
                 // rather than just hiding it.
                 'switchesUsed' => $goal->switch_count,
-                'switchesAllowed' => SavingsGoalService::MAX_SWITCHES,
-                'canSwitch' => $goal->isSaving() && $goal->switch_count < SavingsGoalService::MAX_SWITCHES,
+                'switchesAllowed' => SavingsGoalService::maxSwitches(),
+                'canSwitch' => $goal->isSaving() && $goal->switch_count < SavingsGoalService::maxSwitches(),
                 'canReschedule' => $goal->isSaving() && $goal->remainingKobo() > 0,
                 'extensionUsed' => $goal->extension_count > 0,
                 'behindOnPayments' => $goal->missedPayments() > 0,
+                'isPaused' => $goal->isPaused(),
+                'pausedUntil' => $goal->isPaused() ? $goal->pauseExpiresAt()?->format('j M Y') : null,
+                'automaticDebit' => $this->automaticDebitPayload($goal),
+                // Pausing is refused before the first payment: the price
+                // freezes at signup, so a free hold would be a free price lock.
+                'canPause' => $goal->isSaving() && ! $goal->isPaused() && $goal->payments_made > 0,
                 'durationMonths' => $goal->duration_months,
                 'items' => $goal->items->map(fn ($item) => [
                     // Needed so the switch dialog can send back the items the
@@ -327,5 +336,108 @@ class SavingsGoalController extends Controller
                 ? 'Plan cancelled. '.number_format($carried / 100, 2).' is kept as credit for your next plan.'
                 : 'Plan cancelled.',
         );
+    }
+
+    /**
+     * Pause the reminders and automatic debit on a plan.
+     *
+     * The plan itself keeps running: same frozen price, same amount paid, same
+     * status. Only the chasing stops, and only for a bounded window.
+     */
+    public function pause(Request $request, SavingsGoal $goal, SavingsGoalService $goals): RedirectResponse
+    {
+        abort_unless($goal->user_id === $request->user()->id, 403);
+
+        $paused = $goals->pause($request->user(), $goal);
+
+        return back()->with(
+            'success',
+            'Plan paused. Reminders and automatic payments stop until '
+                .$paused->pauseExpiresAt()?->toFormattedDateString()
+                .', and your price stays locked.',
+        );
+    }
+
+    public function resume(Request $request, SavingsGoal $goal, SavingsGoalService $goals): RedirectResponse
+    {
+        abort_unless($goal->user_id === $request->user()->id, 403);
+
+        $goals->resume($request->user(), $goal);
+
+        return back()->with('success', 'Plan resumed. Reminders and automatic payments are back on.');
+    }
+
+    /**
+     * What the plan page needs to draw the automatic-payments card.
+     *
+     * `canEnable` is the honest question the screen has to answer: automatic
+     * debit needs a card the customer has already paid with, because that is
+     * the only way a reusable authorization exists at all. Offering the switch
+     * without one would just fail on submit.
+     *
+     * Only the last four digits and the card brand are ever sent — the number
+     * itself is not stored anywhere in this system.
+     *
+     * @return array<string, mixed>
+     */
+    private function automaticDebitPayload(SavingsGoal $goal): array
+    {
+        $debit = AutomaticDebit::query()
+            ->with('authorization')
+            ->where('savings_goal_id', $goal->id)
+            ->first();
+
+        $savedCard = PaymentAuthorization::query()
+            ->where('user_id', $goal->user_id)
+            ->where('active', true)
+            ->where('reusable', true)
+            ->latest('id')
+            ->first();
+
+        return [
+            'status' => $debit?->status->value ?? 'off',
+            'statusLabel' => $debit?->status->label() ?? 'Off',
+            'isOn' => (bool) $debit?->isActive(),
+            'needsReauthorization' => (bool) $debit?->needsReauthorization(),
+            'amountKobo' => $debit?->amount_kobo ?? $goal->installment_kobo,
+            'nextRunAt' => $debit?->next_run_at?->format('j M Y'),
+            'lastError' => $debit?->last_error,
+            'cardLast4' => $debit?->authorization?->last4 ?? $savedCard?->last4,
+            'cardBrand' => $debit?->authorization?->card_type ?? $savedCard?->card_type,
+            'canEnable' => $goal->isSaving() && $savedCard !== null,
+            'hasSavedCard' => $savedCard !== null,
+        ];
+    }
+
+    /**
+     * Turn automatic instalments on, or re-point them at a newly saved card
+     * after the old one stopped working.
+     */
+    public function enableAutomaticDebit(
+        Request $request,
+        SavingsGoal $goal,
+        AutomaticDebitService $debits,
+    ): RedirectResponse {
+        abort_unless($goal->user_id === $request->user()->id, 403);
+
+        $debit = $debits->enable($request->user(), $goal);
+
+        return back()->with(
+            'success',
+            'Automatic payments are on. '.number_format($debit->amount_kobo / 100, 2)
+                .' will be taken from your saved card each time an instalment falls due.',
+        );
+    }
+
+    public function disableAutomaticDebit(
+        Request $request,
+        SavingsGoal $goal,
+        AutomaticDebitService $debits,
+    ): RedirectResponse {
+        abort_unless($goal->user_id === $request->user()->id, 403);
+
+        $debits->disable($request->user(), $goal);
+
+        return back()->with('success', 'Automatic payments are off. You can still pay by hand any time.');
     }
 }

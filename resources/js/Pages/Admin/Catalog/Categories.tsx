@@ -337,7 +337,7 @@ export default function AdminCategories() {
                                 type="checkbox"
                                 checked={form.data.is_active}
                                 onChange={(e) => form.setData('is_active', e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                             />
                             Visible to shoppers and vendors
                         </label>

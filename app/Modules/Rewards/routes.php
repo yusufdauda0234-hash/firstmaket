@@ -1,6 +1,8 @@
 <?php
 
-// Routes for the Rewards module are registered here and auto-loaded on the
-// customer/vendor-facing domain by App\Providers\ModuleServiceProvider.
-// Keep controllers thin; delegate to Actions/Services (see
-// docs/FirstMaket_Developer_Guidelines.md).
+use App\Modules\Rewards\Controllers\RewardsController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('auth')->group(function () {
+	Route::get('account/rewards', [RewardsController::class, 'index'])->name('rewards.index');
+});

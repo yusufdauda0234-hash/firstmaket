@@ -42,6 +42,11 @@ class SweepDormantPlans extends Command
             ->where('missed_payments_allowed', '>', 0)
             ->with('user')
             ->get()
+            // A paused plan is one the customer told us they are stepping away
+            // from, so neither the warning nor the revocation applies while the
+            // pause holds. isPaused() is false once the pause window has run
+            // out, which is what stops a pause becoming a permanent price lock.
+            ->reject(fn (SavingsGoal $goal) => $goal->isPaused())
             ->filter(fn (SavingsGoal $goal) => $goal->isDormant());
 
         if ($candidates->isEmpty()) {

@@ -74,6 +74,62 @@ class EarningsService
         }
     }
 
+    /**
+     * Take back the earning on an order that came back — Phase 2E.
+     *
+     * Written as a negative Adjustment rather than by deleting or editing the
+     * original Earning row: the ledger is a history, and a vendor asking why
+     * their balance moved deserves to see the sale and the return as two
+     * events rather than a sale that quietly vanished.
+     *
+     * The balance is allowed to go negative. A vendor whose earning was
+     * already paid out before the return completed genuinely owes it back, and
+     * refusing to record that would leave the platform silently out of pocket
+     * with nothing on the ledger to explain it. Payouts already refuse to pay
+     * more than the balance, so a negative balance simply holds the next one.
+     */
+    public function clawBackOrderEarning(int $vendorId, int $orderId, int $amountKobo, ?string $note = null): ?VendorEarning
+    {
+        if ($amountKobo <= 0) {
+            throw ValidationException::withMessages(['amount' => 'Clawback amount must be positive.']);
+        }
+
+        try {
+            return DB::transaction(function () use ($vendorId, $orderId, $amountKobo, $note) {
+                $balanceBefore = $this->lockedBalance($vendorId);
+
+                $earning = VendorEarning::query()->create([
+                    'vendor_id' => $vendorId,
+                    'order_id' => $orderId,
+                    // A different type from the original Earning, so the
+                    // unique (order_id, type) index lets this row exist beside
+                    // it while still allowing only one clawback per order.
+                    'type' => VendorEarningType::Adjustment,
+                    'amount_kobo' => -$amountKobo,
+                    'balance_before_kobo' => $balanceBefore,
+                    'balance_after_kobo' => $balanceBefore - $amountKobo,
+                    'note' => $note ?? 'Order returned by the customer',
+                    'created_at' => now(),
+                ]);
+
+                $this->auditLogger->log(
+                    actor: null,
+                    subject: $earning,
+                    action: 'vendor.earnings_clawed_back',
+                    newValues: [
+                        'order_id' => $orderId,
+                        'amount_kobo' => -$amountKobo,
+                        'balance_after_kobo' => $earning->balance_after_kobo,
+                    ],
+                );
+
+                return $earning;
+            });
+        } catch (UniqueConstraintViolationException) {
+            return null; // Already clawed back for this order.
+        }
+    }
+
     /** Negative payout row, written only when a transfer is marked paid. */
     public function debitPayout(int $vendorId, int $payoutItemId, int $amountKobo, ?string $note = null): VendorEarning
     {

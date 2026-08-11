@@ -8,6 +8,8 @@ use App\Modules\Auth\Requests\RegisterUserRequest;
 use App\Modules\Auth\Services\PostAuthRedirect;
 use App\Modules\Auth\Services\SessionAuthenticator;
 use App\Modules\Customer\Models\CustomerProfile;
+use App\Modules\Referrals\Services\ReferralService;
+use App\Modules\Affiliates\Services\AffiliateService;
 use App\Shared\Contracts\AuditLoggerContract;
 use App\Shared\Enums\OtpChannel;
 use App\Shared\Enums\UserStatus;
@@ -35,7 +37,7 @@ class RegisteredUserController extends Controller
         return redirect()->route('home', ['auth' => 'register']);
     }
 
-    public function store(RegisterUserRequest $request, AuditLoggerContract $auditLogger, SessionAuthenticator $authenticator): RedirectResponse
+    public function store(RegisterUserRequest $request, AuditLoggerContract $auditLogger, SessionAuthenticator $authenticator, ReferralService $referrals, AffiliateService $affiliates): RedirectResponse
     {
         $verified = $request->session()->get(AuthFlowController::VERIFIED_SESSION_KEY);
 
@@ -58,7 +60,10 @@ class RegisteredUserController extends Controller
             ]);
         }
 
-        $user = DB::transaction(function () use ($request, $channel, $identifier, $column) {
+        $referralCode = $request->session()->get('referral_code');
+        $affiliateLinkId = $request->session()->get('affiliate_link_id');
+
+        $user = DB::transaction(function () use ($request, $channel, $identifier, $column, $referrals, $referralCode, $affiliates, $affiliateLinkId) {
             $user = User::query()->create([
                 'name' => $request->string('name'),
                 $column => $identifier,
@@ -77,10 +82,20 @@ class RegisteredUserController extends Controller
 
             CustomerProfile::query()->create(['user_id' => $user->id]);
 
+            if (is_string($referralCode) && $referralCode !== '') {
+                $referrals->claim($referralCode, $user);
+            }
+
+            if (is_numeric($affiliateLinkId)) {
+                $affiliates->attributeSignup($user, (int) $affiliateLinkId);
+            }
+
             return $user;
         });
 
         $request->session()->forget(AuthFlowController::VERIFIED_SESSION_KEY);
+        $request->session()->forget('referral_code');
+        $request->session()->forget('affiliate_link_id');
 
         $auditLogger->log(actor: $user, subject: $user, action: 'auth.register', newValues: ['channel' => $channel->value]);
 

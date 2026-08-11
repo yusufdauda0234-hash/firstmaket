@@ -5,6 +5,8 @@ namespace App\Modules\Catalog\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Customer\Models\WishlistPriceAlert;
+use App\Modules\Customer\Notifications\WishlistPriceDropNotification;
 use App\Modules\Catalog\Models\ProductAttribute;
 use App\Modules\Catalog\Models\VendorFeeSetting;
 use App\Modules\Catalog\Requests\StoreProductRequest;
@@ -283,6 +285,26 @@ class VendorProductController extends Controller
                     'new_price_kobo' => $newPrice,
                     'changed_by' => $request->user()->id,
                 ]);
+
+                if ($newPrice < $oldPrice) {
+                    WishlistPriceAlert::query()
+                        ->where('product_id', $product->id)
+                        ->where(function ($query) use ($newPrice) {
+                            $query->whereNull('last_notified_price_kobo')
+                                ->orWhere('last_notified_price_kobo', '!=', $newPrice);
+                        })
+                        ->get()
+                        ->each(function (WishlistPriceAlert $alert) use ($product, $oldPrice, $newPrice): void {
+                            $dropPercent = (int) round((1 - ($newPrice / $oldPrice)) * 100);
+
+                            if ($dropPercent < $alert->threshold_percent) {
+                                return;
+                            }
+
+                            $alert->update(['last_notified_price_kobo' => $newPrice]);
+                            $alert->user->notify(new WishlistPriceDropNotification($product, $oldPrice, $newPrice));
+                        });
+                }
             }
 
             $this->storeImages($request, $product);

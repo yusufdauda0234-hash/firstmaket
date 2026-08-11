@@ -15,12 +15,22 @@ use App\Modules\Orders\Events\OrderDeliveryConfirmed;
 use App\Modules\Orders\Events\OrderPaid;
 use App\Modules\Orders\Events\OrderStatusChanged;
 use App\Modules\Orders\Listeners\NotifyCustomerOfOrderStatus;
+use App\Modules\Rewards\Listeners\RecalculateRewardTier;
+use App\Modules\Referrals\Listeners\CreditReferralReward;
+use App\Modules\Affiliates\Listeners\QualifyAffiliateOrder;
+use App\Modules\Affiliates\Listeners\QualifyAffiliateVendor;
+use App\Modules\Affiliates\Listeners\QualifyAffiliateVerifiedUser;
+use App\Modules\Auth\Events\UserIdentifierVerified;
+use App\Modules\Catalog\Events\ProductApproved;
+use App\Modules\Savings\Events\PlanCompleted;
 use App\Modules\Payments\Services\PaystackBankResolver;
 use App\Modules\Payments\Services\PaystackGateway;
 use App\Modules\Vendor\Events\VendorSuspended;
 use App\Modules\Vendor\Listeners\CreditVendorEarnings;
 use App\Modules\Vendor\Listeners\NotifyVendorOfSale;
+use App\Modules\AI\Services\RulesAssistantDriver;
 use App\Shared\Contracts\AiListingAnalyzerContract;
+use App\Shared\Contracts\AssistantDriverContract;
 use App\Shared\Contracts\AuditLoggerContract;
 use App\Shared\Contracts\BankAccountResolverContract;
 use App\Shared\Contracts\PaymentGatewayContract;
@@ -76,6 +86,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AiListingAnalyzerContract::class, fn () => match (config('services.ai.driver')) {
             default => new RuleBasedListingAnalyzer,
         });
+
+        /*
+         * The savings assistant (Phase 3C).
+         *
+         * Ships on the deterministic driver: for "explain my own saving to
+         * me" it cannot invent a figure, costs nothing per question, and
+         * keeps financial data on the platform. The contract is here so a
+         * hosted-model driver can be added as another case when there is a
+         * reason to prefer one — nothing above the contract would change.
+         */
+        $this->app->bind(AssistantDriverContract::class, fn ($app) => match (config('services.assistant.driver')) {
+            default => $app->make(RulesAssistantDriver::class),
+        });
     }
 
     public function boot(): void
@@ -118,6 +141,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(OrderPaid::class, NotifyVendorOfSale::class);
         Event::listen(OrderDeliveryConfirmed::class, CreditVendorEarnings::class);
         Event::listen(OrderStatusChanged::class, NotifyCustomerOfOrderStatus::class);
+        Event::listen(PlanCompleted::class, RecalculateRewardTier::class);
+        Event::listen(PlanCompleted::class, CreditReferralReward::class);
+        Event::listen(OrderDeliveryConfirmed::class, QualifyAffiliateOrder::class);
+        Event::listen(ProductApproved::class, QualifyAffiliateVendor::class);
+        Event::listen(UserIdentifierVerified::class, QualifyAffiliateVerifiedUser::class);
 
         /*
          * Keep the storefront home page honest.

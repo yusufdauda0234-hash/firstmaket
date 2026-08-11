@@ -7,7 +7,9 @@ return [
     // enabled per environment/cohort without a deploy. See
     // app/Shared/Features.php for the defined flags and
     // docs/FirstMaket_Implementation_Plan.md section 1.2.
-    'default' => env('PENNANT_STORE', 'database'),
+    // Runtime state is owned by App\Models\Setting; Pennant only evaluates
+    // the registered definitions and must not require a second feature table.
+    'default' => env('PENNANT_STORE', 'array'),
 
     'stores' => [
 

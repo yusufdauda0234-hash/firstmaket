@@ -106,7 +106,7 @@ export default function ProductReviewModal({ uuid, onClose }: { uuid: string | n
                         <div className="flex flex-wrap gap-2">
                             {product.images.map((img) => (
                                 <a key={img.id} href={img.url} target="_blank" rel="noreferrer">
-                                    <img
+                                    <img loading="lazy" decoding="async"
                                         src={img.url}
                                         alt=""
                                         className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/5 transition hover:ring-2 hover:ring-brand-400"
@@ -177,7 +177,7 @@ export default function ProductReviewModal({ uuid, onClose }: { uuid: string | n
                                 autoFocus
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
-                                className="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                                className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                             />
                             <InputError message={error} />
                         </div>

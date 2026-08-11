@@ -124,7 +124,7 @@ export default function AdminPhoneIndex() {
                                                 value={reason}
                                                 onChange={(e) => setReason(e.target.value)}
                                                 placeholder="Reason for rejection…"
-                                                className="min-w-[200px] flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                                                className="min-w-[200px] flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                                             />
                                             <Button
                                                 type="button"

@@ -14,6 +14,11 @@ class HomeController
             'categories' => $home->categories(),
             'featuredProducts' => $home->featuredProducts(),
             'newestProducts' => $home->newestProducts(),
+            'campaignProducts' => $home->campaignProducts(),
+            'trendingProducts' => $home->trendingProducts(),
+            'trendingSearches' => $home->trendingSearches(),
+            'heroSlides' => $home->heroSlides(),
+            'recentOrderCount' => $home->recentOrderCount(),
             'supportHotline' => config('firstmaket.support.hotline'),
         ]);
     }

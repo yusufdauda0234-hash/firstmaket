@@ -6,8 +6,11 @@ use App\Modules\Cart\Services\CartService;
 use App\Modules\Cart\Services\CartSummary;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\SearchTerm;
 use App\Modules\Catalog\Services\HomeDataService;
+use App\Modules\Catalog\Services\CampaignService;
 use App\Modules\Catalog\Services\ProductAttributeService;
+use App\Modules\Customer\Models\Wishlist;
 use App\Modules\Catalog\Support\VideoLink;
 use App\Shared\Enums\ProductStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,13 +36,20 @@ class CatalogController
 
         $activeCategory = $categories->firstWhere('slug', (string) $request->query('category'));
         $query = trim((string) $request->query('query'));
+        // What people are actually interested in right now is not only what
+        // they type — clicking into "Electronics" is the same kind of signal
+        // as typing "electronics", so both feed the same trending list.
+        $this->recordSearchInterest($query);
+        if ($activeCategory !== null) {
+            $this->recordSearchInterest($activeCategory->name);
+        }
         $sort = (string) $request->query('sort', 'newest');
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
 
         $products = Product::query()
             ->approved()
-            ->with(['images', 'category:id,slug'])
+                ->with(['images', 'category:id,slug', 'campaigns' => fn ($campaigns) => $campaigns->live()])
             // Whole branch, not just the exact category: browsing
             // "Electronics" must still show the phones filed beneath it.
             ->when($activeCategory !== null, fn ($q) => $q->whereIn(
@@ -63,8 +73,8 @@ class CatalogController
                 'uuid' => $product->uuid,
                 'name' => $product->name,
                 'slug' => $product->slug,
-                'priceKobo' => $product->price_kobo,
-                'compareAtPriceKobo' => $product->compare_at_price_kobo,
+                'priceKobo' => $this->effectivePrice($product),
+                'compareAtPriceKobo' => $product->compare_at_price_kobo ?? ($this->effectivePrice($product) < $product->price_kobo ? $product->price_kobo : null),
                 'ratingAverage' => $product->rating_average !== null ? (float) $product->rating_average : null,
                 'ratingCount' => $product->rating_count,
                 'stockQuantity' => $product->stock_quantity,
@@ -116,6 +126,56 @@ class CatalogController
         return response()->json(['suggestions' => $suggestions]);
     }
 
+    public function compare(Request $request): Response
+    {
+        $uuids = collect(explode(',', (string) $request->query('products')))
+            ->map(fn (string $uuid) => trim($uuid))
+            ->filter(fn (string $uuid) => $uuid !== '')
+            ->unique()
+            ->take(4)
+            ->values();
+
+        $productsByUuid = Product::query()
+            ->approved()
+            ->whereIn('uuid', $uuids)
+            ->with(['images', 'category:id,name,slug', 'vendor:id,business_name', 'campaigns' => fn ($campaigns) => $campaigns->live()])
+            ->get()
+            ->keyBy('uuid');
+
+        // Kept in the order the shopper picked them, and only the ones that
+        // are still approved.
+        $found = $uuids
+            ->map(fn (string $uuid) => $productsByUuid->get($uuid))
+            ->filter()
+            ->values();
+
+        $products = $found
+            ->map(fn (Product $product) => [
+                'uuid' => $product->uuid,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'priceKobo' => $this->effectivePrice($product),
+                'compareAtPriceKobo' => $product->compare_at_price_kobo ?? ($this->effectivePrice($product) < $product->price_kobo ? $product->price_kobo : null),
+                'ratingAverage' => $product->rating_average !== null ? (float) $product->rating_average : null,
+                'ratingCount' => $product->rating_count,
+                'stockQuantity' => $product->stock_quantity,
+                'imageUrl' => $product->primaryImageUrl(),
+                'categorySlug' => $product->category->slug,
+                'categoryName' => $product->category->name,
+                'vendorName' => $product->vendor->business_name,
+                'description' => $product->description,
+            ])
+            ->values();
+
+        return Inertia::render('Public/Compare', [
+            'products' => $products,
+            // Per-category fields, aligned across whatever was picked. This is
+            // what turns the page from four prices into an actual spec
+            // comparison.
+            'specRows' => app(ProductAttributeService::class)->comparisonRows($found),
+        ]);
+    }
+
     /**
      * Products for the header categories mega menu: the newest approved
      * listings, optionally scoped to one category, so the menu can show
@@ -139,7 +199,7 @@ class CatalogController
 
         $products = Product::query()
             ->approved()
-            ->with(['images', 'category:id,slug'])
+            ->with(['images', 'category:id,slug', 'campaigns' => fn ($campaigns) => $campaigns->live()])
             ->when(
                 $category !== null,
                 fn ($q) => $q->whereIn('category_id', $category->selfAndDescendantIds()),
@@ -154,18 +214,20 @@ class CatalogController
             ->map(fn (Product $product) => [
                 'name' => $product->name,
                 'slug' => $product->slug,
-                'priceKobo' => $product->price_kobo,
-                'compareAtPriceKobo' => $product->compare_at_price_kobo,
+                'priceKobo' => $this->effectivePrice($product),
+                'compareAtPriceKobo' => $product->compare_at_price_kobo ?? ($this->effectivePrice($product) < $product->price_kobo ? $product->price_kobo : null),
                 'imageUrl' => $product->primaryImageUrl(),
             ]);
 
         return response()->json(['products' => $products]);
     }
 
-    public function show(Request $request, Product $product, CartService $cartService): Response
+    public function show(Request $request, Product $product, CartService $cartService, HomeDataService $home, CampaignService $campaigns): Response
     {
         // Guests may only ever open Approved listings.
         abort_unless($product->status === ProductStatus::Approved, 404);
+        $home->recordView($product);
+        $campaignPrice = $campaigns->priceFor($product)['unitPriceKobo'];
 
         $product->load(['images', 'category:id,name,slug', 'vendor:id,business_name']);
 
@@ -200,7 +262,7 @@ class CatalogController
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'description' => $product->description,
-                'priceKobo' => $product->price_kobo,
+                'priceKobo' => $campaignPrice,
                 'compareAtPriceKobo' => $product->compare_at_price_kobo,
                 'ratingAverage' => $product->rating_average !== null ? (float) $product->rating_average : null,
                 'ratingCount' => $product->rating_count,
@@ -216,6 +278,10 @@ class CatalogController
                 // Whatever the vendor filled in for this category's
                 // admin-defined fields. Empty until staff define some.
                 'specifications' => app(ProductAttributeService::class)->specificationsFor($product),
+                'isWishlisted' => $request->user() !== null && Wishlist::query()
+                    ->where('user_id', $request->user()->id)
+                    ->where('product_id', $product->id)
+                    ->exists(),
             ],
             'relatedProducts' => $related,
             'moreToLove' => $moreToLove,
@@ -251,19 +317,40 @@ class CatalogController
     private function productStrip(Builder $query): Collection
     {
         return $query
-            ->with(['images', 'category:id,slug'])
+                        ->with(['images', 'category:id,slug', 'campaigns' => fn ($campaigns) => $campaigns->live()])
             ->get()
             ->map(fn (Product $item) => [
                 'uuid' => $item->uuid,
                 'name' => $item->name,
                 'slug' => $item->slug,
-                'priceKobo' => $item->price_kobo,
-                'compareAtPriceKobo' => $item->compare_at_price_kobo,
+                'priceKobo' => $this->effectivePrice($item),
+                'compareAtPriceKobo' => $item->compare_at_price_kobo ?? ($this->effectivePrice($item) < $item->price_kobo ? $item->price_kobo : null),
                 'ratingAverage' => $item->rating_average !== null ? (float) $item->rating_average : null,
                 'ratingCount' => $item->rating_count,
                 'stockQuantity' => $item->stock_quantity,
                 'imageUrl' => $item->primaryImageUrl(),
                 'categorySlug' => $item->category->slug,
             ]);
+    }
+
+    /** Records one search/browse interest signal, normalized so "TV" and "tv" count as the same term. */
+    private function recordSearchInterest(string $term): void
+    {
+        $term = mb_strtolower(trim($term));
+        if ($term === '') {
+            return;
+        }
+
+        SearchTerm::query()->updateOrCreate(['term' => $term], ['last_searched_at' => now()]);
+        SearchTerm::query()->where('term', $term)->increment('search_count');
+    }
+
+    private function effectivePrice(Product $product): int
+    {
+        $campaignPrice = $product->relationLoaded('campaigns')
+            ? $product->campaigns->min(fn ($campaign) => (int) $campaign->pivot->sale_price_kobo)
+            : null;
+
+        return $campaignPrice !== null ? min($product->price_kobo, $campaignPrice) : $product->price_kobo;
     }
 }

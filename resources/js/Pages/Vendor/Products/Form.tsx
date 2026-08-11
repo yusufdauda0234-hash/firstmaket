@@ -220,16 +220,32 @@ export default function VendorProductForm() {
                         )}
                     </div>
 
-                    <div>
-                        <Label htmlFor="name">{labelFor('name', 'Product name')}</Label>
-                        <Input
-                            id="name"
-                            value={form.data.name}
-                            onChange={(e) => form.setData('name', e.target.value)}
-                            required
-                        />
-                        <InputError message={form.errors.name} />
-                        <Hint field="name" />
+                    <div className="grid grid-cols-2 gap-5 max-[639px]:grid-cols-1">
+                        <div>
+                            <Label htmlFor="name">{labelFor('name', 'Product name')}</Label>
+                            <Input
+                                id="name"
+                                value={form.data.name}
+                                onChange={(e) => form.setData('name', e.target.value)}
+                                required
+                            />
+                            <InputError message={form.errors.name} />
+                            <Hint field="name" />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="stock_quantity">{labelFor('stock_quantity', 'Stock quantity')}</Label>
+                            <Input
+                                id="stock_quantity"
+                                type="number"
+                                min="1"
+                                value={form.data.stock_quantity}
+                                onChange={(e) => form.setData('stock_quantity', Number(e.target.value))}
+                                required
+                            />
+                            <InputError message={form.errors.stock_quantity} />
+                            <Hint field="stock_quantity" />
+                        </div>
                     </div>
 
                     <div>
@@ -239,14 +255,14 @@ export default function VendorProductForm() {
                             value={form.data.description}
                             onChange={(e) => form.setData('description', e.target.value)}
                             rows={5}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600 shadow-sm"
                             required
                         />
                         <InputError message={form.errors.description} />
                         <Hint field="description" />
                     </div>
 
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <Label htmlFor="price_naira">{labelFor('price_naira', 'Price (₦)')}</Label>
                             <MoneyInput
@@ -280,19 +296,6 @@ export default function VendorProductForm() {
                             />
                             <InputError message={form.errors.compare_at_naira} />
                             <Hint field="compare_at_naira" />
-                        </div>
-                        <div>
-                            <Label htmlFor="stock_quantity">{labelFor('stock_quantity', 'Stock quantity')}</Label>
-                            <Input
-                                id="stock_quantity"
-                                type="number"
-                                min="1"
-                                value={form.data.stock_quantity}
-                                onChange={(e) => form.setData('stock_quantity', Number(e.target.value))}
-                                required
-                            />
-                            <InputError message={form.errors.stock_quantity} />
-                        <Hint field="stock_quantity" />
                         </div>
                     </div>
 
@@ -332,7 +335,7 @@ export default function VendorProductForm() {
                         {product && product.images.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-2">
                                 {product.images.map((image) => (
-                                    <img
+                                    <img loading="lazy" decoding="async"
                                         key={image.id}
                                         src={image.url}
                                         alt=""
@@ -357,7 +360,7 @@ export default function VendorProductForm() {
                             value={form.data.video_url}
                             onChange={(e) => form.setData('video_url', e.target.value)}
                             placeholder="https://www.youtube.com/watch?v=..."
-                            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                         />
                         <InputError message={form.errors.video_url} />
                         <Hint field="video_url" />
@@ -387,7 +390,7 @@ export default function VendorProductForm() {
                                             value={option.value}
                                             checked={form.data.tier === option.value}
                                             onChange={() => form.setData('tier', option.value)}
-                                            className="mt-0.5 h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                                            className="mt-0.5 h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500/20"
                                         />
                                         <span className="min-w-0">
                                             <span className="flex items-baseline gap-2 text-sm font-semibold text-gray-900">

@@ -45,6 +45,60 @@ Reserve `/api/v1` for any JSON API surface from the start, even though Phase 1 i
 
 ## 2. Delivery Phases
 
+### Where The Build Actually Is
+
+Last reviewed against the codebase: **11 August 2026**.
+
+Phases 1 and 2 (2A–2E) are built and covered by tests. This section records where the shipped system differs from the plan as originally written, because a plan that quietly disagrees with the code is worse than no plan.
+
+**Complete**
+
+| Phase | State | Notes |
+| --- | --- | --- |
+| 1 — MVP transaction platform | Done | Catalogue, payments, savings plans, orders, delivery, support, admin |
+| 2A — Wishlist, rewards, referrals, affiliates | Done | Admin affiliate approval queue was built but unreachable; now in the nav |
+| 2B — Automatic debit and plan pause | Done | Localisation shipped earlier than planned (en, fr, ha, ig, pcm, yo) |
+| 2C — Support and assistance | Done, scope changed | See "Decisions that changed the plan" |
+| 2D — Vendor tiers, risk flags, forecasting | Done | Tiers, risk queue, demand and completion forecasting |
+| 2E — Returns, refunds, disputes | Done | Added during the build; was not in the original plan at all |
+
+**Added along the way, not in the original plan**
+
+- **Returns, refunds and disputes (2E).** The product page already published a returns policy — a seven-day window, who pays return delivery, refunds to card — that nothing implemented. Building it also introduced the first outward money path in the system, kept admin-only, capped, idempotent and audited.
+- **Runtime configuration.** Roughly fifty operational values that began as constants or config are now settings staff can change without a deploy: the returns window, plan pause ceiling, automatic-debit retries, vendor rating weights and tier thresholds, risk thresholds, assistant tolerances, recommendation limits, delivery attempts, plan switch allowance, home-page section sizes and the live-chat provider. Two admin screens hold them — **Operations settings** and **Automation & rules**.
+- **Vendor earnings clawback.** A completed return reverses the vendor earning, the affiliate conversion and its commission, inside the same transaction as the refund.
+
+**The wallet was removed — and most of this document predates that**
+
+The largest divergence between this plan and the code. Phase 1 was written around a deposit-only wallet with its own balance and ledger: "fund wallet through Paystack", "Customer wallet page", "credit wallet only after verified webhook". **None of that exists.** There is no `Wallet` model, no `wallets` table, and an architecture test that fails the build if any route URI contains `deposit`, `withdraw`, `cash-out`, `transfer-out` or `add-money`.
+
+What replaced it: money never sits in a customer balance. It only ever enters against something specific —
+
+- a **Pay Small Small instalment**, credited to that one plan and no other,
+- a **card order payment**, or
+- the **goods balance** on a delivered shipment.
+
+and it only ever leaves as goods, as **plan credit** when a plan is cancelled, or — since Phase 2E — as a **refund reversing the exact charge that brought it in**.
+
+This is a better design for what FirstMaket is, and it is why the storefront can say money is never at risk. But it invalidates any later phase written on the assumption that customers hold a balance somebody can top up. Read the Phase 1 wallet sections as historical; the money rules that actually hold are the ones above.
+
+**Decisions that changed the plan**
+
+- **AI is deferred, not delivered.** 2C called for an AI chatbot and AI savings assistant. Both are built as deterministic rules over the customer's own payment history instead. The rules are explainable line by line, cost nothing to run, cannot invent a figure, and keep financial data on the platform. The AI versions remain available in Phase 3D when there is a reason to prefer them.
+- **Live chat is a third-party widget**, configured by naming a provider and an id. Deliberately not a paste-a-snippet box: that is arbitrary third-party JavaScript on pages where customers enter card details.
+- **Dark mode dropped.** 2B listed it as "if needed". FirstMaket ships a single light design on purpose; adding a theme would contradict a decision already documented in the components.
+- **Arabic deferred.** Five languages ship with real translations. Arabic needs right-to-left layout work, which is design, not a file drop.
+- **No recommendation log table.** The recommendations are deterministic, so what was shown on any day can be recomputed. Only feedback — which cannot be recovered — is stored.
+
+**Known gaps this document now plans for**
+
+- Staff roles are seeded constants. An admin cannot create a "Logistics" role and hand it a set of pages. → **Phase 2F**.
+- The home page's "Flash Sale", "Trending searches", "Top Picks for You" and "More to love" are the same two product lists relabelled. There is no flash mechanism, no trending data and no personalisation behind them. → **Phase 2G**.
+- The Agent Network as written in Phase 3 assumed wallet deposits and cannot be built as specified. Rewritten and deferred → **Phase 6**.
+- **Multi-product plan eligibility is intentionally open.** Any customer may bundle several products into one savings plan. The plan creates one item row per product and quotes one combined delivery fee; the setting `savings.multi_product_plans_enabled` remains an operational switch if eligibility needs to narrow later.
+- **Browser push was never built.** Notifications are mail, SMS and in-app only.
+- **Feature flags are settings-backed.** Pennant definitions read `feature.<name>` from the `settings` table, default off, and can be changed from the permission-gated admin Feature flags page. Module entry points still need to adopt individual checks as each optional module is enabled.
+
 ### Project Sequence At A Glance
 
 | Order | Stage | What Gets Completed |
@@ -53,22 +107,28 @@ Reserve `/api/v1` for any JSON API surface from the start, even though Phase 1 i
 | 1 | Foundation | Laravel/Inertia setup, modules, RBAC, audit logging, database baseline |
 | 2 | Onboarding | Customer/vendor registration, OTP, email verification, vendor approval |
 | 3 | Marketplace catalog | Categories, vendor products, product approval, vendor pricing, posting fees |
-| 4 | Wallet and payments | Paystack initialization, webhook-only wallet crediting, receipts, transaction history, finance reconciliation |
-| 5 | Purchase and savings | Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target price locking, tracker, redirection |
+| 4 | Payments | Paystack initialization, webhook-only crediting against a plan or order, receipts, transaction history, finance reconciliation |
+| 5 | Purchase and savings | Pay Small Small plans, Pay At Once checkout, payment logic, target price locking, tracker, switching and rescheduling |
 | 6 | Orders and delivery | Ready-for-delivery order creation, delivery address, admin confirmation, vendor sold-notification and preparation, logistics tracking, vendor earnings and payouts |
 | 7 | Support and communication | Notifications, support tickets, hotline logs, IVR routing, support-agent lookup |
 | 8 | Cart and checkout | Multi-vendor cart, quantity, cart-based full-payment checkout, cart-based plan starts, checkout session grouping |
 | 9 | AI and operations | Listing Review Assistant, reports, vendor/user suspension, operational controls |
 | 10 | MVP launch | Security hardening, no-withdrawal tests, ledger tests, E2E tests, pilot vendor launch |
-| 11 | Growth | Wishlist, rewards, referral, basic affiliate tracking, automatic debit, pause/resume, live chat, AI assistant, risk dashboards |
-| 12 | Scale | Agents, advanced affiliates, group/family/cooperative savings, full AI assistant, mobile apps |
-| 13 | Public website | Public marketing website, SEO, real screenshots/workflows, vendor CTA, final brand launch |
+| 11 | Growth — done | Wishlist, rewards, referrals, affiliates, automatic debit, pause/resume, chat widget, rules-based assistant, vendor tiers, risk flags, forecasting, returns and refunds |
+| 12 | Staff roles — **next** | Roles an administrator can create, with permissions chosen per role |
+| 13 | Merchandising | Real flash deals, deal pricing, measured trending, personalised picks |
+| 14 | Scale | Advanced affiliates, group/family/cooperative savings, full AI assistant |
+| 15 | Public website | Public marketing website, SEO, real screenshots/workflows, vendor CTA, final brand launch |
+| 16 | Mobile apps — future | Native iOS/Android on the reserved `/api/v1`, once the rules have settled |
+| 17 | Agent network — future | Agent-assisted plan payments; the deposit-based version cannot be built |
 
 ### Phase 1: MVP Transaction Platform
 
-Goal: Web-based marketplace with customer savings, full Pay At Once purchase, vendor listing, admin approval, Paystack wallet funding, and delivery operations.
+Goal: web-based marketplace with Pay Small Small savings plans, full Pay At Once purchase, vendor listing, admin approval, Paystack payments, and delivery operations.
 
-#### Sprint 0: Public Home Page and Brand Shell
+Status: **complete**. Read the wallet language in Sprints 4 and 5 as historical — see "The wallet was removed" above.
+
+#### Sprint 0: Public Home Page and Brand Shell — COMPLETE
 
 Scope: build the public-facing home page first, following the layout patterns shared by the major marketplaces surveyed (AliExpress, Amazon, eBay, Etsy, Walmart Marketplace, Temu, Rakuten, Mercado Libre, Shopee, Lazada, Jumia, Konga, Takealot, Kilimall, Bob Shop, Newegg, Bonanza, Wish, Cdiscount, OnBuy). The home page is the storefront and first impression; every surveyed marketplace opens with a search-first, category-driven landing page rather than a marketing brochure. Phase 4 later expands this into the full public website (About, How It Works, legal pages, SEO polish).
 
@@ -79,7 +139,7 @@ Common home page anatomy found in the survey (adopt this structure):
 1. **Top utility bar**: delivery location/language, "Sell on FirstMaket" vendor CTA, Help/Support link, app-download placeholder.
 2. **Main header**: logo (left), prominent full-width search bar with category scope (center), account and cart icons (right). Search is the single most dominant element on every surveyed site.
 3. **Category navigation**: sidebar category menu (Jumia/AliExpress style) or horizontal mega-menu, listing the six launch categories: Electronics, Home Appliances, Solar Equipment, Furniture, Fashion, Business Equipment.
-4. **Hero area**: rotating promotional carousel beside the category menu, plus 1–2 static promo tiles (wallet funding, savings plans).
+4. **Hero area**: rotating promotional carousel beside the category menu, plus 1–2 static promo tiles (Pay Small Small, current deals).
 5. **Flash/featured strip**: horizontally scrolling product row ("Featured", later "Flash Sales" with countdown) — Featured posting-fee tier products surface here.
 6. **Category grid blocks**: image tiles per category linking into the catalog.
 7. **Product feed**: paginated/infinite "For You"/"Top Selling" grid of approved products.
@@ -114,7 +174,7 @@ Exit criteria:
 - Visitors land on a marketplace-style home page with search, categories, and product sections.
 - Layout matches the surveyed marketplace anatomy and reuses the shared public layout.
 
-#### Sprint 1: Project Foundation
+#### Sprint 1: Project Foundation — COMPLETE
 
 Scope: establish the Laravel/Inertia application base, domain architecture, security foundation, and first admin shell.
 
@@ -167,7 +227,7 @@ Exit criteria:
 - RBAC and audit foundations are present.
 - CI runs basic checks.
 
-#### Sprint 2: Identity and Account Onboarding
+#### Sprint 2: Identity and Account Onboarding — COMPLETE
 
 Scope: customer and vendor registration, document upload, and admin approval. There is no BVN/NIN identity verification feature — a version of it was built here originally and later removed entirely (schema, contracts, admin review queue, and UI); vendor identity assurance is CAC document review only.
 
@@ -214,7 +274,7 @@ Exit criteria:
 - Vendors cannot list products until approved.
 - Identity verification events are logged and reviewable.
 
-#### Sprint 2 Addendum: Registration and Login Options (post-survey)
+#### Sprint 2 Addendum: Registration and Login Options — COMPLETE
 
 Scope: bring registration/login in line with the surveyed marketplaces (Jumia, Temu, Shopee, AliExpress all offer email-or-phone signup plus social login). Sprint 2 shipped email+password registration with phone OTP; this addendum widens the entry paths. Can be scheduled alongside or right after Sprint 3.
 
@@ -226,7 +286,7 @@ Backend:
 - Add **social login** with Google and Facebook via Laravel Socialite: create-or-link account by verified provider email, store provider tokens in a `social_accounts` table, never create a duplicate account when the email already exists (link instead, after the user authenticates or confirms via email OTP).
 - Social-only accounts have a nullable password; prompt them to set one (or keep social-only) in settings.
 - Password reset works through both channels: email reset link, or phone OTP + new password form.
-- Phone verification remains mandatory before any money movement (wallet funding), regardless of signup method, since SMS OTP secures transactions.
+- Phone verification remains mandatory before any money movement, regardless of signup method, since SMS OTP secures transactions.
 
 Frontend:
 
@@ -240,10 +300,10 @@ QA and security:
 
 - Test OTP rate limits per identifier, IP, and device for both channels.
 - Test social login cannot take over an existing account without ownership proof.
-- Test unverified-phone accounts are blocked from wallet funding.
+- Test unverified-phone accounts are blocked from paying.
 - Test a user cannot register twice with the same email/phone through different paths.
 
-#### Sprint 3: Catalog and Vendor Listing
+#### Sprint 3: Catalog and Vendor Listing — COMPLETE
 
 Scope: approved product catalog, vendor-controlled pricing, admin product moderation, posting-fee configuration, and AI review logging foundation.
 
@@ -293,9 +353,17 @@ Exit criteria:
 - Admin can approve/reject products.
 - Customers see only approved catalog items.
 
-#### Sprint 4: Wallet and Paystack
+#### Sprint 4: Payments and Paystack — COMPLETE, THEN SUPERSEDED
 
-Scope: deposit-only wallet, Paystack payment initiation, webhook-only balance credit, receipts, transaction history, and finance reconciliation.
+Scope as built: a deposit-only wallet, Paystack payment initiation, webhook-only balance credit, receipts, transaction history, and finance reconciliation.
+
+**The wallet was later removed.** What survived, and is what the system runs on today:
+
+- Paystack initialisation, the signature-verified webhook, and the rule that **only** a verified webhook moves money. Nothing about that changed.
+- Receipts, the Paystack transaction log, and finance reconciliation.
+- Reusable card authorizations, captured here and finally used by Phase 2B automatic debit.
+
+What went: `wallets`, `wallet_transactions`, the balance, the customer wallet pages, and the whole idea of funding an account before choosing what to buy. A payment now names what it is for at the moment it is created — a plan instalment, an order, or a shipment's goods balance — and the webhook credits that one thing. The list below describes the original build; read it as history.
 
 Backend:
 
@@ -347,9 +415,13 @@ Exit criteria:
 - Ledger is immutable and webhook-verified.
 - Finance can reconcile deposits.
 
-#### Sprint 5: Purchase and Savings Engine
+#### Sprint 5: Purchase and Savings Engine — COMPLETE, PARTLY SUPERSEDED
 
-Scope: Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target locking, progress tracking, and redirection.
+Scope as built: Open Savings, Product Target Plans, Pay At Once checkout, contribution logic, target locking, progress tracking, and redirection.
+
+**Open Savings is retired along with the wallet.** The `savings` table still exists but now holds one thing only: **credit** left over when a customer cancels a plan or a vendor rejection is refunded. Credit can only ever be spent on another plan — there is no way to put money in, and no way to take it out. Its `balance_kobo` column is a dead wallet leftover pinned at zero.
+
+What survived and is the heart of the product today: **Pay Small Small plans** with the price frozen at signup, per-plan payment history, progress and completion projection, switching a plan to a different item, and rescheduling. Phase 2B added pausing and automatic debit; Phase 2E added returns. Read the Open Savings items below as history.
 
 Backend:
 
@@ -406,7 +478,7 @@ Exit criteria:
 - Customers can pay fully at once, save openly, or save gradually toward products.
 - Plan progress and readiness are accurate and auditable.
 
-#### Sprint 6: Orders, Logistics, and Vendor Settlement
+#### Sprint 6: Orders, Logistics, and Vendor Settlement — COMPLETE
 
 Scope: conversion from fully funded plan to order, vendor sold-notification, vendor preparation with a packing SLA, FirstMaket-controlled pickup and delivery, customer notifications, and vendor earnings/payout so the fulfillment chain is complete end to end.
 
@@ -419,7 +491,7 @@ The complete fulfillment chain (modeled on Jumia's dropship flow, where the mark
 5. **Handover to logistics** — FirstMaket logistics picks up from the vendor, or the vendor drops off at a FirstMaket hub. Logistics scans/accepts the package: status Packed → Shipped.
 6. **Delivery** — logistics is assigned, status moves Out for Delivery → Delivered. Customer is notified at every step.
 7. **Delivery confirmation window** — customer confirms receipt, or the order auto-confirms after N days (default 3) without a complaint/dispute.
-8. **Vendor earnings credited** — on confirmed delivery, commission (per-category percentage set by admin) is deducted from the locked product price and the remainder is credited to the vendor's **earnings ledger** (separate from customer wallets).
+8. **Vendor earnings credited** — on confirmed delivery, commission (per-category percentage set by admin) is deducted from the locked product price and the remainder is credited to the vendor's **earnings ledger**, which is entirely separate from anything a customer has paid into.
 9. **Vendor payout** — Finance runs a periodic (weekly) payout batch of cleared earnings to the vendor's verified bank account; payout records are auditable and reversible entries are ledger-based, never edits.
 
 Backend:
@@ -469,7 +541,7 @@ QA and security:
 - Test commission math per category and that earnings credit happens exactly once per order (idempotent, transaction-wrapped).
 - Test vendor earnings are not payable before delivery confirmation window passes.
 - Test payout batch totals reconcile with the earnings ledger and cannot include another vendor's earnings.
-- Test vendor payout never touches customer wallets or savings ledgers.
+- Test vendor payout never touches a customer's plan or the savings credit ledger.
 
 DevOps and docs:
 
@@ -483,14 +555,16 @@ Exit criteria:
 - Delivery status is visible to customers and controlled by allowed roles.
 - Vendors see their sales and get paid without ever seeing customer identity.
 
-#### Sprint 7: Support and Notifications
+#### Sprint 7: Support and Notifications — COMPLETE
 
-Scope: notification preferences, email/SMS/browser notifications, support tickets, hotline logs, IVR reasons, FAQ, WhatsApp entry, and support-agent lookup.
+Scope: notification preferences, email/SMS/in-app notifications, support tickets, hotline logs, IVR reasons, FAQ, WhatsApp entry, and support-agent lookup.
+
+> **Correction:** the channels built are **mail, SMS and in-app** (`NotificationPreferenceService` resolves exactly `mail | sms | database`). **Browser push was never implemented.** "In-app" means the notifications inbox at `/notifications`, which is real; nothing asks for browser permission or sends a push.
 
 Backend:
 
 - Build notification preference model and APIs.
-- Implement notification dispatcher for email, SMS, and browser push.
+- Implement notification dispatcher for email, SMS, and in-app. (Browser push was in the original scope and was not built.)
 - Build support tickets and support ticket messages.
 - Build hotline call log model.
 - Store IVR reason categories: payment issue, delivery issue, general inquiry.
@@ -520,7 +594,7 @@ QA and security:
 
 DevOps and docs:
 
-- Add SMS/email/browser push env placeholders.
+- Add SMS/email env placeholders.
 - Add notification delivery failure monitoring.
 - Document support escalation workflow.
 
@@ -529,7 +603,13 @@ Exit criteria:
 - Customers can get help through FAQ, WhatsApp, hotline, and tickets.
 - Support agents have safe, limited visibility.
 
-#### Sprint 8: Cart and Multi-Vendor Checkout — COMPLETE
+#### Sprint 8: Cart and Multi-Vendor Checkout — COMPLETE, WALLET LANGUAGE SUPERSEDED
+
+> **Two corrections, verified against the code.**
+>
+> 1. **The multi-product eligibility gate does not exist.** There is no `PlanEligibilityContract`, no `RuleBasedPlanEligibilityChecker`, no `plan_items` table and no `createMultiProduct()`. Multi-item plans *do* work — `savings_goal_items` holds the products — but **any customer can bundle**; the 30-day / prior-completion / serial-abandoner gate described below was never implemented. Decide whether it is still wanted before treating it as spec.
+> 2. Everything else still describes the cart and checkout accurately **except** the payment step: where it says "debit the wallet", the customer now pays that checkout by card through Paystack, and the verified webhook raises the orders. The cart, the grouping into a `checkout_sessions` row, and the one-order-per-unit fan-out are unchanged.
+
 
 Scope: replace the single-product-at-a-time Pay At Once/Save Small Small entry points with a standard product → cart → checkout flow. Cart items can come from any vendor. Checkout offers two branches: pay the full cart total now, or send selected items into a Product Target Plan — which can now, for eligible customers, bundle multiple products (from different vendors) into one plan with one combined target. This sprint does not change how an individual order is fulfilled once a plan/checkout is paid (Sprint 6's chain is untouched) — it changes how a customer assembles and pays for one or more products, and what a "plan" is allowed to contain.
 
@@ -598,7 +678,7 @@ Scope: AI-assisted listing review, configurable thresholds, operational reports,
 
 **Build note (2026-07-25):** an audit before building found vendor suspend→auto-delist and the session-revocation/login-block plumbing for `UserStatus::Suspended`/`Banned` already fully working from earlier ad-hoc sessions (Sprint 2/3) — neither was rebuilt. Everything else here was net-new. The "AI-assisted" pieces (Listing Review Assistant, the multi-product plan eligibility scorer) are built behind swappable contracts — `AiListingAnalyzerContract` and `PlanEligibilityContract` — with **no real external AI provider wired in** (`config('services.ai')` has the driver/key scaffold, but nothing consumes a key yet): `RuleBasedListingAnalyzer` runs deterministic, zero-cost checks only (price-outlier vs. category average, description length, image count, a prohibited-keyword scan) and is the default/fallback driver; `AiScoredPlanEligibilityChecker` currently just delegates to `RuleBasedPlanEligibilityChecker` verbatim. Both are real, tested, and swappable — a future session can add a real provider case to the `match()` in `AppServiceProvider` without touching the job, the admin UI, or the eligibility call sites. Reports are always live source-table reads (no snapshot table) so "reports match source tables" holds by construction. User moderation reuses the vendor pattern (a reason field + the existing generic `audit_logs` table) rather than a dedicated status-events table.
 
-- Bind `PlanEligibilityContract` to a new AI-scored checker (in place of `RuleBasedPlanEligibilityChecker`), using the customer's contribution reliability and purchase history as model input. Keep the rule-based checker available as a fallback/override — the AI output is advisory input to the same eligibility decision, not a black box the customer can't get an explanation from; a blocked customer still sees a clear, human-readable reason.
+- ~~Bind `PlanEligibilityContract` to an AI-scored checker.~~ **Not built** — the contract it refers to does not exist (see Sprint 8). The Listing Review Assistant *was* built and is real: `AiListingAnalyzerContract` with a deterministic `RuleBasedListingAnalyzer`, swappable for a real provider without touching the job or the admin UI.
 
 Backend:
 
@@ -645,7 +725,7 @@ Exit criteria:
 - Admin can review AI-assisted product flags.
 - Operational reports and suspension workflows are usable and audited.
 
-#### Sprint 10: Hardening and Launch
+#### Sprint 10: Hardening and Launch — COMPLETE
 
 Scope: security review, test depth, performance, deployment readiness, pilot vendor launch, and production rehearsal.
 
@@ -666,7 +746,7 @@ Backend:
   - Outstanding: the workflow behind it is still manual. There is no self-service
     export, no deletion request record, and no scheduled purge — the 30-day promise
     on that page is currently kept by hand.
-- Confirm wallet ledger sum reconciles against the actual settled fund balance (fund safeguarding check).
+- Confirm plan payments and orders reconcile against the actual settled Paystack balance (fund safeguarding check).
 
 Frontend:
 
@@ -708,7 +788,7 @@ Exit criteria:
 
 Goal: improve retention, convenience, personalization, and operational intelligence after the core transaction loop is stable.
 
-#### Phase 2A: Wishlist, Rewards, Referrals, and Basic Affiliates
+#### Phase 2A: Wishlist, Rewards, Referrals, and Basic Affiliates — COMPLETE
 
 Backend:
 
@@ -716,7 +796,7 @@ Backend:
 - Add side-by-side product comparison data endpoints.
 - Add price-drop detection for wishlisted products.
 - Build reward tier configuration: Bronze, Silver, Gold, Platinum Saver.
-- Calculate reward tiers from cumulative completed savings, not current wallet balance.
+- Calculate reward tiers from cumulative completed savings, not from any current balance.
 - Build single-level referral attribution.
 - Credit referral reward only when referred customer's first Product Target Plan reaches Completed status.
 - Build basic affiliate application and approval workflow.
@@ -725,7 +805,7 @@ Backend:
 - Store attribution in secure cookies and attach it to registration when valid.
 - Track customer and vendor conversions without paying commission for clicks or signup alone.
 - Mark commission eligibility only after a delivered Pay At Once order, delivered completed-plan order, or referred vendor approval plus first approved product.
-- Keep affiliate payout records separate from customer wallet and savings ledgers.
+- Keep affiliate payout records entirely separate from customers' plans and the savings credit ledger.
 
 Frontend:
 
@@ -756,13 +836,13 @@ QA and security:
 - Test self-referral is blocked.
 - Test duplicate phone, email, or suspicious device patterns are blocked or flagged.
 - Test affiliate commission is not payable until a qualified delivered order or qualified vendor conversion occurs.
-- Test affiliate payout cannot touch the customer wallet ledger.
+- Test affiliate payout cannot touch a customer's plan or the savings credit ledger.
 
 Exit criteria:
 
 - Customers can save products, compare options, earn badges, refer other users, and approved affiliates can track qualified acquisition without opening fraud-prone reward or cashout paths.
 
-#### Phase 2B: Convenience and Personalization
+#### Phase 2B: Convenience and Personalization — COMPLETE
 
 Backend:
 
@@ -803,7 +883,7 @@ Exit criteria:
 
 - Customers can automate contributions, pause reminders/debits safely, and use the app in supported languages.
 
-#### Phase 2C: Live Support and AI Assistance
+#### Phase 2C: Live Support and Assistance — COMPLETE (AI deferred)
 
 Backend:
 
@@ -840,7 +920,7 @@ Exit criteria:
 
 - Customers get faster help and better savings guidance without handing financial decisions to AI.
 
-#### Phase 2D: Vendor Ratings, Risk, and Forecasting
+#### Phase 2D: Vendor Ratings, Risk, and Forecasting — COMPLETE
 
 Backend:
 
@@ -873,43 +953,161 @@ Exit criteria:
 
 - Admins can monitor risk and demand, while vendors gain transparent performance tiers.
 
-### Phase 3: Scale
+#### Phase 2E: Returns, Refunds, and Dispute Resolution — COMPLETE
 
-Goal: extend FirstMaket into new channels, new savings models, and mobile access after real usage data proves the MVP and growth features.
+Goal: make good on the returns promise the storefront already publishes, and give admins a controlled way to reverse a sale.
 
-#### Phase 3A: Agent Network
+Why this is not optional. `BuyBoxPolicies.tsx` states a specific policy on every product page — seven days from delivery, who pays the return delivery, refunds to the original card within 5–10 working days — and the checkout repeats "full refund if the item is not as described". None of it is implemented: there is no return request, no return model, no route, and no way for an admin to send money back. The gap is a live consumer-protection exposure, not a missing convenience, and it is the reason this phase sits before Phase 3.
+
+The one architectural decision to make first. Every money path in the system today is inward: the gateway contract deliberately exposes no payout or withdrawal operation, and savings can only ever leave as goods. A card refund is the first outward movement of money the platform will have. It must therefore be admin-only, never customer-triggered, capped at the original captured amount, idempotent against the original transaction, and fully audited — the same treatment the webhook gets, for the same reason.
 
 Backend:
 
-- Build agent registration and approval.
-- Generate unique agent codes.
-- Record agent-assisted customer signups.
-- Record agent-assisted deposits and reconcile through Paystack.
-- Calculate agent commissions per successful deposit.
-- Build agent status, suspension, and audit workflow.
+- Build a return request: one per order line, opened by the customer inside the return window.
+- Snapshot the policy onto the request at creation (window length, who pays return delivery, exclusions), so a later policy edit cannot change a case already open.
+- Build the reason taxonomy, because it decides who pays: damaged, faulty, not as described, wrong item, missing parts (platform pays) versus changed mind (customer pays, unopened only).
+- Enforce the return window against `delivered_at`, not order creation.
+- Enforce the exclusion list (perishables, underwear, pierced jewellery, made-to-order) except where the reason is faulty — ideally as a per-category flag on `categories` rather than a hardcoded list.
+- Build the review workflow: requested → approved/rejected → in transit → received by vendor → inspected → refunded/closed.
+- Build vendor inspection: the vendor confirms what came back and may contest the condition, which routes the case to admin rather than settling it.
+- Add a refund operation to the gateway contract and the Paystack driver, keyed to the original transaction reference, capped at the captured amount, and idempotent.
+- Reverse everything the sale set in motion: vendor earnings credited by `CreditVendorEarnings`, affiliate commission qualified by `QualifyAffiliateOrder`, promo redemption, and reward-tier contribution.
+- Route refunds by how the order was paid: a card order refunds to the card; a Pay Small Small order returns value as plan credit, never cash, preserving the existing rule.
+- Build a dispute path for when customer and vendor disagree, ending in an admin decision with a recorded rationale.
+- Add notifications for every state change on both sides.
 
 Frontend:
 
-- Agent onboarding/admin approval screens.
-- Agent dashboard with signups, deposits, commission, and status.
-- Admin agent management page.
-- Finance agent commission reconciliation page.
+- "Report a problem" entry point on a delivered order, visible only inside the window and only on eligible lines.
+- Return request form: line, quantity, reason, free text, and photo evidence.
+- Return status timeline for the customer, including who pays the return delivery and why.
+- Vendor return queue with an inspection outcome form.
+- Admin returns dashboard: queue, case detail, refund action, and dispute resolution.
+- Returns and refunds policy page, generated from the same configuration the enforcement reads, so the published policy and the enforced policy cannot drift.
 
 Database:
 
-- Add agents, agent codes, agent-assisted signups, agent deposits, and agent commissions.
+- Add `return_requests`, `return_request_items`, `return_events`, `return_evidence` (photos), and `refunds`.
+- Add `refunds.gateway_reference` with a unique constraint, so a retried refund cannot pay out twice.
+- Add returnable/exclusion flags to `categories`, and `delivered_at` to orders if not already recorded.
+- Index by customer, vendor, order, status, and opened-at date.
 
 QA and security:
 
-- Test agent cannot directly credit wallet without verified Paystack flow.
-- Test agent commission is calculated only after successful deposit.
-- Test agent cannot view full customer financial history.
+- Test a return cannot be opened after the window closes, or on an excluded category unless the reason is faulty.
+- Test the refund amount can never exceed what was captured, across partial returns of a multi-line order.
+- Test a replayed or retried refund pays out exactly once.
+- Test only an admin with the refund permission can trigger a refund, and that a customer cannot reach it by any route.
+- Test a Pay Small Small return produces credit and never a cash refund.
+- Test vendor earnings, affiliate commission, promo redemption, and reward-tier totals are all reversed on a completed return.
+- Test the auto-confirm window (3 days) interacting with the return window (7 days): earnings already credited must still be reversible.
+- Test a customer cannot see another customer's return, and a vendor sees only returns for their own lines.
 
 Exit criteria:
 
-- FirstMaket can support offline/community-assisted acquisition and deposits without weakening ledger controls.
+- The policy printed on the product page is the policy the system enforces, and money can be returned safely, once, and only by an authorised admin.
 
-#### Phase 3B: Advanced Affiliate Program
+#### Phase 2F: Staff Roles You Can Create — NEXT
+
+Goal: let an administrator invent a role, choose exactly what it can reach, and assign staff to it, without a developer.
+
+Why now. Roles today are a fixed list in `RolesAndPermissionsSeeder` — Super Administrator, Administrator, Support Agent, Logistics Personnel, Finance Officer, Vendor, Customer. Permissions are already fine-grained and already enforced per route and per nav item, so the enforcement half is done; what is missing is the ability to compose a new set. Onboarding a logistics coordinator who should see dispatch and cash but not payouts currently means editing a seeder and deploying.
+
+This is the next phase because it is an operational blocker rather than a feature: every new kind of staff member is a code change until it is fixed.
+
+Backend:
+
+- Make roles first-class records staff can create, rename, clone and retire, rather than seeder constants.
+- Keep the seeded roles as the shipped defaults, and mark them as system roles so a mis-click cannot delete the role the platform depends on.
+- Never allow a role to be deleted while staff still hold it; require reassignment first.
+- Group permissions into readable sets — Catalogue, Orders, Logistics, Finance, Vendors, Support, Returns, Risk, Settings — so an admin picks capabilities rather than reading forty raw keys.
+- Refuse privilege escalation: an administrator cannot grant a permission they do not themselves hold, and only a Super Administrator may grant `roles.manage`, `staff.manage`, `refunds.issue` or `settings.manage`.
+- Audit every grant and revoke with actor, role, permission and time.
+- Invalidate a staff member's cached permissions the moment their role changes, so a revoked capability stops working on the next request rather than the next login.
+
+Frontend:
+
+- Roles list with staff counts, so the cost of deleting a role is visible before the click.
+- Role editor: name, description, and permissions grouped by area with select-all per group.
+- "Clone this role" — most new roles are an existing one plus or minus a few capabilities.
+- A preview of what the role can reach, generated from the same permission map the nav uses, so an admin can see the sidebar the role will get.
+- Staff list filterable by role, with reassignment when a role is retired.
+
+Database:
+
+- `roles` and `permissions` already exist (Spatie). Add `is_system` and `description` to roles.
+- Add a permission group/label table, or a static map, so the UI can present them in sections without hardcoding a list that drifts from the seeder.
+
+QA and security:
+
+- Test an administrator cannot grant themselves or anyone else a permission they lack.
+- Test the reserved permissions stay Super Administrator only.
+- Test a system role cannot be deleted or stripped of its identity.
+- Test deleting a role with staff attached is refused.
+- Test a revoked permission takes effect on the next request, not the next login.
+- Test a custom role sees exactly the nav its permissions justify.
+
+Exit criteria:
+
+- An administrator can create a "Logistics Coordinator", tick the logistics pages, assign three staff to it, and remove it later — with no deploy and no developer.
+
+#### Phase 2G: Real Merchandising
+
+Goal: make the home page's promises true. Flash deals that are actually time-limited, deals that are actually discounted, trending that is actually measured, and picks that are actually personal.
+
+Why. The home page currently renders `featuredProducts` and `newestProducts` under six different headings. "⚡ Flash Sale" has no clock and no discount, "Trending searches" is the newest products, "Top Picks for You" is the same list again, and "More to love" is filler. A shopper who notices — and they do notice when the flash deal never changes — learns that the labels mean nothing, which costs more trust than the sections earn.
+
+Backend:
+
+- Build campaigns: a named merchandising slot with a start and end, a set of products, and a display style (flash, super deal, spotlight).
+- Enforce the clock server-side. A campaign that has ended stops rendering without anyone touching it.
+- Build real deal pricing: a campaign price per product, with the original shown struck through, and a guard that refuses a "discount" above the current price.
+- Cap and track stock committed to a flash deal, so "only 3 left" is a fact.
+- Build trending from measured behaviour — search terms and product views over a rolling window — rather than recency. Store the counts; do not compute them per request.
+- Feed "Top Picks for You" from the existing `RecommendationService`, which already explains why it chose each product.
+- Keep "New Arrivals" as it is. It is the one section that already means what it says.
+- Cache the home payload as now, and clear it when a campaign starts, ends or is edited.
+
+Frontend:
+
+- Admin campaign manager: create, schedule, add products, set deal prices, preview, and see what is live now.
+- Countdown on flash sections driven by the campaign's real end time.
+- Deal price with the original struck through, and the saving stated.
+- Personalised picks carrying their explain-why, as on the wishlist.
+- Trending list linked to the searches that produced it.
+- Empty states that hide a section rather than filling it with unrelated products — an absent section is better than a dishonest one.
+
+Database:
+
+- `merchandising_campaigns`, `campaign_products` (with `deal_price_kobo` and `stock_committed`), `search_terms` and `product_view_counts`.
+- Index by active window, and by term/product over the trending window.
+
+QA and security:
+
+- Test an expired campaign disappears without intervention.
+- Test a deal price above the product price is refused.
+- Test flash stock cannot oversell.
+- Test trending reflects recorded activity, not recency.
+- Test personalised picks never leak another customer's behaviour.
+- Test a section with nothing to show is hidden rather than back-filled.
+
+Exit criteria:
+
+- Every heading on the home page is true, and staff can run a real promotion without a developer.
+
+### Phase 3: Scale — BUILT
+
+Goal: extend FirstMaket into new channels, new savings models, and mobile access after real usage data proves the MVP and growth features.
+
+Status: **3A, 3B and 3C are built.** Three decisions were taken during the build that differ from the brief below, each recorded where it belongs:
+
+1. **Tiers are earned from the record *before* the sale being priced** (3A). Otherwise one order could promote a partner and then pay itself at the new, higher rate. The rule a partner would assume — "your rate comes from your track record, the better rate applies from the next sale" — is the one implemented.
+2. **A cooperative's payout is a plan, never cash** (3B). Offline ajo hands somebody the pot. That cannot exist here, so each turn's contributions land on the beneficiary's own Pay Small Small plan. The social discipline survives; the cash does not. The UI says so plainly, because somebody joining to raise emergency cash needs to know before their turn, not at it.
+3. **The assistant ships on the deterministic driver** (3C). `AssistantDriverContract` exists so a hosted-model driver can be added later, but for "explain my own saving to me" arithmetic on the customer's own record beats a language model on every axis that matters: it cannot invent a figure, every sentence traces to a row, it costs nothing per question, and no financial data leaves the platform. Cost logging, spend caps and per-customer limits are built anyway, so switching drivers is a config change rather than a new project.
+
+Two safety properties are enforced by schema rather than by convention, and both have tests: a group contribution is always tied to the `PlanPayment` it came from (a share can never be a typed number), and an assistant recommendation is inert until a separate `assistant_confirmations` row says the customer accepted it.
+
+#### Phase 3A: Advanced Affiliate Program
 
 Backend:
 
@@ -919,7 +1117,7 @@ Backend:
 - Track clicks, signups, verified users, first deposits, Pay At Once delivered orders, completed-plan delivered orders, and vendor recruitment conversions.
 - Add commission rules for flat, percentage, tiered, and vendor-recruitment payouts.
 - Add monthly payout batches with minimum threshold, Finance approval, rejection reasons, and paid status.
-- Keep affiliate payouts separate from customer wallets and no-withdrawal savings ledgers.
+- Keep affiliate payouts separate from customers' plans and the no-withdrawal savings credit ledger.
 - Add affiliate bank account verification before payout.
 
 Frontend:
@@ -950,13 +1148,13 @@ Exit criteria:
 
 - External partners can drive signups and delivered conversions through protected links, auditable conversion rules, fraud controls, and finance-approved partner payouts.
 
-#### Phase 3C: Group, Family, and Cooperative Savings
+#### Phase 3B: Group, Family, and Cooperative Savings
 
 Backend:
 
 - Build Group Purchase Plans where multiple customers contribute toward one product target.
 - Build contribution ownership and share tracking.
-- Build Family Savings dashboard without pooling underlying wallets.
+- Build a Family Savings dashboard that summarises members' plans without pooling money. There are no wallets to pool: each contribution belongs to one plan, and that has to stay true inside a group.
 - Build Cooperative Savings model for structured rotating contribution groups.
 - Define group permissions, invitations, approvals, and exit rules.
 - Keep no-withdrawal principle intact for group/cooperative flows.
@@ -978,14 +1176,14 @@ QA and security:
 
 - Test contribution ownership remains traceable.
 - Test one member cannot redirect another member's funds.
-- Test family dashboard does not pool wallets.
+- Test the family dashboard summarises without pooling: every contribution still belongs to one plan and one owner.
 - Test cooperative schedules do not create withdrawal paths.
 
 Exit criteria:
 
-- Multi-person savings models work without breaking wallet, ownership, or no-cash-withdrawal rules.
+- Multi-person savings models work without breaking ownership or the no-cash-withdrawal rule.
 
-#### Phase 3D: Full AI Financial Assistant
+#### Phase 3C: Full AI Financial Assistant
 
 Backend:
 
@@ -1017,40 +1215,35 @@ Exit criteria:
 
 - Customers can receive contextual savings help while retaining full control over decisions.
 
-#### Phase 3E: Native Mobile Applications
+### Phase 4: Public Website — MOSTLY COMPLETE
 
-Backend:
+Goal: the full public brand presence, once the product can demonstrate real workflows rather than mock-ups.
 
-- Harden Sanctum token mode for mobile.
-- Expose API endpoints needed by mobile without duplicating business logic.
-- Add mobile push notification device tokens.
-- Add mobile versioning and forced-update settings.
+Status: **mostly built, and built differently than planned.** The marketing content lives *inside* the storefront rather than as a separate brochure site — which is the better outcome, and matches every marketplace the Sprint 0 survey looked at. A visitor lands on a working shop, not a landing page that asks them to click through to one.
 
-Frontend/mobile:
+**Already shipped**
 
-- Build Android and iOS apps consuming the Laravel API.
-- Implement authentication, dashboard, catalog, wallet, plans, tracker, orders, notifications, and support.
-- Add native push notifications.
-- Keep web and mobile UI flows consistent.
+| Planned page | Where it actually lives |
+| --- | --- |
+| Home | `/` — hero, categories, deals, and the trust strip |
+| How It Works | A section on the home page |
+| About / trust pillars | "Why trust FirstMaket" on the home page |
+| Become a Vendor | "Sell on FirstMaket" CTA → the live vendor onboarding |
+| Marketplace Preview | The real catalogue at `/catalog`, approved products only |
+| FAQ | `/faq`, no login |
+| Terms, Privacy, Data deletion | `/legal`, `/legal/{slug}`, `/terms`, `/privacy-policy`, `/data-deletion` — **content-managed**, so staff edit the wording in admin without a deploy |
+| Public route group with no auth | Done, and enforced by tests |
 
-Database:
+That answers the "static or content-managed" question the original plan left open: the legal pages are content-managed and the rest are Inertia pages, because policy wording changes and a hero section does not.
 
-- Add personal access token strategy, device tokens, mobile sessions, and app-version settings if needed.
+**Genuinely outstanding**
 
-QA and security:
+- `robots.txt` and a generated `sitemap.xml`. Neither file exists.
+- Per-page SEO metadata. The document head is shared; only the title varies.
+- A contact form. There is a support hotline, WhatsApp, the Support Centre and now the Complaint Centre — a contact form may simply be unnecessary, and is worth a decision rather than a default.
+- A standalone About page, if the home-page section is judged not enough.
 
-- Test API authorization for every mobile endpoint.
-- Test device token registration and revocation.
-- Test mobile app cannot bypass web business rules.
-- Run mobile smoke tests for critical customer flows.
-
-Exit criteria:
-
-- Mobile apps reuse the stable backend and add native convenience without a parallel system.
-
-### Phase 4: Public Website
-
-Goal: Expand the Sprint 0 home page into the full public brand presence once the core product can demonstrate real workflows, screenshots, vendor onboarding, support, and trust messaging accurately. The marketplace home page itself ships in Sprint 0; Phase 4 adds the surrounding marketing/informational pages and final SEO polish.
+**One correction to the content brief below:** it says to explain "Pay At Once, Open Savings, and Product Target Plans". Open Savings no longer exists and Product Target Plans are called **Pay Small Small** in the product. Marketing copy should use the two names customers actually see.
 
 Backend/CMS:
 
@@ -1103,6 +1296,64 @@ Exit criteria:
 - Marketing content reflects the completed application, not planned features.
 - Contact form, hotline, and vendor interest form are working.
 
+### Phase 5: Native Mobile Applications — FUTURE
+
+Deliberately last of the product phases, and after the public website.
+
+The web app is the product; a mobile client is a second front end onto the same rules. Every phase before this one adds or changes those rules — returns, roles, merchandising, agents, cooperative savings — and each change would otherwise have to be made twice and shipped through an app-store review. Building the apps once the rules have settled means one implementation to port, not a moving target to chase.
+
+Two things are already in place for it: `/api/v1` is reserved (see Architecture), and the modules keep business logic in services rather than controllers, so an API surface is a new entry point rather than a rewrite.
+
+Backend:
+
+- Harden Sanctum token mode for mobile.
+- Expose API endpoints needed by mobile without duplicating business logic.
+- Add mobile push notification device tokens.
+- Add mobile versioning and forced-update settings.
+
+Frontend/mobile:
+
+- Build Android and iOS apps consuming the Laravel API.
+- Implement authentication, dashboard, catalogue, plans, tracker, orders, returns, notifications, and support.
+- Add native push notifications.
+- Keep web and mobile UI flows consistent.
+
+Database:
+
+- Add personal access token strategy, device tokens, mobile sessions, and app-version settings if needed.
+
+QA and security:
+
+- Test API authorization for every mobile endpoint.
+- Test device token registration and revocation.
+- Test mobile app cannot bypass web business rules.
+- Run mobile smoke tests for critical customer flows.
+
+Exit criteria:
+
+- Mobile apps reuse the stable backend and add native convenience without a parallel system.
+
+### Phase 6: Agent Network — FUTURE
+
+Moved out of Phase 3 and deferred, because the version written there cannot be built.
+
+It assumed agents would take **deposits** and earn commission per deposit, with a test that "an agent cannot directly credit wallet without verified Paystack flow". There is no wallet to credit and no deposit to take. Rewriting it as agent-assisted *plan payments* is possible, but it is a different feature with different risks, and it should not be attempted until the phases before it have settled.
+
+What it would have to become:
+
+- An agent helps a customer **start a plan or pay an instalment**, never "deposit". Money still enters against one specific plan and nothing else.
+- The charge still goes through Paystack and is still credited by the verified webhook. An agent is a person standing next to the customer, not a new way for money to enter the system.
+- Commission is earned on a **qualifying plan payment**, and paid from the affiliate/partner ledger — never from a customer's plan, and never as a balance the agent can hold.
+- Agent codes are attribution, exactly like affiliate links, and grant no permission over the customer's account.
+
+Why it is deferred rather than dropped. Community-assisted acquisition genuinely suits how many Nigerians already save, and the ajo/esusu collector is the model Pay Small Small is named after. But it introduces a person handling somebody else's money in a system whose entire safety argument is that money only moves through verified Paystack charges. That is worth doing carefully and late, after roles (2F) exist to scope what an agent can see, and after the returns and refund paths have run in production long enough to trust.
+
+Open questions to settle before building it:
+
+- Does the agent ever handle cash? If yes, this needs a float and reconciliation model closer to the existing cash-on-delivery flow than to affiliates, and that is a much larger piece of work.
+- What can an agent see of a customer they signed up? The default should be nothing beyond their own attribution.
+- How is an agent's commission clawed back when the plan they started is cancelled or refunded?
+
 ## 3. Recommended Folder Structure
 
 Use the IHMS modular layout, adapted to FirstMaket:
@@ -1115,9 +1366,10 @@ app/
     Customer/
     Vendor/
     Catalog/
-    Wallet/
     Savings/
+    Cart/
     Orders/
+    Returns/
     Logistics/
     Payments/
     Notifications/
@@ -1126,6 +1378,7 @@ app/
     Reporting/
     AI/
     Risk/
+    Affiliates/
     Referrals/
     Rewards/
   Shared/
@@ -1174,7 +1427,6 @@ resources/js/
     domain/
       catalog/
       savings/
-      wallet/
       orders/
       vendor/
       admin/
@@ -1211,23 +1463,28 @@ tests/
 
 ## 4. Key Engineering Rules
 
-- Paystack webhook confirmation is the only event that credits wallet balance.
-- No backend withdrawal endpoint may exist.
+- There is no customer balance. A payment names what it is for when it is created — a plan instalment, an order, or a shipment's goods balance — and the signature-verified Paystack webhook credits that one thing.
+- A verified webhook is the only event that credits anything. A browser callback never moves money.
+- No withdrawal or deposit endpoint may exist. An architecture test fails the build if a route URI contains `withdraw`, `deposit`, `cash-out`, `transfer-out` or `add-money`.
+- Money leaves in exactly three ways: as goods, as plan credit when a plan is cancelled, or as a refund reversing the original charge. A refund is admin-only, capped at what was captured, and idempotent on a unique reference.
 - All money values use integer kobo or `DECIMAL(15,2)` consistently; do not use floats.
 - Product target price is locked at plan creation.
 - Vendor price edits after approval return the product to pending approval.
 - Vendors never see customer identity or delivery address.
 - Vendor earnings live in a separate vendor ledger; commission is deducted at delivery confirmation, and payouts go only to verified vendor bank accounts through Finance-approved batches.
 - Vendor earnings are credited exactly once per delivered order, inside a database transaction, and never before the delivery confirmation window passes.
-- Registration accepts email or phone; the verification OTP travels through the matching channel, and phone verification is mandatory before wallet funding.
+- Registration accepts email or phone; the verification OTP travels through the matching channel, and phone verification is mandatory before any payment.
 - Social login (Google/Facebook) links to an existing account only after ownership proof; it never silently merges or duplicates accounts.
 - Admin roles must be permission-based, not hard-coded role checks.
 - All ledger-affecting writes must run inside database transactions.
-- Affiliate commission is a separate partner payout record, never a customer wallet withdrawal or savings ledger movement.
+- Affiliate commission is a separate partner payout record, never taken from a customer's plan or savings ledger. A returned order reverses the commission with it.
 - Affiliate links must use random non-sequential codes or signed tokens, never database IDs or personal data.
 - All sensitive identity fields must be encrypted at application level.
 - OTP requests must be rate-limited by phone number, IP, and device fingerprint.
-- AI recommendations that affect money, product approval, fraud, or account access are advisory only; human admins make final decisions.
+- Recommendations and risk flags that touch money, product approval, fraud or account access are advisory only; a human decides. Nothing is suspended, cancelled or refunded because a rule fired.
+- Operational thresholds live in the settings table with an admin screen, not in constants. A value staff cannot change is a deploy waiting to happen — and a setting nothing reads is worse, because it looks like it works.
+- Anything the storefront promises the system must enforce, from the same value. The returns window is printed and enforced from one setting for exactly this reason.
+- Third-party scripts are embedded by naming a known provider and an id, never by storing a snippet. Customers enter card details on these pages.
 - Modules communicate through domain events or shared contracts, never by querying another module's models directly.
 - Admin, Support, Logistics, and Finance surfaces are served from an isolated subdomain with a separate cookie scope from the customer app.
 - Admin, Finance Officer, and Super Administrator accounts require 2FA; it is not optional.
@@ -1243,18 +1500,20 @@ tests/
 | Vendor payouts | Paystack Transfers | Weekly vendor payout batches to verified bank accounts |
 | Email | SendGrid, Postmark | Verification, receipts, notifications |
 | Storage | Cloudinary or S3-compatible bucket | Product images and CAC documents |
-| Address lookup | Google Maps Places API | Delivery address entry and validation |
-| AI | OpenAI or Anthropic | Listing review, support chatbot, savings assistant |
-| Browser push | Web Push API or OneSignal | Web notifications before native mobile apps |
+| Address lookup | Google Maps Places API | Not integrated. Addresses are typed and validated against the state/LGA list |
+| AI | OpenAI or Anthropic | Listing review only. The savings assistant and recommendations are deterministic rules, not a model — see Phase 2C |
+| Live chat | Tawk.to or Crisp | Storefront chat widget, selected in admin by provider name and id |
+| Browser push | Web Push API or OneSignal | **Not integrated.** Notifications are mail, SMS and in-app only |
 
 ## 6. MVP Success Metrics
 
 | Area | Target |
 | --- | --- |
-| Deposit confirmation | 100% webhook-verified |
-| Ledger integrity | No orphaned wallet transaction |
+| Payment confirmation | 100% webhook-verified; no browser callback ever moves money |
+| Ledger integrity | No plan payment without a matching verified transaction; no refund paid twice |
+| Returns | Every case resolved inside the published window, with the reason recorded |
 | Dashboard response | Under 500 ms for normal account load |
 | Plan creation | Under 90 seconds for a verified customer |
 | Vendor listing review | Admin can approve or reject in under 2 minutes |
 | Delivery status | Customer notified on every status change |
-| Public website | Launch after the transactional product is complete and validated |
+| Public website | Shipped as part of the storefront; SEO polish outstanding |

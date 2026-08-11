@@ -67,7 +67,7 @@ export default function TwoFactorChallenge() {
                                 type="checkbox"
                                 checked={form.data.remember_device}
                                 onChange={(e) => form.setData('remember_device', e.target.checked)}
-                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                             />
                             <span className="text-sm">
                                 <span className="font-semibold text-gray-800">Trust this device for 30 days</span>

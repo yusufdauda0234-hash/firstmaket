@@ -2,6 +2,8 @@
 
 namespace App\Modules\Savings\Services;
 
+use App\Modules\Savings\Events\PlanCompleted;
+use App\Models\Setting;
 use App\Models\User;
 use App\Modules\Cart\Models\CheckoutSession;
 use App\Modules\Catalog\Models\Product;
@@ -58,6 +60,15 @@ class SavingsGoalService
     {
         if ($lines->isEmpty()) {
             throw ValidationException::withMessages(['cart' => 'There is nothing to start a plan for.']);
+        }
+
+        // Open bundling is the current product decision. Keeping the switch
+        // in settings makes a future eligibility gate a policy change, not a
+        // rewrite of plan pricing and fulfilment.
+        if ($lines->count() > 1 && ! (bool) Setting::get('savings.multi_product_plans_enabled', true)) {
+            throw ValidationException::withMessages([
+                'cart' => 'Multi-product plans are not available yet.',
+            ]);
         }
 
         return DB::transaction(function () use ($user, $lines, $address, $term) {
@@ -294,6 +305,12 @@ class SavingsGoalService
                 'next_due_at' => null,
             ])->save();
 
+            DB::afterCommit(fn () => PlanCompleted::dispatch(
+                $goal->id,
+                $goal->user_id,
+                $goal->target_kobo,
+            ));
+
             $this->auditLogger->log(
                 actor: $user,
                 subject: $goal,
@@ -343,6 +360,90 @@ class SavingsGoalService
             );
 
             return $carried;
+        });
+    }
+
+    /**
+     * Pause the chasing, not the plan.
+     *
+     * Suspends the payment reminders, the dormancy sweep and any automatic
+     * debit. It deliberately does not touch `target_kobo`, `paid_kobo`,
+     * `status` or the schedule: a customer who pauses for a month comes back to
+     * exactly the plan they left, at the price they locked.
+     *
+     * Refused before the first payment. The price freezes at signup, so
+     * allowing a pause on a plan nobody has paid into would let anyone lock
+     * today's price for free and hold it — which is precisely what
+     * RevokeUnpaidPlans exists to prevent.
+     */
+    public function pause(User $user, SavingsGoal $goal): SavingsGoal
+    {
+        return DB::transaction(function () use ($user, $goal) {
+            /** @var SavingsGoal $goal */
+            $goal = SavingsGoal::query()->whereKey($goal->id)->lockForUpdate()->firstOrFail();
+
+            if ($goal->user_id !== $user->id) {
+                throw ValidationException::withMessages(['goal' => 'This plan does not belong to you.']);
+            }
+
+            if (! $goal->isSaving()) {
+                throw ValidationException::withMessages(['goal' => 'Only a running plan can be paused.']);
+            }
+
+            if ($goal->payments_made < 1) {
+                throw ValidationException::withMessages([
+                    'goal' => 'Make your first payment before pausing this plan.',
+                ]);
+            }
+
+            if ($goal->isPaused()) {
+                return $goal;
+            }
+
+            $goal->forceFill([
+                'paused_at' => now(),
+                // A pause is the customer answering the warning. Leaving it
+                // set would revoke the plan on the next sweep after the pause
+                // expires, without the second chance the two-pass sweep is
+                // meant to guarantee.
+                'dormancy_warned_at' => null,
+            ])->save();
+
+            $this->auditLogger->log(
+                actor: $user,
+                subject: $goal,
+                action: 'savings.plan_paused',
+                newValues: ['paused_until' => $goal->pauseExpiresAt()?->toDateTimeString()],
+            );
+
+            return $goal;
+        });
+    }
+
+    /** Resume reminders and automatic debit. Nothing else changes. */
+    public function resume(User $user, SavingsGoal $goal): SavingsGoal
+    {
+        return DB::transaction(function () use ($user, $goal) {
+            /** @var SavingsGoal $goal */
+            $goal = SavingsGoal::query()->whereKey($goal->id)->lockForUpdate()->firstOrFail();
+
+            if ($goal->user_id !== $user->id) {
+                throw ValidationException::withMessages(['goal' => 'This plan does not belong to you.']);
+            }
+
+            if ($goal->paused_at === null) {
+                return $goal;
+            }
+
+            $goal->forceFill(['paused_at' => null])->save();
+
+            $this->auditLogger->log(
+                actor: $user,
+                subject: $goal,
+                action: 'savings.plan_resumed',
+            );
+
+            return $goal;
         });
     }
 
@@ -413,6 +514,17 @@ class SavingsGoalService
     public const MAX_SWITCHES = 2;
 
     /**
+     * How many times a plan may be switched to a different item.
+     *
+     * The constant is the shipped default; this is what the code reads, so
+     * staff can loosen or tighten it without a deploy.
+     */
+    public static function maxSwitches(): int
+    {
+        return max(0, (int) Setting::get('savings.max_plan_switches', self::MAX_SWITCHES));
+    }
+
+    /**
      * Point an existing plan at a different item, keeping the money on it.
      *
      * Deliberately not cancel-then-create. Cancelling would write a
@@ -448,9 +560,9 @@ class SavingsGoalService
                 throw ValidationException::withMessages(['goal' => 'This plan is no longer running.']);
             }
 
-            if ($goal->switch_count >= self::MAX_SWITCHES) {
+            if ($goal->switch_count >= self::maxSwitches()) {
                 throw ValidationException::withMessages([
-                    'items' => 'This plan has already been switched '.self::MAX_SWITCHES.' times. '
+                    'items' => 'This plan has already been switched '.self::maxSwitches().' times. '
                         .'Finish it, or cancel and start a new one with the money as credit.',
                 ]);
             }

@@ -44,4 +44,48 @@ return [
         'whatsapp' => env('FirstMaket_SUPPORT_WHATSAPP', ''),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Savings plans
+    |--------------------------------------------------------------------------
+    |
+    | How long a customer may hold a plan paused.
+    |
+    | Pausing suspends the payment reminders and any automatic debit, which
+    | also means the dormancy sweep stops counting missed payments. A plan
+    | freezes its price at signup, so an unbounded pause would be an
+    | indefinite price lock — buy at today's price, pause for two years, come
+    | back and collect. The pause therefore expires: after this many days the
+    | plan behaves normally again and can be warned and swept like any other.
+    | Nothing is charged or cancelled at the moment it expires.
+    |
+    */
+
+    'savings' => [
+        'max_pause_days' => (int) env('FirstMaket_MAX_PAUSE_DAYS', 60),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Returns and refunds
+    |--------------------------------------------------------------------------
+    |
+    | These are the numbers the product page prints and the numbers the code
+    | enforces — deliberately one source, because a published policy that the
+    | system does not actually apply is a promise the business cannot keep.
+    |
+    | `window_days` runs from delivery, not from the order date: an order that
+    | spent three weeks in transit has not spent its return window in transit.
+    |
+    */
+
+    'returns' => [
+        'window_days' => (int) env('FirstMaket_RETURN_WINDOW_DAYS', 7),
+        // Working days quoted to the customer for the money to land back on
+        // their card. Paystack settles refunds on its own timetable; this is
+        // what we tell people, and it matches the product page.
+        'refund_days_min' => (int) env('FirstMaket_REFUND_DAYS_MIN', 5),
+        'refund_days_max' => (int) env('FirstMaket_REFUND_DAYS_MAX', 10),
+    ],
+
 ];

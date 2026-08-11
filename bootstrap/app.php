@@ -5,6 +5,10 @@ use App\Http\Middleware\SetLocale;
 use App\Modules\Orders\Commands\AutoConfirmDeliveredOrders;
 use App\Modules\Orders\Commands\FlagOverduePreparations;
 use App\Modules\Savings\Commands\RevokeUnpaidPlans;
+use App\Modules\Payments\Commands\ChargeDueAutomaticDebits;
+use App\Modules\Payments\Commands\ReconcilePendingPayments;
+use App\Modules\Risk\Commands\SweepRiskFlags;
+use App\Modules\Vendor\Commands\RecalculateVendorRatings;
 use App\Modules\Savings\Commands\SweepDormantPlans;
 use App\Providers\ModuleServiceProvider;
 use App\Shared\Enums\UserType;
@@ -70,6 +74,10 @@ return Application::configure(basePath: dirname(__DIR__))
     // Module-housed artisan commands (auto-discovery only scans app/Console).
     ->withCommands([
         AutoConfirmDeliveredOrders::class,
+        ChargeDueAutomaticDebits::class,
+        ReconcilePendingPayments::class,
+        RecalculateVendorRatings::class,
+        SweepRiskFlags::class,
         FlagOverduePreparations::class,
         RevokeUnpaidPlans::class,
         SweepDormantPlans::class,

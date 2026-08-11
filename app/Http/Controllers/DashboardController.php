@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * The `/dashboard` route redirects to where each account type actually lives:
@@ -23,8 +22,15 @@ class DashboardController extends Controller
             // Customers have no separate dashboard — the marketplace home IS
             // their dashboard (Section 3 behavior). Any lingering /dashboard
             // link just lands them home.
-            $user->hasRole('Customer') => redirect()->route('home'),
-            default => throw new HttpException(403, 'This account has no customer/vendor dashboard access.'),
+            //
+            // Staff accounts browsing the storefront land here too: the header
+            // and account dropdown offer "Dashboard" to every signed-in user,
+            // and their admin dashboard is on the admin subdomain behind a
+            // separate session, so it is not reachable from this redirect.
+            // Home rather than a 403 — this route only ever routes, and a nav
+            // link that answers with an error page is a dead end, not a guard.
+            // Nothing privileged is exposed by it: home is a public page.
+            default => redirect()->route('home'),
         };
     }
 }

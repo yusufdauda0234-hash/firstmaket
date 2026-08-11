@@ -63,7 +63,7 @@ export default function StopList({ stops, failureReasons }: Props) {
                                         : [],
                                 )
                             }
-                            className="h-5 w-5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                            className="h-5 w-5 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                         />
                         Select all ({selectable.length})
                     </label>

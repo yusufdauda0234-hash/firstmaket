@@ -467,7 +467,7 @@ function RateForm({
                         onChange={(e) => form.setData('note', e.target.value)}
                         maxLength={200}
                         placeholder="e.g. Renegotiated with the courier in August"
-                        className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                        className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-sm"
                     />
                     <InputError message={form.errors.note} className="mt-1" />
                 </label>
@@ -477,7 +477,7 @@ function RateForm({
                         type="checkbox"
                         checked={form.data.is_active}
                         onChange={(e) => form.setData('is_active', e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                     />
                     <span className="text-sm text-gray-700">Use this rate at checkout</span>
                 </label>

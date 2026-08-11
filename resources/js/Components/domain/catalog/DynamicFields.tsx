@@ -184,7 +184,7 @@ function FieldInput({
                         disabled={disabled}
                         checked={Boolean(value)}
                         onChange={(e) => onChange(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                     />
                     Yes
                 </label>

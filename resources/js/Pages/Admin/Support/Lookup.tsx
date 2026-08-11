@@ -26,7 +26,9 @@ interface Props {
         emailVerified: boolean;
         phoneVerified: boolean;
         memberSince: string;
-        savingsBalanceKobo: number;
+        /** False for staff without savings.view — the financial cards are hidden entirely. */
+        canSeeFinancials: boolean;
+        savingsBalanceKobo: number | null;
         orders: { uuid: string; productName: string; status: string; statusLabel: string; lockedPriceKobo: number; createdAt: string }[];
         savingsGoals: { uuid: string; productNames: string; status: string; targetKobo: number }[];
         tickets: { uuid: string; subject: string; status: string }[];
@@ -136,15 +138,17 @@ export default function CustomerLookup() {
                         </div>
                     </Card>
 
-                    <Card>
-                        <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Savings</h2>
-                        <p className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900">
-                            {formatNairaFromKobo(customer.savingsBalanceKobo)}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-400">
-                            Deposit-only balance · card details are held by Paystack, never FirstMaket.
-                        </p>
-                    </Card>
+                    {customer.canSeeFinancials && (
+                        <Card>
+                            <h2 className="text-xs font-bold uppercase tracking-wide text-gray-500">Savings</h2>
+                            <p className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900">
+                                {formatNairaFromKobo(customer.savingsBalanceKobo ?? 0)}
+                            </p>
+                            <p className="mt-1 text-xs text-gray-400">
+                                Deposit-only balance · card details are held by Paystack, never FirstMaket.
+                            </p>
+                        </Card>
+                    )}
 
                     <Card className="p-0">
                         <h2 className="border-b border-gray-100 px-5 py-3.5 text-xs font-bold uppercase tracking-wide text-gray-500">
@@ -171,7 +175,7 @@ export default function CustomerLookup() {
                         )}
                     </Card>
 
-                    <Card className="p-0">
+                    <Card className={customer.canSeeFinancials ? 'p-0' : 'hidden'}>
                         <h2 className="border-b border-gray-100 px-5 py-3.5 text-xs font-bold uppercase tracking-wide text-gray-500">
                             Savings goals
                         </h2>

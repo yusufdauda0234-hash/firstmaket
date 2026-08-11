@@ -63,7 +63,9 @@ function OrderStatusTile({
                     </span>
                 )}
             </span>
-            <span className="text-xs font-medium text-gray-600 group-hover:text-brand-700">{label}</span>
+            <span className="text-xs font-medium leading-tight text-gray-600 group-hover:text-brand-700">
+                {label}
+            </span>
         </Link>
     );
 }
@@ -85,7 +87,7 @@ function ActionTile({
             <span className={cn('flex h-11 w-11 items-center justify-center rounded-full', accent)}>
                 <Icon className="h-5 w-5" />
             </span>
-            <span className="text-xs font-semibold text-gray-700">{label}</span>
+            <span className="text-xs font-semibold leading-tight text-gray-700">{label}</span>
         </>
     );
 
@@ -139,7 +141,13 @@ export default function AccountOverview() {
                     <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white/15 text-xl font-extrabold text-white ring-2 ring-white/40 backdrop-blur">
                         {initials || '?'}
                     </span>
-                    <div className="min-w-0 flex-1">
+                    {/* Claims the rest of the first line on a phone (the avatar
+                        plus its gap is exactly 5rem), which pushes Edit profile
+                        onto its own row. Left as plain `flex-1`, the text column
+                        was allowed to shrink to nothing so the button could
+                        stay alongside — crushing "Welcome back" onto two lines
+                        and wrapping the member-since pill into a blob. */}
+                    <div className="min-w-0 flex-1 basis-[calc(100%-5rem)] sm:basis-auto">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">
                             Welcome back
                         </p>
@@ -147,15 +155,17 @@ export default function AccountOverview() {
                         <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-brand-100">
                             {account.memberSince && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-medium">
-                                    <Clock className="h-3.5 w-3.5" />
-                                    Member since {account.memberSince}
+                                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="whitespace-nowrap">
+                                        Member since {account.memberSince}
+                                    </span>
                                 </span>
                             )}
                         </div>
                     </div>
                     <Link
                         href={route('account.profile')}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-white backdrop-blur transition hover:bg-white/25"
+                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-white backdrop-blur transition hover:bg-white/25 sm:w-auto"
                     >
                         <Pencil className="h-3.5 w-3.5" /> Edit profile
                     </Link>
@@ -224,7 +234,12 @@ export default function AccountOverview() {
                     href={route('support.index')}
                     accent="bg-amber-50 text-amber-600"
                 />
-                <ActionTile label="Saved Items" icon={Heart} href={null} accent="bg-rose-50 text-rose-600" />
+                <ActionTile
+                    label="Saved Items"
+                    icon={Heart}
+                    href={route('wishlist.index')}
+                    accent="bg-rose-50 text-rose-600"
+                />
                 <ActionTile
                     label="My Orders"
                     icon={PackageCheck}
@@ -248,19 +263,33 @@ export default function AccountOverview() {
                     </header>
                     <div className="space-y-3 px-5 py-4">
                         <p className="text-base font-bold text-gray-900">{account.name}</p>
+                        {/* Wrapping, not truncating: an address long enough to
+                            crowd the badge is exactly the one worth reading in
+                            full, and the badge must never be pushed off the
+                            card — it is the reason to look at this line. */}
                         <div>
-                            <p className="flex items-center gap-2 text-sm text-gray-600">
-                                {account.email ?? 'No email added'}
+                            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600">
+                                <span className="min-w-0 break-all">
+                                    {account.email ?? 'No email added'}
+                                </span>
                                 {account.email && (
-                                    <Badge tone={account.emailVerified ? 'success' : 'warning'}>
+                                    <Badge
+                                        tone={account.emailVerified ? 'success' : 'warning'}
+                                        className="shrink-0"
+                                    >
                                         {account.emailVerified ? 'verified' : 'unverified'}
                                     </Badge>
                                 )}
                             </p>
-                            <p className="mt-1.5 flex items-center gap-2 text-sm text-gray-600">
-                                {account.phone ?? 'No phone added'}
+                            <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600">
+                                <span className="min-w-0 break-all">
+                                    {account.phone ?? 'No phone added'}
+                                </span>
                                 {account.phone && (
-                                    <Badge tone={account.phoneVerified ? 'success' : 'warning'}>
+                                    <Badge
+                                        tone={account.phoneVerified ? 'success' : 'warning'}
+                                        className="shrink-0"
+                                    >
                                         {account.phoneVerified ? 'verified' : 'unverified'}
                                     </Badge>
                                 )}

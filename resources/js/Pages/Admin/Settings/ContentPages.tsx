@@ -353,7 +353,7 @@ export default function ContentPages() {
                                 type="checkbox"
                                 checked={form.data.is_published}
                                 onChange={(e) => form.setData('is_published', e.target.checked)}
-                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                             />
                             <span className="text-sm text-gray-700">
                                 Published
@@ -368,7 +368,7 @@ export default function ContentPages() {
                                 type="checkbox"
                                 checked={form.data.show_in_footer}
                                 onChange={(e) => form.setData('show_in_footer', e.target.checked)}
-                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                             />
                             <span className="text-sm text-gray-700">
                                 Link from the site footer

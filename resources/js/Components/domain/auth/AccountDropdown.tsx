@@ -70,6 +70,7 @@ export default function AccountDropdown({
                                     { label: 'My Account', href: route('account.overview'), icon: <UserSmallIcon /> },
                                     { label: 'My Orders', href: route('orders.index'), icon: <OrdersIcon /> },
                                     { label: 'My Savings', href: route('savings.index'), icon: <WalletIcon /> },
+                                    { label: 'Saved Items', href: route('wishlist.index'), icon: <HeartIcon /> },
                                     // No "Identity verification" entry: the dedicated page went away
                                     // when BVN/NIN checks were dropped (commit bb15765) and phone
                                     // verification became the dashboard modal (VerifyPhoneModal).

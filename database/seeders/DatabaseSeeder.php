@@ -36,6 +36,11 @@ class DatabaseSeeder extends Seeder
             DisplayCurrencySeeder::class,
             FaqSeeder::class,
 
+            // The partner commission ladder. Without at least one tier the
+            // resolver falls back to a single flat percentage and no partner
+            // can see a reason to grow.
+            AffiliateTierSeeder::class,
+
             // The terms, privacy policy and data-deletion pages. Seeded for
             // the same reason as the product fields: staff edit the wording,
             // but the rows have to exist, because Google and Meta fetch those

@@ -36,6 +36,11 @@ class RolesAndPermissionsSeeder extends Seeder
         'finance.reconcile',
         'affiliates.manage',
         'affiliate_conversions.review',
+        // Working the returns queue and paying money back are different
+        // levels of trust, so they are different permissions.
+        'returns.manage',
+        'refunds.issue',
+        'risk.review',
         'affiliate_payouts.approve',
         'vendor_fees.manage',
         'ai_settings.manage',
@@ -45,6 +50,10 @@ class RolesAndPermissionsSeeder extends Seeder
         // Creating a staff account is creating a way into the admin domain,
         // so it is its own permission rather than folded into roles.manage.
         'staff.manage',
+        // Downloads a full SQL dump and can wipe any table's data outright.
+        // Like roles.manage, seeded but granted to no role by default — only
+        // Super Administrator (via Gate::before) reaches it out of the box.
+        'system.backup',
     ];
 
     private const ROLE_PERMISSIONS = [
@@ -69,23 +78,35 @@ class RolesAndPermissionsSeeder extends Seeder
             'reports.view',
             'affiliates.manage',
             'affiliate_conversions.review',
-            'staff.manage',
-            // The wording of the terms, privacy policy and data-deletion
-            // pages. An Administrator can already suspend a vendor and change
-            // what customers are charged; withholding the ability to correct
-            // a policy would only mean waiting on the one Super Administrator
-            // account to fix a sentence.
-            'settings.manage',
+            'returns.manage',
+            'risk.review',
         ],
         'Support Agent' => [
             'customers.view',
             'support.manage',
+            // Can work the returns queue — approve, reject, chase — but not
+            // pay money out. That stays with finance.
+            'returns.manage',
+            /*
+             * An agent answering "where is my order" has always been able to
+             * see the customer's savings context on the lookup screen. That
+             * screen now checks these two rather than showing the figures to
+             * anyone who can open it, so they are granted here to keep the
+             * job exactly as it was — the difference is that an admin can now
+             * take them away and build a support role without financial
+             * visibility, which was not possible before.
+             */
+            'savings.view',
+            'plans.view',
         ],
         'Logistics Personnel' => [
             'delivery.update',
         ],
         'Finance Officer' => [
             'savings.view',
+            // The one role besides an administrator that may send money back.
+            'refunds.issue',
+            'returns.manage',
             'savings.reconcile',
             'finance.reconcile',
             'affiliate_payouts.approve',
@@ -107,6 +128,16 @@ class RolesAndPermissionsSeeder extends Seeder
         foreach (self::ROLE_PERMISSIONS as $roleName => $permissions) {
             $role = Role::findOrCreate($roleName, 'web');
             $role->syncPermissions($permissions);
+
+            // These seven names are exactly the ones the codebase depends on
+            // existing — Gate::before checks 'Super Administrator' by name,
+            // StaffController assumes 'Vendor'/'Customer' exist — so they are
+            // marked system on every seed, not just the migration that added
+            // the column. A role editor built later must never be able to
+            // rename or delete one of these.
+            if ($role->is_system !== true) {
+                $role->forceFill(['is_system' => true])->save();
+            }
         }
     }
 }

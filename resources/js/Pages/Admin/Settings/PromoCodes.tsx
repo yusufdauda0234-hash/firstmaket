@@ -538,7 +538,7 @@ function CodeForm({ code, onClose }: { code: PromoCode | null; onClose: () => vo
                                 onChange={(event) =>
                                     form.setData('first_order_only', event.target.checked)
                                 }
-                                className="mt-0.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                                className="mt-0.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                             />
                             <span>
                                 First order only
@@ -556,7 +556,7 @@ function CodeForm({ code, onClose }: { code: PromoCode | null; onClose: () => vo
                         type="checkbox"
                         checked={form.data.is_active}
                         onChange={(event) => form.setData('is_active', event.target.checked)}
-                        className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                        className="rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
                     />
                     Active
                 </label>

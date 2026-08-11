@@ -46,7 +46,17 @@ class ProcessPaystackWebhook
             'paystack_reference' => $reference,
             'signature_valid' => $signatureValid,
             'payload_hash' => hash('sha256', json_encode($payload) ?: ''),
-            'payload' => $payload,
+            /*
+             * An unverified body is recorded but not kept.
+             *
+             * This endpoint is public, so anyone can post anything to it, and
+             * storing whatever they send would let a stranger write arbitrary
+             * JSON into our database at will. The hash, the event name and the
+             * reference are enough for the thing this log is actually for —
+             * spotting a misconfigured secret, where real Paystack events
+             * start arriving with bad signatures.
+             */
+            'payload' => $signatureValid ? $payload : ['discarded' => 'Unverified payload not stored.'],
             'processing_status' => 'received',
         ]);
 

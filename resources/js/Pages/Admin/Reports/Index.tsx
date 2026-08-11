@@ -3,7 +3,7 @@ import PageHeader from '@/Components/ui/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, router, usePage } from '@inertiajs/react';
-import { Banknote, ClipboardList, Download, PackageCheck, Store, UserPlus, Wallet } from 'lucide-react';
+import { Banknote, CalendarClock, ClipboardList, Download, Heart, PackageCheck, Store, UserPlus, Wallet } from 'lucide-react';
 import { ComponentType, FormEventHandler, useState } from 'react';
 
 interface Props {
@@ -15,6 +15,10 @@ interface Props {
     orderVolume: { count: number; totalKobo: number; byStatus: Record<string, number> };
     vendorActivity: { newVendors: number; approvedProducts: number };
     productApprovalOutcomes: { approved: number; rejected: number };
+    /** Phase 2D forecasting — aggregates only, never customer identity. */
+    wishlistDemand: { count: number; rows: { shortfall: number }[] };
+    expectedCompletions: { count: number; totalRemainingKobo: number };
+    vendorPerformance: { count: number; rows: { score: number }[] };
     [key: string]: unknown;
 }
 
@@ -54,8 +58,19 @@ function ReportCard({ title, icon: Icon, stats, exportKey, from, to }: ReportCar
 }
 
 export default function ReportsIndex() {
-    const { from, to, signups, deposits, planCompletions, orderVolume, vendorActivity, productApprovalOutcomes } =
-        usePage<Props>().props;
+    const {
+        from,
+        to,
+        signups,
+        deposits,
+        planCompletions,
+        orderVolume,
+        vendorActivity,
+        productApprovalOutcomes,
+        wishlistDemand,
+        expectedCompletions,
+        vendorPerformance,
+    } = usePage<Props>().props;
 
     const [fromDate, setFromDate] = useState(from);
     const [toDate, setToDate] = useState(to);
@@ -82,7 +97,7 @@ export default function ReportsIndex() {
                         type="date"
                         value={fromDate}
                         onChange={(e) => setFromDate(e.target.value)}
-                        className="mt-1 rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                        className="border mt-1 rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                     />
                 </div>
                 <div>
@@ -91,7 +106,7 @@ export default function ReportsIndex() {
                         type="date"
                         value={toDate}
                         onChange={(e) => setToDate(e.target.value)}
-                        className="mt-1 rounded-xl border-gray-200 text-sm focus:border-brand-500 focus:ring-brand-500/20"
+                        className="border mt-1 rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500/20 px-3 py-2 shadow-sm"
                     />
                 </div>
                 <button
@@ -169,6 +184,64 @@ export default function ReportsIndex() {
                     stats={[
                         { label: 'Approved', value: String(productApprovalOutcomes.approved) },
                         { label: 'Rejected', value: String(productApprovalOutcomes.rejected) },
+                    ]}
+                />
+            </div>
+
+            {/*
+                Forecasting looks forward, so it sits apart from the reports
+                above and deliberately ignores the date range — a demand
+                signal filtered to last month is not a forecast.
+
+                Every figure here is an aggregate. Phase 2D requires that
+                forecasting never expose customer identity, and the safest way
+                to hold that line is for the identity never to be in the data.
+            */}
+            <h2 className="mb-3 mt-8 text-sm font-extrabold uppercase tracking-wide text-gray-500">
+                Looking ahead
+            </h2>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <ReportCard
+                    title="Wishlist demand"
+                    icon={Heart}
+                    exportKey="wishlist-demand"
+                    from={from}
+                    to={to}
+                    stats={[
+                        { label: 'Products wanted', value: String(wishlistDemand.count) },
+                        {
+                            label: 'Short of stock',
+                            value: String(wishlistDemand.rows.filter((row) => row.shortfall > 0).length),
+                        },
+                    ]}
+                />
+                <ReportCard
+                    title="Expected completions"
+                    icon={CalendarClock}
+                    exportKey="expected-completions"
+                    from={from}
+                    to={to}
+                    stats={[
+                        { label: 'Plans due', value: String(expectedCompletions.count) },
+                        {
+                            label: 'Still to be paid',
+                            value: formatNairaFromKobo(expectedCompletions.totalRemainingKobo),
+                        },
+                    ]}
+                />
+                <ReportCard
+                    title="Vendor performance"
+                    icon={Store}
+                    exportKey="vendor-performance"
+                    from={from}
+                    to={to}
+                    stats={[
+                        { label: 'Rated vendors', value: String(vendorPerformance.count) },
+                        {
+                            label: 'Top score',
+                            value: String(vendorPerformance.rows[0]?.score ?? 0),
+                        },
                     ]}
                 />
             </div>

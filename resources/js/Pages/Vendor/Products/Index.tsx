@@ -303,7 +303,7 @@ export default function VendorProductsIndex() {
                                                 <td className="px-5 py-3.5">
                                                     <div className="flex items-center gap-3">
                                                         {product.imageUrl ? (
-                                                            <img
+                                                            <img loading="lazy" decoding="async"
                                                                 src={product.imageUrl}
                                                                 alt=""
                                                                 className="h-9 w-9 shrink-0 rounded-lg object-cover ring-1 ring-black/5"
@@ -373,7 +373,7 @@ export default function VendorProductsIndex() {
                                     >
                                         <div className="relative">
                                             {product.imageUrl ? (
-                                                <img
+                                                <img loading="lazy" decoding="async"
                                                     src={product.imageUrl}
                                                     alt=""
                                                     className="aspect-square w-full object-cover"
@@ -532,7 +532,7 @@ export default function VendorProductsIndex() {
                 {viewTarget && (
                     <div className="flex gap-4">
                         {viewTarget.imageUrl ? (
-                            <img
+                            <img loading="lazy" decoding="async"
                                 src={viewTarget.imageUrl}
                                 alt=""
                                 className="h-28 w-28 shrink-0 rounded-xl object-cover ring-1 ring-black/5"

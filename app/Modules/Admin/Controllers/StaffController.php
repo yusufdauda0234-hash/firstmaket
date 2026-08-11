@@ -4,6 +4,7 @@ namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\Admin\Services\RoleService;
 use App\Modules\Identity\Services\OtpService;
 use App\Modules\Logistics\Models\CourierProfile;
 use App\Shared\Contracts\AuditLoggerContract;
@@ -41,21 +42,7 @@ use Spatie\Permission\Models\Role;
  */
 class StaffController extends Controller
 {
-    /**
-     * Roles that may be handed out here.
-     *
-     * Super Administrator is deliberately absent: granting the role that
-     * bypasses every permission check is not an ordinary staffing decision,
-     * and it stays a deployment-time act.
-     */
-    private const ASSIGNABLE_ROLES = [
-        'Administrator',
-        'Logistics Personnel',
-        'Support Agent',
-        'Finance Officer',
-    ];
-
-    public function index(Request $request): Response
+    public function index(Request $request, RoleService $roleService): Response
     {
         $term = trim((string) $request->query('q', ''));
         $roleFilter = (string) $request->query('role', '');
@@ -98,7 +85,7 @@ class StaffController extends Controller
 
         return Inertia::render('Admin/Staff/Index', [
             'staff' => $staff,
-            'roles' => self::ASSIGNABLE_ROLES,
+            'roles' => $roleService->assignableRoleNames(),
             'vehicleTypes' => array_map(fn (VehicleType $type) => [
                 'value' => $type->value,
                 'label' => $type->label(),
@@ -110,9 +97,9 @@ class StaffController extends Controller
         ]);
     }
 
-    public function store(Request $request, AuditLoggerContract $auditLogger): RedirectResponse
+    public function store(Request $request, AuditLoggerContract $auditLogger, RoleService $roleService): RedirectResponse
     {
-        $data = $this->validated($request);
+        $data = $this->validated($request, $roleService);
 
         $user = DB::transaction(function () use ($data) {
             $user = User::query()->create([
@@ -170,11 +157,11 @@ class StaffController extends Controller
     }
 
     /** Change a staff member's role, or a courier's vehicle and patch. */
-    public function update(Request $request, User $user, AuditLoggerContract $auditLogger): RedirectResponse
+    public function update(Request $request, User $user, AuditLoggerContract $auditLogger, RoleService $roleService): RedirectResponse
     {
         abort_unless($user->user_type === UserType::Staff, 404);
 
-        $data = $this->validated($request, $user);
+        $data = $this->validated($request, $roleService, $user);
         $before = ['role' => $user->roles->pluck('name')->first()];
 
         DB::transaction(function () use ($user, $data) {
@@ -339,7 +326,7 @@ class StaffController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, ?User $existing = null): array
+    private function validated(Request $request, RoleService $roleService, ?User $existing = null): array
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -352,7 +339,7 @@ class StaffController extends Controller
                 'regex:/^(\+?234|0)[789][01]\d{8}$/',
                 Rule::unique('users', 'phone')->ignore($existing?->id),
             ],
-            'role' => ['required', Rule::in(self::ASSIGNABLE_ROLES)],
+            'role' => ['required', Rule::in($roleService->assignableRoleNames())],
             'vehicle_type' => ['nullable', Rule::enum(VehicleType::class)],
             'vehicle_plate' => ['nullable', 'string', 'max:20'],
             'base_state' => ['nullable', 'string', Rule::in(Nigeria::STATES)],

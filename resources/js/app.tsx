@@ -1,4 +1,6 @@
 import AuthModalProvider from '@/Components/domain/auth/AuthModalProvider';
+import CompareTray from '@/Components/domain/catalog/CompareTray';
+import PageLoader from '@/Components/ui/PageLoader';
 import { ToastProvider } from '@/Components/ui/Toast';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
@@ -8,14 +10,14 @@ const appName = import.meta.env.VITE_APP_NAME || 'FirstMaket';
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) => {
-        const pages = import.meta.glob<{ default: React.ComponentType }>('./Pages/**/*.tsx', { eager: true });
+        const pages = import.meta.glob<{ default: React.ComponentType }>('./Pages/**/*.tsx');
         const page = pages[`./Pages/${name}.tsx`];
 
         if (!page) {
             throw new Error(`Page not found: ./Pages/${name}.tsx`);
         }
 
-        return page;
+        return page();
     },
     setup({ el, App, props }) {
         /*
@@ -44,14 +46,22 @@ createInertiaApp({
                 {({ Component, props: pageProps, key }) => (
                     <ToastProvider>
                         <AuthModalProvider>
+                            {/* Outside the keyed Component, so the spinner is
+                                not unmounted by the very navigation it is
+                                reporting on. */}
+                            <PageLoader />
                             <Component key={key} {...pageProps} />
+                            {/* Below the page so it overlays it, and outside
+                                the key so a navigation does not drop the
+                                selection the shopper is building. */}
+                            <CompareTray />
                         </AuthModalProvider>
                     </ToastProvider>
                 )}
             </App>,
         );
     },
-    progress: {
-        color: '#2f7a3d',
-    },
+    // Inertia's bundled NProgress bar is off: PageLoader replaces it with a
+    // centred spinner, and leaving this on would run both at once.
+    progress: false,
 });

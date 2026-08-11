@@ -32,7 +32,7 @@ readonly class CartSummary
     ) {}
 
     /**
-     * @param  Collection<int, array{cartItemId: int|null, product: Product, quantity: int}>  $lines
+    * @param  Collection<int, array{cartItemId: int|null, product: Product, quantity: int, unitPriceKobo?: int}>  $lines
      * @param  string|null  $state  Delivery state, once it is known. The cart
      *                              page quotes the default rate because no
      *                              address has been given yet; checkout
@@ -49,10 +49,11 @@ readonly class CartSummary
             $product = $line['product'];
             $quantity = $line['quantity'];
 
-            $subtotal += $product->price_kobo * $quantity;
+            $unitPrice = (int) ($line['unitPriceKobo'] ?? $product->price_kobo);
+            $subtotal += $unitPrice * $quantity;
             // Products without a compare-at price contribute their own price,
             // so they show no phantom discount.
-            $itemsTotal += max($product->compare_at_price_kobo ?? 0, $product->price_kobo) * $quantity;
+            $itemsTotal += max($product->compare_at_price_kobo ?? 0, $unitPrice) * $quantity;
             $count += $quantity;
         }
 
