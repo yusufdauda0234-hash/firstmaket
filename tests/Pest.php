@@ -167,6 +167,12 @@ function adminUrl(string $path = ''): string
     return 'http://'.config('app.admin_domain').'/'.ltrim($path, '/');
 }
 
+/** A URL on the isolated Vendor Center subdomain. Shared for the same reason. */
+function vendorUrl(string $path = ''): string
+{
+    return 'http://'.config('app.vendor_domain').'/'.ltrim($path, '/');
+}
+
 function postWebhook(array $payload, ?string $signature = null): TestResponse
 {
     $json = json_encode($payload) ?: '';

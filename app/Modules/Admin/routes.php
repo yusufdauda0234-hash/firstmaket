@@ -335,8 +335,8 @@ Route::middleware('permission:staff.manage')->group(function () {
     Route::post('staff/{user:uuid}/suspend', [StaffController::class, 'suspend'])->name('admin.staff.suspend');
     Route::post('staff/{user:uuid}/reactivate', [StaffController::class, 'reactivate'])->name('admin.staff.reactivate');
     Route::post('staff/{user:uuid}/availability', [StaffController::class, 'toggleAvailability'])->name('admin.staff.availability');
-    Route::post('staff/{user:uuid}/resend-code', [StaffController::class, 'resendPasswordCode'])
-        ->middleware('throttle:10,1')->name('admin.staff.resend-code');
+    Route::post('staff/{user:uuid}/password-link', [StaffController::class, 'resendPasswordLink'])
+        ->middleware('throttle:10,1')->name('admin.staff.password-link');
 });
 
 Route::middleware('permission:roles.manage')->group(function () {

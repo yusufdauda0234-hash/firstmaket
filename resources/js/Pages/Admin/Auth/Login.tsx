@@ -3,7 +3,7 @@ import { Input } from '@/Components/ui/Input';
 import { InputError } from '@/Components/ui/InputError';
 import { Label } from '@/Components/ui/Label';
 import StaffAuthLayout, { lightInput, lightLabel } from '@/Layouts/StaffAuthLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 export default function AdminLogin() {
@@ -58,15 +58,24 @@ export default function AdminLogin() {
                     <InputError message={errors.password} />
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-                    <input
-                        type="checkbox"
-                        checked={data.remember}
-                        onChange={(e) => setData('remember', e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
-                    />
-                    Keep me signed in on this device
-                </label>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                        <input
+                            type="checkbox"
+                            checked={data.remember}
+                            onChange={(e) => setData('remember', e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
+                        />
+                        Keep me signed in on this device
+                    </label>
+
+                    <Link
+                        href={route('admin.password.request')}
+                        className="text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+                    >
+                        Forgot password?
+                    </Link>
+                </div>
 
                 <Button
                     type="submit"
@@ -78,7 +87,8 @@ export default function AdminLogin() {
             </form>
 
             <p className="mt-6 text-center text-xs text-gray-400">
-                Need help signing in? Contact support for assistance.
+                Locked out and the reset email is not arriving? Ask another administrator to
+                send you a new link from the Staff screen.
             </p>
         </StaffAuthLayout>
     );

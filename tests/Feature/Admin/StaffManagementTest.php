@@ -1,8 +1,7 @@
 <?php
 
 use App\Models\User;
-use App\Modules\Identity\Notifications\OtpCodeNotification;
-use App\Modules\Identity\Services\OtpService;
+use App\Modules\Admin\Notifications\StaffPasswordResetNotification;
 use App\Modules\Logistics\Models\CourierProfile;
 use App\Shared\Enums\UserStatus;
 use App\Shared\Enums\UserType;
@@ -95,30 +94,30 @@ it('creates a courier with a vehicle and puts them on the dispatch list', functi
         ->and($courier->courierProfile->is_available)->toBeTrue();
 });
 
-it('emails the new staff member a code to set their password', function () {
-    // The message said "we have emailed them a code" whether or not anything
-    // was sent — and it was not: the OtpService import named the wrong
-    // namespace, which the container only complains about at call time. Every
-    // test here asserted the row in the database and none asserted the email,
-    // so a screen that silently sent nothing passed for a full suite.
+it('emails the new staff member a link to set their password', function () {
+    // The message said "we have emailed them" whether or not anything was
+    // sent — and once it was not: every test here asserted the row in the
+    // database and none asserted the email, so a screen that silently sent
+    // nothing passed for a full suite.
+    //
+    // It used to be a six-digit code, which was worse than useless: the admin
+    // portal has nowhere to type one, so a new joiner was left holding a
+    // number and no way to use it.
     $this->actingAs(staffAdmin())
         ->post(staffUrl(), courierPayload())
         ->assertRedirect()
         ->assertSessionHas('success');
 
-    Notification::assertSentOnDemand(OtpCodeNotification::class);
+    $courier = User::query()->where('email', 'musa@firstmaket.test')->firstOrFail();
+
+    Notification::assertSentTo($courier, StaffPasswordResetNotification::class);
 });
 
 it('says so plainly when the email could not be sent', function () {
     // The account still exists, so this is not a failed creation — but it is
-    // not a success either, and the admin has to know to resend.
-    app()->bind(OtpService::class, fn () => new class
-    {
-        public function request(...$arguments): void
-        {
-            throw new RuntimeException('Mail server refused the connection');
-        }
-    });
+    // not a success either, and the admin has to know to resend the link.
+    Notification::shouldReceive('send')
+        ->andThrow(new RuntimeException('Mail server refused the connection'));
 
     $this->actingAs(staffAdmin())
         ->post(staffUrl(), courierPayload())
@@ -128,18 +127,20 @@ it('says so plainly when the email could not be sent', function () {
     expect(User::query()->where('email', 'musa@firstmaket.test')->exists())->toBeTrue();
 });
 
-it('resends the code on request', function () {
+it('resends the password link on request', function () {
     $this->actingAs(staffAdmin())->post(staffUrl(), courierPayload());
     $courier = User::query()->where('email', 'musa@firstmaket.test')->firstOrFail();
 
     Notification::fake();
 
     $this->actingAs(staffAdmin())
-        ->post(staffUrl('/'.$courier->uuid.'/resend-code'))
+        ->post(staffUrl('/'.$courier->uuid.'/password-link'))
         ->assertRedirect()
         ->assertSessionHas('success');
 
-    Notification::assertSentOnDemand(OtpCodeNotification::class);
+    // A link, not a six-digit code: the admin portal has no screen to type a
+    // code into, so the code was a dead end for whoever received it.
+    Notification::assertSentTo($courier, StaffPasswordResetNotification::class);
 });
 
 it('never lets an admin choose somebody else\'s password', function () {

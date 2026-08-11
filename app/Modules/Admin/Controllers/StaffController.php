@@ -4,12 +4,10 @@ namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\Admin\Notifications\StaffPasswordResetNotification;
 use App\Modules\Admin\Services\RoleService;
-use App\Modules\Identity\Services\OtpService;
 use App\Modules\Logistics\Models\CourierProfile;
 use App\Shared\Contracts\AuditLoggerContract;
-use App\Shared\Enums\OtpChannel;
-use App\Shared\Enums\OtpPurpose;
 use App\Shared\Enums\UserStatus;
 use App\Shared\Enums\UserType;
 use App\Shared\Enums\VehicleType;
@@ -18,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -37,7 +36,7 @@ use Spatie\Permission\Models\Role;
  * creating a staff account is creating a way into the admin domain.
  *
  * Nobody sets anybody else's password. The account gets an unguessable
- * secret and the new staff member is emailed a code to choose their own —
+ * secret and the new staff member is emailed a link to choose their own —
  * the same rule that governs customer creation, and for the same reason.
  */
 class StaffController extends Controller
@@ -107,7 +106,7 @@ class StaffController extends Controller
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
                 // Unguessable and never shown. Staff choose their own via the
-                // emailed code; nobody here ever knows it.
+                // emailed link; nobody here ever knows it.
                 'password' => Hash::make(Str::random(48)),
                 'user_type' => UserType::Staff,
                 'status' => UserStatus::Active,
@@ -141,18 +140,19 @@ class StaffController extends Controller
             newValues: ['email' => $user->email, 'role' => $data['role']],
         );
 
-        $sent = $this->sendPasswordCode($request, $user);
+        $sent = $this->sendPasswordLink($user, isNewAccount: true, roleName: $data['role']);
+        $minutes = (int) config('auth.passwords.users.expire', 60);
 
         // The account exists either way. Which of the two happened decides
         // what the admin has to do next, so it decides what they are told.
         return $sent
             ? back()->with(
                 'success',
-                "{$user->name} added as {$data['role']}. We have emailed {$user->email} a 6-digit code to set their password with."
+                "{$user->name} added as {$data['role']}. We have emailed {$user->email} a link to choose their password — it expires in {$minutes} minutes."
             )
             : back()->with(
                 'error',
-                "{$user->name} was added, but the email could not be sent. Check the mail settings, then use the key icon on their row to send the code again."
+                "{$user->name} was added, but the email could not be sent. Check the mail settings, then use the key icon on their row to send the link again."
             );
     }
 
@@ -284,41 +284,54 @@ class StaffController extends Controller
         );
     }
 
-    /** Re-send the code a staff member sets their password with. */
-    public function resendPasswordCode(Request $request, User $user): RedirectResponse
+    /** Re-send the link a staff member sets their password with. */
+    public function resendPasswordLink(Request $request, User $user): RedirectResponse
     {
         abort_unless($user->user_type === UserType::Staff, 404);
 
-        return $this->sendPasswordCode($request, $user)
-            ? back()->with('success', "New code sent to {$user->email}.")
+        $minutes = (int) config('auth.passwords.users.expire', 60);
+
+        return $this->sendPasswordLink($user)
+            ? back()->with('success', "New link sent to {$user->email}. It expires in {$minutes} minutes and works once.")
             : back()->with('error', "Could not send to {$user->email}. Check the mail settings and try again.");
     }
 
     /**
-     * The app's own code-based reset, not Laravel's link-based one.
+     * Email a new staff member a link to choose their own password.
      *
-     * Password::sendResetLink builds its URL from route('password.reset'),
-     * which does not exist here because every reset in this app is a 6-digit
-     * code.
+     * This used to send a six-digit code, which left the new joiner holding a
+     * number and no obvious place to type it — the admin portal has no
+     * "enter your code" screen, so the code was effectively a dead end. A
+     * link takes them straight to a form on the portal they will be working
+     * in, which is what vendors already had.
+     *
+     * Laravel's password broker owns the token: hashing, one-time use, and
+     * the 60-minute expiry. `Password::sendResetLink` is deliberately not
+     * used, because it builds its URL from route('password.reset'), which
+     * does not exist in this app — the link has to land on the admin
+     * subdomain, and StaffPasswordResetNotification builds that host itself.
      */
-    private function sendPasswordCode(Request $request, User $user): bool
+    private function sendPasswordLink(User $user, bool $isNewAccount = false, ?string $roleName = null): bool
     {
+        if ($user->email === null) {
+            return false;
+        }
+
         try {
-            app(OtpService::class)->request(
-                destination: $user->email,
-                purpose: OtpPurpose::PasswordReset,
-                user: $user,
-                requestIp: $request->ip(),
-                channel: OtpChannel::Email,
-            );
+            $user->notify(new StaffPasswordResetNotification(
+                Password::broker()->createToken($user),
+                $user->email,
+                (int) config('auth.passwords.users.expire', 60),
+                $isNewAccount,
+                $roleName,
+            ));
 
             return true;
         } catch (\Throwable $e) {
             // The account is already committed, so a mail failure must not be
             // reported as a failed creation — but it must not be reported as
-            // a success either. This swallowed the error and still told the
-            // admin "we have emailed them a code" while nothing was sent, so
-            // the caller now gets the answer and says which happened.
+            // a success either. The caller gets the answer and says which
+            // happened, so nobody is told an email went out that did not.
             report($e);
 
             return false;

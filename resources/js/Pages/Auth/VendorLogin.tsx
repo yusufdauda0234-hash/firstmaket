@@ -3,7 +3,7 @@ import { Input } from '@/Components/ui/Input';
 import { InputError } from '@/Components/ui/InputError';
 import { Label } from '@/Components/ui/Label';
 import { PageProps } from '@/Types';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 // Always-light page: neutralize the shared components' dark-mode variants.
@@ -137,15 +137,24 @@ export default function VendorLogin() {
                                 <InputError message={errors.password} />
                             </div>
 
-                            <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-                                <input
-                                    type="checkbox"
-                                    checked={data.remember}
-                                    onChange={(e) => setData('remember', e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
-                                />
-                                Keep me signed in on this device
-                            </label>
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                                    <input
+                                        type="checkbox"
+                                        checked={data.remember}
+                                        onChange={(e) => setData('remember', e.target.checked)}
+                                        className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500/20"
+                                    />
+                                    Keep me signed in on this device
+                                </label>
+
+                                <Link
+                                    href={route('vendor.password.request')}
+                                    className="text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+                                >
+                                    Forgot password?
+                                </Link>
+                            </div>
 
                             <Button
                                 type="submit"

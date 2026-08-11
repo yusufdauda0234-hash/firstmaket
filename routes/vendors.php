@@ -27,6 +27,20 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('vendor.login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    /*
+     * A vendor asking for their own reset, rather than having to phone
+     * support and ask staff to send one.
+     *
+     * Throttled harder than the reset itself: it sends mail to an address
+     * chosen by whoever is asking, so without a ceiling it is a way to have
+     * FirstMaket flood a stranger's inbox.
+     */
+    Route::get('forgot-password', [VendorPasswordResetController::class, 'request'])
+        ->name('vendor.password.request');
+    Route::post('forgot-password', [VendorPasswordResetController::class, 'send'])
+        ->middleware('throttle:6,1')
+        ->name('vendor.password.email');
+
     // Where the "set your password" email lands. Guest-only: a vendor already
     // signed in has no business on it, and the token is the credential here.
     Route::get('reset-password/{token}', [VendorPasswordResetController::class, 'edit'])

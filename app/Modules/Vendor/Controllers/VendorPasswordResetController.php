@@ -4,7 +4,9 @@ namespace App\Modules\Vendor\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\Vendor\Notifications\VendorPasswordResetNotification;
 use App\Shared\Contracts\AuditLoggerContract;
+use App\Shared\Enums\UserStatus;
 use App\Shared\Enums\UserType;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +28,59 @@ use Inertia\Response;
  */
 class VendorPasswordResetController extends Controller
 {
+    /** The "I forgot my password" form on the Vendor Center sign-in page. */
+    public function request(): Response
+    {
+        return Inertia::render('Auth/VendorForgotPassword');
+    }
+
+    /**
+     * Email a reset link — or appear to.
+     *
+     * Always reports success. Saying "no such account" would turn this form
+     * into a way to discover which addresses sell on FirstMaket, and a list
+     * of verified sellers is worth having to anyone running a scam against
+     * them.
+     *
+     * Previously a vendor who forgot their password had to ask staff to
+     * reset it for them; this is the same email, asked for by the vendor.
+     */
+    public function send(Request $request, AuditLoggerContract $auditLogger): RedirectResponse
+    {
+        $validated = $request->validate(['email' => ['required', 'email', 'max:255']]);
+
+        $vendor = User::query()
+            ->where('email', $validated['email'])
+            ->where('user_type', UserType::Vendor)
+            ->first();
+
+        // A suspended vendor must not be able to let themselves back in.
+        if ($vendor !== null && $vendor->status === UserStatus::Active) {
+            try {
+                $vendor->notify(new VendorPasswordResetNotification(
+                    Password::broker()->createToken($vendor),
+                    (string) $vendor->email,
+                    $this->expiryMinutes(),
+                ));
+
+                $auditLogger->log(
+                    actor: $vendor,
+                    subject: $vendor,
+                    action: 'vendor.password_reset_requested',
+                );
+            } catch (\Throwable $e) {
+                // Reported, not shown: the response is identical either way,
+                // so a failing mailer cannot be used to probe for accounts.
+                report($e);
+            }
+        }
+
+        return back()->with(
+            'success',
+            'If that address belongs to a FirstMaket vendor account, a link to set a new password is on its way. It expires in '.$this->expiryMinutes().' minutes.',
+        );
+    }
+
     public function edit(Request $request, string $token): Response
     {
         return Inertia::render('Auth/VendorResetPassword', [
@@ -81,5 +136,10 @@ class VendorPasswordResetController extends Controller
         return redirect()
             ->route('vendor.login')
             ->with('success', 'Your password is set. Sign in to the Vendor Center below.');
+    }
+
+    private function expiryMinutes(): int
+    {
+        return (int) config('auth.passwords.users.expire', 60);
     }
 }

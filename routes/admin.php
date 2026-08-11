@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\StaffDashboardController;
+use App\Modules\Admin\Controllers\StaffPasswordResetController;
 use App\Modules\Admin\Controllers\TwoFactorController;
 use App\Modules\Auth\Controllers\AuthenticatedSessionController;
 use App\Modules\Auth\Controllers\TwoFactorChallengeController;
@@ -24,6 +25,29 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('admin.login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    /*
+     * Password recovery for staff.
+     *
+     * Guest-only throughout: the token is the credential, and somebody
+     * already signed in has no business on these pages.
+     *
+     * The request endpoint is throttled harder than the reset itself. It
+     * sends mail to an address chosen by whoever is asking, so without a
+     * ceiling it is a way to have FirstMaket send a stranger's inbox as
+     * much mail as somebody likes.
+     */
+    Route::get('forgot-password', [StaffPasswordResetController::class, 'request'])
+        ->name('admin.password.request');
+    Route::post('forgot-password', [StaffPasswordResetController::class, 'send'])
+        ->middleware('throttle:6,1')
+        ->name('admin.password.email');
+
+    Route::get('reset-password/{token}', [StaffPasswordResetController::class, 'edit'])
+        ->name('admin.password.reset');
+    Route::post('reset-password', [StaffPasswordResetController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('admin.password.update');
 
     // Second step of a staff sign-in. Reachable only as a guest, because the
     // account is deliberately not authenticated until the code is verified —

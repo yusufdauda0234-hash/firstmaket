@@ -207,14 +207,14 @@ export default function StaffIndex() {
                                                 type="button"
                                                 onClick={() =>
                                                     router.post(
-                                                        route('admin.staff.resend-code', member.uuid),
+                                                        route('admin.staff.password-link', member.uuid),
                                                         {},
                                                         { preserveScroll: true },
                                                     )
                                                 }
                                                 className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                                                aria-label={`Resend password code to ${member.name}`}
-                                                title="Email a new password code"
+                                                aria-label={`Email ${member.name} a new password link`}
+                                                title="Email a new link to set their password"
                                             >
                                                 <KeyRound className="h-4 w-4" />
                                             </button>
