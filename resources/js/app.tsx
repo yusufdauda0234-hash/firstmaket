@@ -61,7 +61,9 @@ createInertiaApp({
             </App>,
         );
     },
-    // Inertia's bundled NProgress bar is off: PageLoader replaces it with a
-    // centred spinner, and leaving this on would run both at once.
+    // Inertia's bundled NProgress bar is off. PageLoader draws our own, which
+    // sits above the sticky headers and — unlike the bundled one — ignores
+    // hover prefetches and background reloads. Leaving this on would run two
+    // bars at once.
     progress: false,
 });
