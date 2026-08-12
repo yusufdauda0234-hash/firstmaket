@@ -17,6 +17,7 @@ import {
     MoreHorizontal,
     Package,
     PiggyBank,
+    ReceiptText,
     RotateCcw,
     Settings,
     ShoppingBag,
@@ -126,6 +127,12 @@ export default function AccountLayout({ title, children }: PropsWithChildren<{ t
                     icon: Package,
                     href: route('orders.index'),
                     match: (p) => p.startsWith('/orders'),
+                },
+                {
+                    label: 'Receipts',
+                    icon: ReceiptText,
+                    href: route('receipts.index'),
+                    match: (p) => p.startsWith('/receipts'),
                 },
                 {
                     label: 'Returns',

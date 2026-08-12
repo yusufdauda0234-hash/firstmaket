@@ -4,6 +4,7 @@ namespace App\Modules\Orders\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Orders\Models\Order;
+use App\Modules\Orders\Models\OrderReceipt;
 use App\Modules\Orders\Services\OrderService;
 use App\Modules\Payments\Actions\StartPaystackPaymentAction;
 use App\Modules\Returns\Models\ReturnRequest;
@@ -176,6 +177,13 @@ class OrderController extends Controller
                 'goodsDueKobo' => $order->shipment?->collect_on_delivery_kobo ?? 0,
                 'goodsPaidAt' => $order->shipment?->goods_paid_at?->format('j M Y, g:ia'),
                 'canConfirmReceipt' => $order->status === OrderStatus::Delivered && $order->delivery_confirmed_at === null,
+                // The receipt covers the whole checkout, so it is looked up
+                // by session rather than by order — a two-vendor basket shows
+                // the same document on both order pages, which is correct:
+                // it was one payment.
+                'receiptUuid' => OrderReceipt::query()
+                    ->where('checkout_session_id', $order->checkout_session_id)
+                    ->value('uuid'),
                 // Phase 2E. `returnWindowClosesAt` is shown whether or not the
                 // window is still open: a customer who has just missed it is
                 // owed the date, not a silently absent button.

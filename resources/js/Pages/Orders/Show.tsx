@@ -6,7 +6,7 @@ import AccountLayout from '@/Layouts/AccountLayout';
 import { cn } from '@/Utils/cn';
 import { formatNairaFromKobo } from '@/Utils/money';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, KeyRound, MapPin, Package, PartyPopper, RotateCcw } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, KeyRound, MapPin, Package, PartyPopper, ReceiptText, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 
 /** Mirrors App\Shared\Enums\ReturnReason — the server revalidates it. */
@@ -47,6 +47,8 @@ interface Props {
         existingReturnUuid: string | null;
         confirmedAt: string | null;
         canConfirmReceipt: boolean;
+        /** Covers the whole checkout, so a multi-vendor basket shares one. */
+        receiptUuid: string | null;
         goodsDueKobo: number;
         goodsPaidAt: string | null;
         /** Four digits the customer reads to the courier. Null once spent. */
@@ -170,6 +172,26 @@ export default function OrderShow() {
                     <span className="rounded-xl bg-white px-5 py-2.5 text-2xl font-extrabold tracking-[0.35em] tabular-nums text-brand-800 shadow-sm">
                         {order.deliveryCode}
                     </span>
+                </div>
+            )}
+
+            {/* ── Receipt ──
+                Above the returns form and below the delivery code: a customer
+                looking for proof of purchase is usually doing paperwork, not
+                complaining, and should not have to scroll past a returns form
+                to find it. */}
+            {order.receiptUuid && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4">
+                    <p className="flex items-center gap-2 text-sm text-gray-700">
+                        <ReceiptText className="h-5 w-5 text-gray-400" />
+                        Your receipt for this purchase is ready to view or print.
+                    </p>
+                    <Link
+                        href={route('receipts.show', order.receiptUuid)}
+                        className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-bold text-gray-700 transition hover:border-brand-300 hover:text-brand-700 active:scale-95"
+                    >
+                        View receipt
+                    </Link>
                 </div>
             )}
 

@@ -53,3 +53,32 @@
         display: none;
     }
 }
+
+/* Printing one element out of a full page.
+
+   A receipt is the only thing on this site anybody prints, and it sits inside
+   the ordinary storefront shell — header, search bar, footer, cookie strip.
+   Marking each of those `print:hidden` would mean revisiting every layout and
+   getting it wrong whenever a new one appears, so the page instead names what
+   SHOULD print and everything else disappears.
+
+   Visibility rather than display: `display: none` on an ancestor would take
+   the receipt down with it, whereas visibility can be switched back on for
+   the subtree. */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    [data-print-sheet],
+    [data-print-sheet] * {
+        visibility: visible;
+    }
+
+    [data-print-sheet] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}

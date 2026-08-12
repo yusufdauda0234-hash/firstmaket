@@ -42,7 +42,10 @@ class OrderService
         'vendor_rejected' => ['cancelled', 'processing'],
     ];
 
-    public function __construct(private readonly AuditLoggerContract $auditLogger) {}
+    public function __construct(
+        private readonly AuditLoggerContract $auditLogger,
+        private readonly ReceiptService $receipts,
+    ) {}
 
     /**
      * Create every order for a checkout session — one order per unit,
@@ -117,6 +120,19 @@ class OrderService
 
                     $orders->push($order);
                 }
+            }
+
+            // Issued here rather than at either call site, so a card checkout
+            // and a completed savings plan produce the same document — the
+            // customer paid for goods either way, and only the schedule
+            // differed.
+            $receipt = $this->receipts->issueFor($customer, $session, $orders);
+
+            // Emailed after commit: this runs inside the payment webhook's
+            // transaction, and a mail failure must never roll back orders the
+            // customer has already been charged for.
+            if ($receipt !== null) {
+                DB::afterCommit(fn () => $this->receipts->email($receipt));
             }
 
             $this->auditLogger->log(
