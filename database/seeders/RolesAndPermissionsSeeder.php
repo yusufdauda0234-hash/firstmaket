@@ -54,6 +54,16 @@ class RolesAndPermissionsSeeder extends Seeder
         // support.manage: answering one customer and mailing every customer
         // are different levels of trust.
         'announcements.send',
+        // Recording what the business spends, and signing it off. Two
+        // permissions rather than one so the person who spends the money need
+        // not be the person who approves it.
+        'expenses.manage',
+        'expenses.approve',
+        // Reads the audit trail: who changed what, across the whole system.
+        // Seeded but granted to no role by default — the trail exists to hold
+        // staff to account, so who may read it is a decision an owner makes
+        // deliberately rather than something an Administrator inherits.
+        'audit.view',
         // Downloads a full SQL dump and can wipe any table's data outright.
         // Like roles.manage, seeded but granted to no role by default — only
         // Super Administrator (via Gate::before) reaches it out of the box.
@@ -108,6 +118,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'delivery.update',
         ],
         'Finance Officer' => [
+            'expenses.manage',
+            'expenses.approve',
             'savings.view',
             // The one role besides an administrator that may send money back.
             'refunds.issue',

@@ -8,6 +8,7 @@ use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -25,7 +26,7 @@ use Spatie\Permission\Models\Role;
  * @property NotificationCategory $category
  * @property int $recipients_count
  * @property int|null $sent_by
- * @property \Illuminate\Support\Carbon|null $sent_at
+ * @property Carbon|null $sent_at
  */
 class Announcement extends Model
 {

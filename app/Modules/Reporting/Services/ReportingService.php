@@ -10,8 +10,8 @@ use App\Modules\Savings\Models\SavingsGoal;
 use App\Modules\Vendor\Models\VendorProfile;
 use App\Modules\Vendor\Models\VendorRating;
 use App\Shared\Enums\SavingsGoalStatus;
-use App\Shared\Support\TitleCase;
 use App\Shared\Enums\UserType;
+use App\Shared\Support\TitleCase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

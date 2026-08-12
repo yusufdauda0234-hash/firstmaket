@@ -2,6 +2,9 @@
 
 use App\Modules\Admin\Controllers\AiSettingsController;
 use App\Modules\Admin\Controllers\AnnouncementController;
+use App\Modules\Admin\Controllers\AuditLogController;
+use App\Modules\Admin\Controllers\ExpenseController;
+use App\Modules\Admin\Controllers\FinanceController;
 use App\Modules\Admin\Controllers\AutomationSettingsController;
 use App\Modules\Admin\Controllers\CategoryController;
 use App\Modules\Admin\Controllers\CampaignController;
@@ -366,6 +369,33 @@ Route::middleware('permission:roles.manage')->group(function () {
     Route::post('roles', [RoleController::class, 'store'])->name('admin.roles.store');
     Route::put('roles/{role}', [RoleController::class, 'update'])->name('admin.roles.update');
     Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('admin.roles.destroy');
+});
+
+// The audit trail. Read-only by design: no store, update or destroy route
+// exists here and none should — a log somebody can edit is not a log.
+Route::middleware('permission:audit.view')->group(function () {
+    Route::get('audit', [AuditLogController::class, 'index'])->name('admin.audit.index');
+});
+
+// The money, read two ways. Read-only: moving money has its own screens
+// with their own permissions, and folding an action in here would make the
+// reporting page something nobody dares grant access to.
+Route::middleware('permission:reports.view')->group(function () {
+    Route::get('finance/transactions', [FinanceController::class, 'transactions'])->name('admin.transactions.index');
+    Route::get('finance/transactions/export', [FinanceController::class, 'export'])->name('admin.transactions.export');
+    Route::get('finance/summary', [FinanceController::class, 'summary'])->name('admin.finance.summary');
+});
+
+// What the business spends. Recording and approving are separate
+// permissions: writing a cost down and signing it off are different jobs.
+Route::middleware('permission:expenses.manage')->group(function () {
+    Route::get('finance/expenses', [ExpenseController::class, 'index'])->name('admin.expenses.index');
+    Route::post('finance/expenses', [ExpenseController::class, 'store'])->name('admin.expenses.store');
+    Route::get('finance/expenses/{expense:uuid}/receipt', [ExpenseController::class, 'receipt'])
+        ->name('admin.expenses.receipt');
+    Route::post('finance/expenses/{expense:uuid}/decision', [ExpenseController::class, 'decide'])
+        ->middleware('permission:expenses.approve')
+        ->name('admin.expenses.decision');
 });
 
 Route::middleware('permission:system.backup')->group(function () {

@@ -242,12 +242,61 @@ hand-edited URL fails rather than silently attributing to a guessed code.
 | Customers | Customers, Phone review | `customers.view`, `identity.review` |
 | Support | Tickets, Lookup, Returns | `support.manage`, `returns.manage` |
 | | Refunds | `refunds.issue` |
+| | Notifications (broadcast) | `announcements.send` |
 | Finance | Reconciliation, Vendor payouts | `finance.reconcile`, `vendor_payouts.approve` |
+| | Financial summary, Transactions | `reports.view` |
+| | Expenses | `expenses.manage`, `expenses.approve` |
 | Growth | Affiliate partners | `affiliates.manage` |
 | | Affiliate payouts | `affiliate_payouts.approve` |
 | System | Staff, Staff roles | `staff.manage`, `roles.manage` |
 | | Settings, Feature flags | `settings.manage` |
+| | **Audit trail** | `audit.view` |
 | | **Database backups** | `system.backup` |
+
+### Notifications
+
+At **Support → Notifications**, behind `announcements.send`. Compose a
+message and send it to everyone, to one role, or to a single person, down any
+of in-app, email and SMS.
+
+The sender's channel choice is **narrowed** by each recipient's own
+preferences for the chosen category, never widened — somebody who switched
+off promotional email does not start receiving it because a broadcast ticked
+the box. Suspended and banned accounts are always skipped, and a broadcast
+matching nobody is refused rather than recorded as "sent to 0".
+
+### Financial summary, transactions and expenses
+
+There is no single transactions table, and deliberately so — a customer
+charge, a vendor payout, a refund and an office expense are different records
+with different lifecycles. **Finance → Transactions** reads them together at
+query time; nothing is copied into a second place that could drift.
+
+Only settled money appears: a charge is counted from its `webhook_verified_at`,
+never from a browser callback, and a payout from its `paid_at`.
+
+**Finance → Financial summary** shows money in, money out, the net position
+and commission earned. Commission is shown *beside* money in, never added to
+it: it is the platform's share of a charge that already appears there.
+
+**Finance → Expenses** records what the business spends, by category, with an
+optional receipt. Recording and approving are separate permissions and the
+person who recorded an expense **cannot** approve it. Rejected spend stays on
+the record but never counts toward a total, and only *approved* expenses reach
+the ledger — so the net position cannot move on somebody's unreviewed data
+entry.
+
+### Audit trail
+
+At **System → Audit trail**, behind `audit.view`, which **no role holds by
+default**. Every money, plan, listing, vendor, order and admin state change
+has always been written to `audit_logs`; this is the screen that reads it.
+Filter by area, action, who, and period — the areas and actions offered are
+derived from the data, so a feature shipped last week appears without anybody
+updating a list.
+
+Read-only. There is no route here that edits or deletes a row, and there
+should never be one.
 
 ### Merchandising
 

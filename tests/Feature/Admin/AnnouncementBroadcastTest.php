@@ -13,6 +13,7 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Support\Facades\Queue;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -74,7 +75,7 @@ it('sends only to the chosen role', function () {
     User::factory()->count(3)->create(); // No role — must not be counted.
 
     $sender = announcementSender();
-    $customerRoleId = Spatie\Permission\Models\Role::query()->where('name', 'Customer')->value('id');
+    $customerRoleId = Role::query()->where('name', 'Customer')->value('id');
 
     $this->actingAs($sender)
         ->post(announcementUrl(), announcementPayload([
@@ -125,7 +126,7 @@ it('refuses to send to an empty audience', function () {
     Queue::fake();
 
     $sender = announcementSender();
-    $emptyRoleId = Spatie\Permission\Models\Role::query()->where('name', 'Logistics Personnel')->value('id');
+    $emptyRoleId = Role::query()->where('name', 'Logistics Personnel')->value('id');
 
     $this->actingAs($sender)
         ->post(announcementUrl(), announcementPayload([
@@ -141,7 +142,7 @@ it('refuses to send to an empty audience', function () {
 it('clears the role when the audience is everyone', function () {
     Queue::fake();
 
-    $roleId = Spatie\Permission\Models\Role::query()->where('name', 'Customer')->value('id');
+    $roleId = Role::query()->where('name', 'Customer')->value('id');
     $sender = announcementSender();
 
     $this->actingAs($sender)

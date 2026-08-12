@@ -2,7 +2,7 @@ import { cn } from '@/Utils/cn';
 import { useFlashToast } from '@/Components/ui/Toast';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { BookOpen, Banknote, BarChart3, TrendingUp, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Megaphone, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
+import { ArrowLeftRight, BookOpen, Banknote, BarChart3, PieChart, TrendingUp, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FileSearch, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Megaphone, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 interface NavItem {
@@ -395,6 +395,34 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         icon: ShieldCheck,
                         active: path.startsWith('/roles'),
                         show: can('roles.manage'),
+                    },
+                    {
+                        label: 'Financial summary',
+                        href: route('admin.finance.summary'),
+                        icon: PieChart,
+                        active: path.startsWith('/finance/summary'),
+                        show: can('reports.view'),
+                    },
+                    {
+                        label: 'Transactions',
+                        href: route('admin.transactions.index'),
+                        icon: ArrowLeftRight,
+                        active: path.startsWith('/finance/transactions'),
+                        show: can('reports.view'),
+                    },
+                    {
+                        label: 'Expenses',
+                        href: route('admin.expenses.index'),
+                        icon: Wallet,
+                        active: path.startsWith('/finance/expenses'),
+                        show: can('expenses.manage'),
+                    },
+                    {
+                        label: 'Audit trail',
+                        href: route('admin.audit.index'),
+                        icon: FileSearch,
+                        active: path.startsWith('/audit'),
+                        show: can('audit.view'),
                     },
                     {
                         label: 'Database backups',
