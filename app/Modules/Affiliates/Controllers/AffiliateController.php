@@ -24,6 +24,7 @@ class AffiliateController extends Controller
         AffiliateService $affiliates,
         AffiliateTierResolver $tiers,
         AffiliatePayoutService $payouts,
+        \App\Modules\Affiliates\Services\AffiliateRankService $ranks,
     ): Response {
         $affiliate = Affiliate::query()
             ->with([
@@ -45,6 +46,7 @@ class AffiliateController extends Controller
                 'bankAccount' => null,
                 'tier' => null,
                 'minimumPayoutKobo' => $payouts->minimumThresholdKobo(),
+                'standing' => null,
                 'attributionWindowDays' => $affiliates->attributionWindowDays(),
             ]);
         }
@@ -123,6 +125,7 @@ class AffiliateController extends Controller
                 'vendorRecruitmentKobo' => $tier->vendor_recruitment_kobo,
             ] : null,
             'minimumPayoutKobo' => $payouts->minimumThresholdKobo(),
+            'standing' => $ranks->standing($affiliate),
             'attributionWindowDays' => $affiliates->attributionWindowDays(),
         ]);
     }
@@ -164,6 +167,63 @@ class AffiliateController extends Controller
         $link->forceFill(['status' => AffiliateLink::STATUS_SUSPENDED])->save();
 
         return back()->with('success', 'Link switched off. Anyone who already signed up through it still counts.');
+    }
+
+    /**
+     * Apply for the next rank.
+     *
+     * Documents go to the private disk, exactly like a vendor's CAC file —
+     * never a public URL, and never inline in the request body.
+     */
+    public function requestUpgrade(Request $request, \App\Modules\Affiliates\Services\AffiliateRankService $ranks): RedirectResponse
+    {
+        $affiliate = $this->ownAffiliate($request);
+        $target = $ranks->nextRankFor($affiliate);
+
+        if ($target === null) {
+            return back()->with('error', 'You are already on the highest rank.');
+        }
+
+        $request->validate([
+            'answers' => ['array'],
+            'answers.*.value' => ['nullable', 'string', 'max:500'],
+            'answers.*.document' => ['nullable', 'file', 'max:5120', 'mimes:pdf,jpg,jpeg,png'],
+        ]);
+
+        $answers = [];
+
+        foreach ($target->requirements as $requirement) {
+            $submitted = $request->input("answers.{$requirement->id}.value");
+            $file = $request->file("answers.{$requirement->id}.document");
+
+            $answers[$requirement->id] = [
+                'value' => $submitted,
+                'document_id' => $file === null ? null : $this->storeDocument($request, $file, $requirement->label),
+            ];
+        }
+
+        $ranks->requestUpgrade($affiliate, $answers);
+
+        return back()->with('success', 'Application sent. We will look at it and let you know.');
+    }
+
+    /** @param \Illuminate\Http\UploadedFile $file */
+    private function storeDocument(Request $request, $file, string $label): int
+    {
+        $path = $file->store('affiliate-rank-documents', 'private');
+
+        return \App\Models\UploadedDocument::query()->create([
+            'owner_type' => \App\Models\User::class,
+            'owner_id' => $request->user()->id,
+            'document_type' => $label,
+            'disk' => 'private',
+            'path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+            'status' => 'pending',
+            'uploaded_by' => $request->user()->id,
+        ])->id;
     }
 
     public function storeBankAccount(Request $request, AffiliatePayoutService $payouts): RedirectResponse

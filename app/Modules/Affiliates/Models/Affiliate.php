@@ -18,13 +18,17 @@ class Affiliate extends Model
     public const STATUS_SUSPENDED = 'suspended';
 
     protected $fillable = [
-        'user_id', 'display_name', 'status', 'tier_id', 'approved_by', 'approved_at',
-        'suspended_at', 'suspension_reason', 'rejection_reason',
+        'user_id', 'display_name', 'status', 'tier_id', 'rank_entered_at', 'rank_baseline_conversion_id',
+        'approved_by', 'approved_at', 'suspended_at', 'suspension_reason', 'rejection_reason',
     ];
 
     protected function casts(): array
     {
-        return ['approved_at' => 'datetime', 'suspended_at' => 'datetime'];
+        return [
+            'approved_at' => 'datetime',
+            'suspended_at' => 'datetime',
+            'rank_entered_at' => 'datetime',
+        ];
     }
 
     /** @return BelongsTo<User, $this> */
@@ -53,6 +57,9 @@ class Affiliate extends Model
 
     /** @return HasMany<AffiliateFraudFlag, $this> */
     public function fraudFlags(): HasMany { return $this->hasMany(AffiliateFraudFlag::class); }
+
+    /** @return HasMany<AffiliateUpgradeRequest, $this> */
+    public function upgradeRequests(): HasMany { return $this->hasMany(AffiliateUpgradeRequest::class); }
 
     /**
      * Trading status. A suspended partner keeps their history and their

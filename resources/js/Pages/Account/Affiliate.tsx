@@ -28,7 +28,43 @@ interface PayoutRow {
     period: string;
 }
 
+interface RankRequirement {
+    id: number;
+    label: string;
+    helpText: string | null;
+    type: 'document' | 'text' | 'number';
+    isRequired: boolean;
+}
+
+interface Standing {
+    rank: {
+        name: string;
+        description: string | null;
+        commissionPercent: number;
+        referralQuota: number;
+        linkExpiryDays: number;
+        maxActiveLinks: number;
+    } | null;
+    referralsUsed: number;
+    referralsRemaining: number | null;
+    canEarn: boolean;
+    mustUpgrade: boolean;
+    canCreateLink: boolean;
+    nextRank: {
+        id: number;
+        name: string;
+        description: string | null;
+        commissionPercent: number;
+        referralQuota: number;
+        linkExpiryDays: number;
+        requirements: RankRequirement[];
+    } | null;
+    pendingRequest: boolean;
+    lastRejection: string | null;
+}
+
 interface Props {
+    standing: Standing | null;
     application: { displayName: string; status: string; rejectionReason: string | null; suspensionReason: string | null } | null;
     links: AffiliateLink[];
     stats: { clicks: number; signups: number; conversions: number; inReview: number; pendingKobo: number; paidKobo: number } | null;
@@ -49,6 +85,7 @@ interface Props {
 
 export default function Affiliate({
     application,
+    standing,
     links = [],
     stats,
     funnel,
@@ -142,6 +179,8 @@ export default function Affiliate({
                             </p>
                         )}
                     </section>
+
+                    {standing?.rank && <RankStanding standing={standing} />}
 
                     {stats && (
                         <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -375,5 +414,195 @@ export default function Affiliate({
                 </>
             )}
         </AccountLayout>
+    );
+}
+
+/**
+ * Where the partner stands on the ladder, and the way up.
+ *
+ * The quota meter is the point of this block. A rank allows a fixed number of
+ * referrals, and running out is not a failure state — it is the programme
+ * saying "you have done the trial, now show us who you are". So it reads as a
+ * next step rather than a penalty, and it says plainly that shoppers can
+ * still use the link: a partner's first fear on seeing a limit is that the
+ * post they shared has gone dead.
+ */
+function RankStanding({ standing }: { standing: Standing }) {
+    const [open, setOpen] = useState(false);
+    const rank = standing.rank!;
+    const next = standing.nextRank;
+
+    const used = standing.referralsUsed;
+    const quota = rank.referralQuota;
+    const unlimited = quota <= 0;
+    const percent = unlimited ? 0 : Math.min(100, Math.round((used / Math.max(1, quota)) * 100));
+
+    return (
+        <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">Your rank</p>
+                    <h2 className="mt-0.5 text-xl font-extrabold text-gray-900">{rank.name}</h2>
+                    {rank.description && <p className="mt-1 text-sm text-gray-500">{rank.description}</p>}
+                </div>
+                <span className="rounded-xl bg-brand-50 px-4 py-2 text-center">
+                    <span className="block text-lg font-extrabold text-brand-900">{rank.commissionPercent}%</span>
+                    <span className="text-[11px] font-semibold text-brand-700">per delivered order</span>
+                </span>
+            </div>
+
+            <div className="mt-5">
+                <div className="flex items-baseline justify-between">
+                    <p className="text-sm font-semibold text-gray-700">
+                        {unlimited ? 'Unlimited referrals' : `${used} of ${quota} referrals used`}
+                    </p>
+                    {!unlimited && standing.referralsRemaining !== null && (
+                        <p className="text-xs text-gray-500">{standing.referralsRemaining} left on this rank</p>
+                    )}
+                </div>
+                {!unlimited && (
+                    <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-gray-100">
+                        <div
+                            className={`h-full rounded-full transition-all ${standing.canEarn ? 'bg-brand-600' : 'bg-amber-500'}`}
+                            style={{ width: `${percent}%` }}
+                        />
+                    </div>
+                )}
+                <p className="mt-2 text-xs text-gray-400">
+                    {rank.linkExpiryDays > 0
+                        ? `Links you create last ${rank.linkExpiryDays} days.`
+                        : 'Your links do not expire.'}
+                    {rank.maxActiveLinks > 0 && ` Up to ${rank.maxActiveLinks} live at a time.`}
+                </p>
+            </div>
+
+            {standing.mustUpgrade && (
+                <div className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <strong className="font-bold">You have used this rank&rsquo;s referrals.</strong> Your links
+                    still work and anyone can still shop through them — but new referrals will not earn until you
+                    move up to {next?.name}.
+                </div>
+            )}
+
+            {standing.lastRejection && !standing.pendingRequest && (
+                <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <strong className="font-bold">Your last application was not accepted.</strong>{' '}
+                    {standing.lastRejection} You can fix that and apply again.
+                </p>
+            )}
+
+            {standing.pendingRequest && (
+                <p className="mt-4 rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                    Your application to move up is with our team. We will let you know.
+                </p>
+            )}
+
+            {next && !standing.pendingRequest && (
+                <div className="mt-5 border-t border-gray-100 pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p className="text-sm font-bold text-gray-900">Next: {next.name}</p>
+                            <p className="text-xs text-gray-500">
+                                {next.commissionPercent}% per order ·{' '}
+                                {next.referralQuota > 0 ? `${next.referralQuota} referrals` : 'unlimited referrals'} ·{' '}
+                                {next.linkExpiryDays > 0 ? `${next.linkExpiryDays}-day links` : 'links never expire'}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setOpen((value) => !value)}
+                            className="rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-700"
+                        >
+                            {open ? 'Cancel' : `Apply for ${next.name}`}
+                        </button>
+                    </div>
+
+                    {open && <UpgradeForm next={next} onDone={() => setOpen(false)} />}
+                </div>
+            )}
+
+            {!next && (
+                <p className="mt-4 border-t border-gray-100 pt-4 text-sm text-gray-500">
+                    You are on the highest rank. Nothing is capped.
+                </p>
+            )}
+        </section>
+    );
+}
+
+function UpgradeForm({ next, onDone }: { next: NonNullable<Standing['nextRank']>; onDone: () => void }) {
+    const form = useForm<{ answers: Record<string, { value?: string; document?: File | null }> }>({
+        answers: {},
+    });
+
+    const setAnswer = (id: number, patch: { value?: string; document?: File | null }) =>
+        form.setData('answers', {
+            ...form.data.answers,
+            [id]: { ...(form.data.answers[id] ?? {}), ...patch },
+        });
+
+    return (
+        <form
+            onSubmit={(event) => {
+                event.preventDefault();
+                form.post(route('affiliates.upgrade.request'), {
+                    // Documents ride along, so this cannot be a JSON request.
+                    forceFormData: true,
+                    preserveScroll: true,
+                    onSuccess: onDone,
+                });
+            }}
+            className="mt-4 space-y-4 rounded-xl bg-gray-50 p-4"
+        >
+            {next.requirements.length === 0 && (
+                <p className="text-sm text-gray-600">
+                    This rank asks for nothing extra — send the application and our team will review it.
+                </p>
+            )}
+
+            {next.requirements.map((requirement) => (
+                <label key={requirement.id} className="block">
+                    <span className="mb-1 block text-xs font-bold text-gray-700">
+                        {requirement.label}
+                        {!requirement.isRequired && <span className="ml-1 font-medium text-gray-400">(optional)</span>}
+                    </span>
+                    {requirement.helpText && (
+                        <span className="mb-1.5 block text-[11px] text-gray-500">{requirement.helpText}</span>
+                    )}
+
+                    {requirement.type === 'document' ? (
+                        <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(event) => setAnswer(requirement.id, { document: event.target.files?.[0] ?? null })}
+                            className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"
+                        />
+                    ) : (
+                        <input
+                            type={requirement.type === 'number' ? 'number' : 'text'}
+                            onChange={(event) => setAnswer(requirement.id, { value: event.target.value })}
+                            className="min-h-11 w-full rounded-lg border border-gray-300 px-3 text-sm"
+                        />
+                    )}
+                </label>
+            ))}
+
+            {/* The server rejects a missing requirement under its own key,
+                which is not one of this form's fields. */}
+            {'upgrade' in form.errors && (
+                <p className="text-xs text-red-600">{(form.errors as Record<string, string>).upgrade}</p>
+            )}
+
+            <button
+                type="submit"
+                disabled={form.processing}
+                className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+            >
+                {form.processing ? 'Sending…' : 'Send application'}
+            </button>
+            <p className="text-[11px] text-gray-400">
+                Documents are stored privately and are only seen by our review team.
+            </p>
+        </form>
     );
 }

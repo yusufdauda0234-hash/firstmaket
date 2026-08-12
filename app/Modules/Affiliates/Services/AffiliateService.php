@@ -45,6 +45,7 @@ class AffiliateService
     public function __construct(
         private readonly AffiliateTierResolver $tiers,
         private readonly AffiliateFraudService $fraud,
+        private readonly AffiliateRankService $ranks,
     ) {}
 
     public function commissionPercent(): float
@@ -73,6 +74,8 @@ class AffiliateService
     public function approve(Affiliate $affiliate, User $admin): AffiliateLink
     {
         return DB::transaction(function () use ($affiliate, $admin): AffiliateLink {
+            $entryRank = $this->ranks->entryRank();
+
             $affiliate->forceFill([
                 'status' => Affiliate::STATUS_APPROVED,
                 'approved_by' => $admin->id,
@@ -80,7 +83,11 @@ class AffiliateService
                 'rejection_reason' => null,
                 'suspended_at' => null,
                 'suspension_reason' => null,
-                'tier_id' => $affiliate->tier_id ?? $this->tiers->defaultTier()?->id,
+                'tier_id' => $affiliate->tier_id ?? $entryRank?->id,
+                // The quota window opens now, not at signup — otherwise an
+                // application that sat waiting for a week would arrive with
+                // part of its allowance already counted against it.
+                'rank_entered_at' => $affiliate->rank_entered_at ?? now(),
             ])->save();
 
             $existing = $affiliate->links()->first();
@@ -132,6 +139,26 @@ class AffiliateService
     {
         if (! $affiliate->isActive()) {
             throw ValidationException::withMessages(['link' => 'Only an active affiliate can create links.']);
+        }
+
+        if (! $this->ranks->canCreateLink($affiliate)) {
+            throw ValidationException::withMessages([
+                'link' => 'You have as many live links as your rank allows. Switch one off, or upgrade for more.',
+            ]);
+        }
+
+        /*
+         * The rank decides how long a link lives. A partner may ask for
+         * something shorter, but never longer — short-lived links at the
+         * bottom of the ladder are what limit the damage somebody can do
+         * before anyone has verified who they are.
+         */
+        $rankExpiry = $this->ranks->linkExpiryFor($affiliate);
+
+        if ($rankExpiry !== null) {
+            $expiresAt = $expiresAt === null
+                ? $rankExpiry
+                : min($expiresAt, $rankExpiry);
         }
 
         $code = $this->newCode();
@@ -436,6 +463,22 @@ class AffiliateService
     private function writeCommission(Affiliate $affiliate, AffiliateConversion $conversion): ?AffiliateCommission
     {
         if ($conversion->status !== AffiliateConversion::STATUS_QUALIFIED) {
+            return null;
+        }
+
+        /*
+         * The rank's referral quota.
+         *
+         * The conversion is still recorded — the referral genuinely happened
+         * and the partner should see it on their funnel — but nothing is paid
+         * for it beyond the allowance their rank carries. They upgrade to
+         * keep earning.
+         *
+         * Checked here rather than at attribution time on purpose: a customer
+         * who clicked a link must still be able to sign up and shop normally.
+         * Refusing them would cost a sale to make a point at the partner.
+         */
+        if (! $this->ranks->canEarn($affiliate, $conversion->id)) {
             return null;
         }
 

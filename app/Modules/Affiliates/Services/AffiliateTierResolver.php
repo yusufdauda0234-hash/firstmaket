@@ -23,15 +23,12 @@ use App\Modules\Affiliates\Models\AffiliateTier;
 class AffiliateTierResolver
 {
     /**
-     * The tier an affiliate qualifies for right now, ignoring what is stored
-     * on them.
+     * The highest rank an affiliate's record would *qualify* them to apply
+     * for — not the rank they are on.
      *
-     * `$excludingConversionId` exists because a conversion row is written
-     * before it is priced. Without it, a sale would count towards the tier
-     * that prices it — one order could promote the partner and then pay
-     * itself at the new, higher rate. The rule is instead the one a partner
-     * would assume: your rate comes from your track record *before* this
-     * sale, and the better rate applies from the next one.
+     * Used to tell a partner "you have done enough to apply for Growth", and
+     * to let staff see at a glance who is ready. Granting the rank is a
+     * separate, reviewed step in AffiliateRankService.
      */
     public function resolveFor(Affiliate $affiliate, ?int $excludingConversionId = null): ?AffiliateTier
     {
@@ -59,13 +56,8 @@ class AffiliateTierResolver
     }
 
     /**
-     * The same answer as {@see effectiveTier()}, for a whole list, in a fixed
-     * number of queries.
-     *
-     * The single-affiliate version costs three queries — a count, a sum and a
-     * tier lookup — which is nothing on a dashboard and quietly awful on the
-     * admin list, where it runs once per row. This does the counting in one
-     * grouped query and resolves the ladder in PHP.
+     * The same answer as {@see effectiveTier()}, for a whole list, without a
+     * query per row.
      *
      * @param  \Illuminate\Support\Collection<int, Affiliate>  $affiliates
      * @return array<int, AffiliateTier|null> Keyed by affiliate id.
@@ -76,43 +68,18 @@ class AffiliateTierResolver
             return [];
         }
 
-        $totals = AffiliateConversion::query()
-            ->selectRaw('affiliate_id, COUNT(*) as delivered_count, COALESCE(SUM(order_value_kobo), 0) as delivered_value')
-            ->whereIn('affiliate_id', $affiliates->pluck('id'))
-            ->where('status', AffiliateConversion::STATUS_QUALIFIED)
-            ->whereIn('conversion_type', [
-                AffiliateConversion::TYPE_DELIVERED_ORDER,
-                AffiliateConversion::TYPE_COMPLETED_PLAN_ORDER,
-            ])
-            ->groupBy('affiliate_id')
+        $ranks = AffiliateTier::query()
+            ->whereIn('id', $affiliates->pluck('tier_id')->filter()->unique())
             ->get()
-            ->keyBy('affiliate_id');
+            ->keyBy('id');
 
-        // Best tier first, so the first one an affiliate qualifies for wins —
-        // the same ordering the per-affiliate query uses.
-        $ladder = AffiliateTier::query()
-            ->where('is_active', true)
-            ->orderByDesc('min_delivered_value_kobo')
-            ->orderByDesc('min_delivered_conversions')
-            ->orderBy('sort_order')
-            ->get();
+        $default = $this->defaultTier();
 
-        $default = $ladder->firstWhere('is_default', true) ?? $ladder->first();
-
-        $resolved = [];
-
-        foreach ($affiliates as $affiliate) {
-            $row = $totals->get($affiliate->id);
-            $count = (int) ($row->delivered_count ?? 0);
-            $value = (int) ($row->delivered_value ?? 0);
-
-            $resolved[$affiliate->id] = $ladder->first(
-                fn (AffiliateTier $tier) => $tier->min_delivered_conversions <= $count
-                    && $tier->min_delivered_value_kobo <= $value,
-            ) ?? $affiliate->tier ?? $default;
-        }
-
-        return $resolved;
+        return $affiliates
+            ->mapWithKeys(fn (Affiliate $affiliate) => [
+                $affiliate->id => $ranks->get($affiliate->tier_id) ?? $default,
+            ])
+            ->all();
     }
 
     public function defaultTier(): ?AffiliateTier
@@ -122,12 +89,20 @@ class AffiliateTierResolver
     }
 
     /**
-     * The tier actually applied to an affiliate: whichever they have earned,
-     * falling back to the one recorded on the account, then the default.
+     * The rank actually applied to an affiliate — the one recorded on their
+     * account, falling back to the entry rank.
+     *
+     * Note what this no longer does: it does not promote anybody. Ranks used
+     * to be earned silently the moment a threshold was crossed, which meant
+     * nobody ever looked at a partner before widening what they could do.
+     * Since a rank now carries a referral quota and a link lifetime as well as
+     * a rate, it is granted by review instead — {@see resolveFor()} says which
+     * rank somebody *qualifies to apply for*, and AffiliateRankService owns
+     * the application.
      */
     public function effectiveTier(Affiliate $affiliate, ?int $excludingConversionId = null): ?AffiliateTier
     {
-        return $this->resolveFor($affiliate, $excludingConversionId) ?? $affiliate->tier ?? $this->defaultTier();
+        return $affiliate->tier ?? $this->defaultTier();
     }
 
     /** What one qualified conversion is worth, in kobo. */

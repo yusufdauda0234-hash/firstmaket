@@ -29,4 +29,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('account/affiliate/links/{link}', [AffiliateController::class, 'destroyLink'])->name('affiliates.links.destroy');
 
     Route::post('account/affiliate/bank-account', [AffiliateController::class, 'storeBankAccount'])->name('affiliates.bank-account.store');
+
+    // Applying for the next rank. Throttled because it accepts file uploads.
+    Route::post('account/affiliate/upgrade', [AffiliateController::class, 'requestUpgrade'])
+        ->middleware('throttle:6,1')
+        ->name('affiliates.upgrade.request');
 });

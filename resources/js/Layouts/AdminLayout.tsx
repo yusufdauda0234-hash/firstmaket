@@ -2,7 +2,7 @@ import { cn } from '@/Utils/cn';
 import { useFlashToast } from '@/Components/ui/Toast';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { BookOpen, Banknote, BarChart3, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
+import { BookOpen, Banknote, BarChart3, TrendingUp, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 interface NavItem {
@@ -319,6 +319,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         href: route('admin.affiliates.index'),
                         icon: Handshake,
                         active: path === '/affiliates',
+                        show: can('affiliates.manage'),
+                    },
+                    {
+                        label: 'Affiliate ranks',
+                        href: route('admin.affiliates.ranks.index'),
+                        icon: TrendingUp,
+                        active: path.startsWith('/affiliates/ranks'),
                         show: can('affiliates.manage'),
                     },
                     {

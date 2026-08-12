@@ -34,6 +34,7 @@ use App\Modules\Admin\Controllers\VendorApprovalController;
 use App\Modules\Admin\Controllers\VendorPayoutController;
 use App\Modules\Affiliates\Controllers\AdminAffiliateController;
 use App\Modules\Affiliates\Controllers\AffiliatePayoutController;
+use App\Modules\Affiliates\Controllers\AffiliateRankController;
 use App\Modules\Returns\Controllers\AdminReturnController;
 use App\Modules\Risk\Controllers\AdminRiskController;
 use App\Modules\Logistics\Controllers\CashController;
@@ -91,6 +92,26 @@ Route::middleware('permission:affiliates.manage')->group(function () {
  * Reviewing a partner's conversions is its own permission, because it is the
  * step that decides whether a commission exists at all.
  */
+/*
+ * The rank ladder and the applications to climb it.
+ *
+ * Under affiliates.manage rather than a permission of its own: deciding who
+ * may recruit at scale is the same job as approving a partner in the first
+ * place, and splitting it would mean two screens nobody could use alone.
+ */
+Route::middleware('permission:affiliates.manage')->group(function () {
+    Route::get('affiliates/ranks', [AffiliateRankController::class, 'index'])->name('admin.affiliates.ranks.index');
+    Route::post('affiliates/ranks', [AffiliateRankController::class, 'store'])->name('admin.affiliates.ranks.store');
+    Route::put('affiliates/ranks/{rank}', [AffiliateRankController::class, 'update'])->name('admin.affiliates.ranks.update');
+    Route::delete('affiliates/ranks/{rank}', [AffiliateRankController::class, 'destroy'])->name('admin.affiliates.ranks.destroy');
+
+    Route::post('affiliates/ranks/{rank}/requirements', [AffiliateRankController::class, 'storeRequirement'])->name('admin.affiliates.ranks.requirements.store');
+    Route::delete('affiliates/requirements/{requirement}', [AffiliateRankController::class, 'destroyRequirement'])->name('admin.affiliates.requirements.destroy');
+
+    Route::post('affiliates/upgrades/{upgrade:uuid}/approve', [AffiliateRankController::class, 'approveUpgrade'])->name('admin.affiliates.upgrades.approve');
+    Route::post('affiliates/upgrades/{upgrade:uuid}/reject', [AffiliateRankController::class, 'rejectUpgrade'])->name('admin.affiliates.upgrades.reject');
+});
+
 Route::middleware('permission:affiliate_conversions.review')->group(function () {
     Route::post('affiliates/conversions/{conversion}/approve', [AdminAffiliateController::class, 'approveConversion'])->name('admin.affiliates.conversions.approve');
     Route::post('affiliates/conversions/{conversion}/reject', [AdminAffiliateController::class, 'rejectConversion'])->name('admin.affiliates.conversions.reject');

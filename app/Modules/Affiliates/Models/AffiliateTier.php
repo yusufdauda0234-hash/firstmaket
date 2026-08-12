@@ -19,7 +19,8 @@ class AffiliateTier extends Model
 
     protected $fillable = [
         'name', 'description', 'commission_type', 'commission_percent', 'flat_amount_kobo',
-        'vendor_recruitment_kobo', 'min_delivered_conversions', 'min_delivered_value_kobo',
+        'vendor_recruitment_kobo', 'referral_quota', 'link_expiry_days', 'max_active_links',
+        'requires_approval', 'min_delivered_conversions', 'min_delivered_value_kobo',
         'is_default', 'is_active', 'sort_order',
     ];
 
@@ -29,6 +30,10 @@ class AffiliateTier extends Model
             'commission_percent' => 'decimal:2',
             'flat_amount_kobo' => 'integer',
             'vendor_recruitment_kobo' => 'integer',
+            'referral_quota' => 'integer',
+            'link_expiry_days' => 'integer',
+            'max_active_links' => 'integer',
+            'requires_approval' => 'boolean',
             'min_delivered_conversions' => 'integer',
             'min_delivered_value_kobo' => 'integer',
             'is_default' => 'boolean',
@@ -41,6 +46,33 @@ class AffiliateTier extends Model
     public function affiliates(): HasMany
     {
         return $this->hasMany(Affiliate::class, 'tier_id');
+    }
+
+    /** @return HasMany<AffiliateRankRequirement, $this> */
+    public function requirements(): HasMany
+    {
+        return $this->hasMany(AffiliateRankRequirement::class, 'tier_id')->orderBy('sort_order');
+    }
+
+    /** Zero means unlimited, which is what the top of the ladder carries. */
+    public function hasUnlimitedReferrals(): bool
+    {
+        return $this->referral_quota <= 0;
+    }
+
+    public function linksNeverExpire(): bool
+    {
+        return $this->link_expiry_days <= 0;
+    }
+
+    /** The next rank up the ladder, or null at the top. */
+    public function nextRank(): ?self
+    {
+        return self::query()
+            ->where('is_active', true)
+            ->where('sort_order', '>', $this->sort_order)
+            ->orderBy('sort_order')
+            ->first();
     }
 
     /**

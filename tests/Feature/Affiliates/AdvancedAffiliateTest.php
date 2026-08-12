@@ -182,13 +182,13 @@ it('refuses to create a new link while suspended', function () {
 
 // ── Commission tiers ────────────────────────────────────────────────────────
 
-it('pays the rate of the highest tier the partner has actually earned', function () {
+it('pays the rate of the rank the partner is on, and does not promote them for selling', function () {
     AffiliateTier::query()->create([
-        'name' => 'Base', 'commission_percent' => 5, 'is_default' => true,
+        'name' => 'Base', 'commission_percent' => 5, 'is_default' => true, 'referral_quota' => 0,
         'min_delivered_conversions' => 0, 'min_delivered_value_kobo' => 0, 'sort_order' => 1,
     ]);
-    AffiliateTier::query()->create([
-        'name' => 'Top', 'commission_percent' => 10, 'is_default' => false,
+    $top = AffiliateTier::query()->create([
+        'name' => 'Top', 'commission_percent' => 10, 'is_default' => false, 'referral_quota' => 0,
         'min_delivered_conversions' => 1, 'min_delivered_value_kobo' => 0, 'sort_order' => 2,
     ]);
 
@@ -197,16 +197,29 @@ it('pays the rate of the highest tier the partner has actually earned', function
     $this->service->attributeSignup($first, $affiliate->links()->first()->id);
     $this->service->qualifyDeliveredOrder(deliveredOrderFor($first, 100_000_00));
 
-    // First sale is priced at the base rate: a sale must not promote the
-    // partner and then pay itself at the new rate.
     expect((int) $affiliate->commissions()->sum('amount_kobo'))->toBe(500_000);
 
     $second = User::factory()->create();
     $this->service->attributeSignup($second, $affiliate->links()->first()->id);
     $this->service->qualifyDeliveredOrder(deliveredOrderFor($second, 100_000_00));
 
-    // Second sale is priced at the tier the first one earned them.
-    expect((int) $affiliate->fresh()->commissions()->sum('amount_kobo'))->toBe(500_000 + 1_000_000);
+    /*
+     * Still the base rate. Ranks used to promote silently the moment a
+     * threshold was crossed; since a rank now also widens the referral quota
+     * and the link lifetime, it is granted by review instead. Crossing the
+     * threshold means "you may apply", not "you have been moved".
+     */
+    expect((int) $affiliate->fresh()->commissions()->sum('amount_kobo'))->toBe(1_000_000)
+        ->and($affiliate->fresh()->tier?->name)->not->toBe('Top');
+
+    // Granted, the new rate applies from the next sale.
+    app(\App\Modules\Affiliates\Services\AffiliateRankService::class)->assignRank($affiliate->fresh(), $top);
+
+    $third = User::factory()->create();
+    $this->service->attributeSignup($third, $affiliate->links()->first()->id);
+    $this->service->qualifyDeliveredOrder(deliveredOrderFor($third, 100_000_00));
+
+    expect((int) $affiliate->fresh()->commissions()->sum('amount_kobo'))->toBe(1_000_000 + 1_000_000);
 });
 
 it('does not pay for a bare signup', function () {
