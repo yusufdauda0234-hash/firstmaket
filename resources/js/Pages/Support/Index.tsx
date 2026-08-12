@@ -1,7 +1,7 @@
 import { Card } from '@/Components/ui/Card';
 import { InputError } from '@/Components/ui/InputError';
 import { Select } from '@/Components/ui/Select';
-import AccountLayout from '@/Layouts/AccountLayout';
+import PortalLayout from '@/Layouts/PortalLayout';
 import { cn } from '@/Utils/cn';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
@@ -73,7 +73,7 @@ export default function SupportIndex() {
     const whatsappHref = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Hello FirstMaket support!')}`;
 
     return (
-        <AccountLayout title="Support">
+        <PortalLayout title="Support">
             <Head title="Support Center" />
 
             <h1 className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
@@ -274,6 +274,6 @@ export default function SupportIndex() {
                     </div>
                 ))}
             </div>
-        </AccountLayout>
+        </PortalLayout>
     );
 }

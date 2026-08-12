@@ -1,4 +1,5 @@
 import PaymentMarks from '@/Components/ui/PaymentMarks';
+import HeaderInbox from '@/Components/ui/HeaderInbox';
 import AccountDropdown from '@/Components/domain/auth/AccountDropdown';
 import { useAuthModal } from '@/Components/domain/auth/auth-modal-context';
 import { CategoriesMenu, GetAppPopover, HelpMenu, LocalePopover } from '@/Components/domain/layout/HeaderMenus';
@@ -109,6 +110,9 @@ export default function PublicLayout({ categories: categoriesProp, children }: P
 
                     <nav className="order-2 ml-auto flex min-w-0 shrink-0 items-center gap-2 text-sm font-medium text-gray-700 lg:order-3 lg:ml-0 lg:gap-4">
                         <LocalePopover />
+                        {/* Renders nothing for a guest — there is no inbox to
+                            show them and no ticket to chase. */}
+                        <HeaderInbox />
                         <AccountDropdown user={auth.user} onOpenAuth={openAuth} />
                         {/* Guests get a cart too — the sign-in gate is at
                             checkout, not here. Same tab: unlike a product

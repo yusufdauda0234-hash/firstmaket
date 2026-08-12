@@ -83,6 +83,12 @@ export interface PageProps {
     categories: Category[];
     /** Total units in the cart — guests included. Drives the header badge. */
     cartCount: number;
+    /** Which origin served this page. Drives chrome on cross-portal pages. */
+    portal: 'admin' | 'vendor' | 'customer';
+    /** Header bell badge. Zero for guests. */
+    unreadNotifications: number;
+    /** Header support badge — tickets of this customer still open or awaiting them. */
+    openTickets: number;
     /** Lowest order value earning free delivery; 0 when none is offered. */
     freeDeliveryFromKobo: number;
     /**

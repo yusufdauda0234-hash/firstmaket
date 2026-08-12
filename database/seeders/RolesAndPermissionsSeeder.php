@@ -50,6 +50,10 @@ class RolesAndPermissionsSeeder extends Seeder
         // Creating a staff account is creating a way into the admin domain,
         // so it is its own permission rather than folded into roles.manage.
         'staff.manage',
+        // Messaging the whole userbase at once. Deliberately separate from
+        // support.manage: answering one customer and mailing every customer
+        // are different levels of trust.
+        'announcements.send',
         // Downloads a full SQL dump and can wipe any table's data outright.
         // Like roles.manage, seeded but granted to no role by default — only
         // Super Administrator (via Gate::before) reaches it out of the box.
@@ -80,6 +84,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'affiliate_conversions.review',
             'returns.manage',
             'risk.review',
+            'announcements.send',
         ],
         'Support Agent' => [
             'customers.view',

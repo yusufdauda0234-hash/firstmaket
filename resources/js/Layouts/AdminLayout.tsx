@@ -2,7 +2,7 @@ import { cn } from '@/Utils/cn';
 import { useFlashToast } from '@/Components/ui/Toast';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { BookOpen, Banknote, BarChart3, TrendingUp, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
+import { BookOpen, Banknote, BarChart3, TrendingUp, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Megaphone, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 interface NavItem {
@@ -282,6 +282,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         icon: LifeBuoy,
                         active: path.startsWith('/support'),
                         show: can('support.manage'),
+                    },
+                    {
+                        label: 'Notifications',
+                        href: route('admin.notifications.index'),
+                        icon: Megaphone,
+                        active: path.startsWith('/notifications'),
+                        show: can('announcements.send'),
                     },
                     {
                         label: 'Phone numbers',

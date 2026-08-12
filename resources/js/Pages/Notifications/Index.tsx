@@ -1,5 +1,5 @@
 import { Card } from '@/Components/ui/Card';
-import AccountLayout from '@/Layouts/AccountLayout';
+import PortalLayout from '@/Layouts/PortalLayout';
 import { cn } from '@/Utils/cn';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Bell, BellRing, Check, CheckCheck, Lock, Mail, MessageSquare, Smartphone } from 'lucide-react';
@@ -83,7 +83,7 @@ export default function NotificationsIndex() {
     };
 
     return (
-        <AccountLayout title="Notifications">
+        <PortalLayout title="Notifications">
             <Head title="Notifications" />
 
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -236,6 +236,6 @@ export default function NotificationsIndex() {
                     {prefForm.processing && <p className="mt-3 text-xs text-gray-400">Saving…</p>}
                 </Card>
             </div>
-        </AccountLayout>
+        </PortalLayout>
     );
 }

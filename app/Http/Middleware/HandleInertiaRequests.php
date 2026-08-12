@@ -10,7 +10,9 @@ use App\Modules\Customer\Models\Wishlist;
 use App\Modules\Orders\Services\DeliveryPricing;
 use App\Modules\Returns\Services\ReturnPolicy;
 use App\Modules\Support\Models\ContentPage;
+use App\Modules\Support\Models\SupportTicket;
 use App\Shared\Enums\Locale;
+use App\Shared\Enums\TicketStatus;
 use App\Shared\Security\AdminDomain;
 use App\Shared\Security\VendorDomain;
 use Illuminate\Http\Request;
@@ -29,10 +31,23 @@ class HandleInertiaRequests extends Middleware
         // the marketplace PublicLayout without threading categories through
         // every controller. Skipped on the admin/vendor portals, which don't
         // use that layout. Cached in HomeDataService, so this is cheap.
-        $isPortal = AdminDomain::matches($request) || VendorDomain::matches($request);
+        $isAdmin = AdminDomain::matches($request);
+        $isVendor = VendorDomain::matches($request);
+        $isPortal = $isAdmin || $isVendor;
 
         return [
             ...parent::share($request),
+            /*
+             * Which origin is being served.
+             *
+             * A handful of pages are reachable from more than one portal —
+             * support and notifications carry no domain constraint, so a
+             * vendor opens them on the Vendor Center origin under their own
+             * vendor session. Those pages read this to pick their chrome;
+             * without it they would render the storefront header on a
+             * subdomain that has no storefront.
+             */
+            'portal' => $isAdmin ? 'admin' : ($isVendor ? 'vendor' : 'customer'),
             'categories' => $isPortal ? [] : fn () => app(HomeDataService::class)->categories(),
             // Header cart badge. Guests have a cart too (session-backed), so
             // this is not gated on $user. Closure-wrapped, so the query only
@@ -44,6 +59,22 @@ class HandleInertiaRequests extends Middleware
             // when no rate offers free delivery at all, rather than promising
             // something the checkout will not honour.
             'freeDeliveryFromKobo' => $isPortal ? 0 : fn () => app(DeliveryPricing::class)->lowestFreeThresholdKobo(),
+            /*
+             * Header bell and open-ticket badge.
+             *
+             * Shared rather than threaded through every controller, because
+             * they sit in the layout and therefore appear on every page —
+             * passing them per-controller would mean the bell silently
+             * emptying itself on whichever screen somebody forgot.
+             *
+             * Closure-wrapped, so the queries only run for a signed-in
+             * request that actually renders them.
+             */
+            'unreadNotifications' => $user === null ? 0 : fn () => $user->unreadNotifications()->count(),
+            'openTickets' => $user === null ? 0 : fn () => SupportTicket::query()
+                ->where('customer_id', $user->id)
+                ->whereIn('status', [TicketStatus::Open, TicketStatus::Pending])
+                ->count(),
             // Footer legal links. Shared rather than hardcoded in the layout
             // so that publishing a page in admin puts it on the site, and
             // unpublishing one takes the link away instead of leaving a 404

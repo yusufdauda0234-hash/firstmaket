@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Admin\Controllers\AiSettingsController;
+use App\Modules\Admin\Controllers\AnnouncementController;
 use App\Modules\Admin\Controllers\AutomationSettingsController;
 use App\Modules\Admin\Controllers\CategoryController;
 use App\Modules\Admin\Controllers\CampaignController;
@@ -390,6 +391,15 @@ Route::middleware('permission:support.manage')->group(function () {
     Route::get('support/{ticket:uuid}', [SupportAdminController::class, 'show'])->name('admin.support.show');
     Route::post('support/{ticket:uuid}/reply', [SupportAdminController::class, 'reply'])->name('admin.support.reply');
     Route::post('support/{ticket:uuid}/status', [SupportAdminController::class, 'updateStatus'])->name('admin.support.status');
+});
+
+// ── Announcements: admin messages out to the userbase ──
+
+// Its own permission, not settings.manage or support.manage: reaching every
+// customer at once is a different level of trust from answering one of them.
+Route::middleware('permission:announcements.send')->group(function () {
+    Route::get('notifications', [AnnouncementController::class, 'index'])->name('admin.notifications.index');
+    Route::post('notifications', [AnnouncementController::class, 'store'])->name('admin.notifications.store');
 });
 
 // ── Sprint 9: AI, reporting, and operational controls ──

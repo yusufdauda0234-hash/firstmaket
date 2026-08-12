@@ -1,6 +1,6 @@
 import { Card } from '@/Components/ui/Card';
 import { InputError } from '@/Components/ui/InputError';
-import AccountLayout from '@/Layouts/AccountLayout';
+import PortalLayout from '@/Layouts/PortalLayout';
 import { cn } from '@/Utils/cn';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Send } from 'lucide-react';
@@ -48,7 +48,7 @@ export default function TicketShow() {
     };
 
     return (
-        <AccountLayout title="Ticket">
+        <PortalLayout title="Ticket">
             <Head title={`Ticket — ${ticket.subject}`} />
 
             <Link
@@ -133,6 +133,6 @@ export default function TicketShow() {
                     </button>
                 </form>
             )}
-        </AccountLayout>
+        </PortalLayout>
     );
 }

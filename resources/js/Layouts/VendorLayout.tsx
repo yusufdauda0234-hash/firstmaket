@@ -1,7 +1,8 @@
+import HeaderInbox from '@/Components/ui/HeaderInbox';
 import { useFlashToast } from '@/Components/ui/Toast';
 import { cn } from '@/Utils/cn';
 import { PageProps } from '@/Types';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Banknote,
     ChevronLeft,
@@ -32,7 +33,7 @@ const COLLAPSE_KEY = 'fm.vendor-sidebar-collapsed';
  * on desktop, slide-over drawer on mobile — in the light marketplace look.
  * Replaces the old top-nav so the portal reads like a real seller workspace.
  */
-export default function VendorLayout({ children }: PropsWithChildren) {
+export default function VendorLayout({ title, children }: PropsWithChildren<{ title?: string }>) {
     const {
         props: { auth, mainSiteUrl, flash },
         url,
@@ -272,15 +273,28 @@ export default function VendorLayout({ children }: PropsWithChildren) {
                         Vendor
                     </span>
                 </Link>
-                <button
-                    type="button"
-                    onClick={() => setDrawerOpen(true)}
-                    aria-label="Open menu"
-                    className="rounded-full border border-gray-200 p-2 text-gray-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 active:scale-90"
-                >
-                    <Menu className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-1">
+                    <HeaderInbox />
+                    <button
+                        type="button"
+                        onClick={() => setDrawerOpen(true)}
+                        aria-label="Open menu"
+                        className="rounded-full border border-gray-200 p-2 text-gray-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 active:scale-90"
+                    >
+                        <Menu className="h-5 w-5" />
+                    </button>
+                </div>
             </header>
+
+            {/* Desktop top bar. The Vendor Center is sidebar-only otherwise,
+                so without this a vendor would have nowhere to see that a
+                reply had landed. Sits above the page title, right-aligned,
+                and stays out of the way when there is nothing waiting. */}
+            <div className={cn('sticky top-0 z-30 hidden border-b border-gray-200 bg-white/80 backdrop-blur-md lg:block', mainMargin)}>
+                <div className="mx-auto flex max-w-6xl items-center justify-end gap-2 px-4 py-2 sm:px-6 lg:px-8">
+                    <HeaderInbox />
+                </div>
+            </div>
 
             {/* Mobile drawer */}
             {drawerOpen && (
@@ -305,7 +319,18 @@ export default function VendorLayout({ children }: PropsWithChildren) {
             )}
 
             <main className={cn('flex-1 px-4 py-6 transition-[margin] duration-200 sm:px-6 lg:px-8 lg:py-8', mainMargin)}>
-                <div className="mx-auto max-w-6xl">{children}</div>
+                <div className="mx-auto max-w-6xl">
+                    {/* Only pages routed through PortalLayout pass a title —
+                        every purpose-built Vendor Center page writes its own
+                        heading, and a second one would double it up. */}
+                    {title !== undefined && (
+                        <>
+                            <Head title={title} />
+                            <h1 className="mb-6 text-2xl font-bold text-gray-900">{title}</h1>
+                        </>
+                    )}
+                    {children}
+                </div>
             </main>
 
             <footer className={cn('border-t border-gray-200 bg-white', mainMargin)}>
