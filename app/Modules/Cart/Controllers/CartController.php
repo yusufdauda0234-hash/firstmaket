@@ -249,12 +249,13 @@ class CartController extends Controller
         StartPaystackPaymentAction $startPayment,
     ): SymfonyResponse {
         $validated = $request->validate([
+            'country_id' => ['required', 'integer', Rule::exists('countries', 'id')->where('is_active', true)],
             'recipient_name' => ['required', 'string', 'max:120'],
             // Nigerian mobile numbers, local or +234 form. Couriers call
             // ahead, so a reachable number is not optional.
             'recipient_phone' => ['required', 'string', 'regex:/^(\+?234|0)[789][01]\d{8}$/'],
             'delivery_address' => ['required', 'string', 'max:500'],
-            'state' => ['required', 'string', Rule::in(Nigeria::STATES)],
+            'state' => ['required', 'string', 'max:80'],
             'lga' => ['required', 'string', 'max:80'],
             'landmark' => ['nullable', 'string', 'max:160'],
             'payment_method' => ['required', Rule::enum(CheckoutMethod::class)],
@@ -277,6 +278,7 @@ class CartController extends Controller
             'buy_now_product' => ['nullable', 'string'],
             'buy_now_quantity' => ['nullable', 'integer', 'min:1'],
         ], [
+            'country_id.exists' => 'Select a valid country.',
             'recipient_phone.regex' => 'Enter a valid Nigerian phone number, e.g. 08031234567.',
             'state.in' => 'Choose a state from the list.',
             'plan_term_id.required' => 'Choose how you want to pay it off.',
