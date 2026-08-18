@@ -111,6 +111,7 @@ export default function CartCheckout() {
         summary,
         contact,
         paymentMethods,
+        countries,
         states,
         planTerms,
         planCreditKobo,
@@ -369,6 +370,21 @@ export default function CartCheckout() {
                                             />
                                         </Field>
                                     </div>
+
+                                    <Field label="Country" htmlFor="country" error={form.errors.country}>
+                                        <Select
+                                            id="country"
+                                            disabled
+                                            className="text-gray-900"
+                                            defaultValue={countries[0] || ''}
+                                        >
+                                            {countries.map((country) => (
+                                                <option key={country} value={country} className="text-gray-900">
+                                                    {country}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </Field>
 
                                     <Field label="State" htmlFor="state" error={form.errors.state}>
                                         <Select

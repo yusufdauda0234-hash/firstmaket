@@ -242,6 +242,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         active: path.startsWith('/settings/delivery-rates'),
                         show: can('vendor_fees.manage'),
                     },
+                    {
+                        label: 'Countries',
+                        href: route('admin.settings.countries'),
+                        icon: Globe,
+                        active: path.startsWith('/settings/countries'),
+                        show: can('orders.manage'),
+                    },
                 ],
             },
             {
@@ -369,6 +376,13 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         icon: BarChart3,
                         active: path.startsWith('/settings/growth'),
                         show: can('settings.manage'),
+                    },
+                    {
+                        label: 'Referral rewards',
+                        href: route('admin.settings.referrals'),
+                        icon: Gift,
+                        active: path.startsWith('/settings/referrals'),
+                        show: can('commissions.manage'),
                     },
                 ],
             },

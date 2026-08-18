@@ -3,12 +3,14 @@
 use App\Modules\Admin\Controllers\AiSettingsController;
 use App\Modules\Admin\Controllers\AnnouncementController;
 use App\Modules\Admin\Controllers\AuditLogController;
+use App\Modules\Admin\Controllers\CountriesSettingsController;
 use App\Modules\Admin\Controllers\ExpenseController;
 use App\Modules\Admin\Controllers\FinanceController;
 use App\Modules\Admin\Controllers\AutomationSettingsController;
 use App\Modules\Admin\Controllers\CategoryController;
 use App\Modules\Admin\Controllers\CampaignController;
 use App\Modules\Admin\Controllers\CommissionSettingsController;
+use App\Modules\Admin\Controllers\ReferralSettingsController;
 use App\Modules\Admin\Controllers\ContentPageController;
 use App\Modules\Admin\Controllers\CustomerLookupController;
 use App\Modules\Admin\Controllers\DatabaseBackupController;
@@ -305,6 +307,21 @@ Route::middleware('permission:commissions.manage')->group(function () {
     Route::post('settings/promo-codes/template', [PromoCodeController::class, 'applyTemplate'])->name('admin.settings.promo-codes.template');
     Route::put('settings/promo-codes/{promoCode:uuid}', [PromoCodeController::class, 'update'])->name('admin.settings.promo-codes.update');
     Route::delete('settings/promo-codes/{promoCode:uuid}', [PromoCodeController::class, 'destroy'])->name('admin.settings.promo-codes.destroy');
+});
+
+// Countries settings for shipping logistics
+Route::middleware('permission:orders.manage')->group(function () {
+    Route::get('settings/countries', [CountriesSettingsController::class, 'index'])->name('admin.settings.countries');
+    Route::post('settings/countries', [CountriesSettingsController::class, 'store'])->name('admin.settings.countries.store');
+    Route::put('settings/countries/{country}', [CountriesSettingsController::class, 'update'])->name('admin.settings.countries.update');
+    Route::delete('settings/countries/{country}', [CountriesSettingsController::class, 'destroy'])->name('admin.settings.countries.destroy');
+    Route::post('settings/countries/{country}/toggle', [CountriesSettingsController::class, 'toggleActive'])->name('admin.settings.countries.toggle');
+});
+
+// Referral rewards settings
+Route::middleware('permission:commissions.manage')->group(function () {
+    Route::get('settings/referrals', [ReferralSettingsController::class, 'index'])->name('admin.settings.referrals');
+    Route::post('settings/referrals', [ReferralSettingsController::class, 'store'])->name('admin.settings.referrals.store');
 });
 
 /*
