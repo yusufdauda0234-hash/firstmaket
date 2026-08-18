@@ -47,6 +47,10 @@ class DatabaseSeeder extends Seeder
             // three URLs during sign-in review and a 404 fails it. Never
             // overwrites an edited page.
             ContentPageSeeder::class,
+
+            // Default countries — Nigeria is seeded so checkout has at least
+            // one option. Admins can add more through the settings interface.
+            CountriesSeeder::class,
         ]);
     }
 }
