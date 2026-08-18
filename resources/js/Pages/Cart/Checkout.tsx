@@ -374,15 +374,19 @@ export default function CartCheckout() {
                                     <Field label="Country" htmlFor="country">
                                         <Select
                                             id="country"
-                                            disabled
+                                            value={countries[0] || ''}
+                                            onChange={() => {}}
                                             className="text-gray-900"
-                                            defaultValue={countries[0] || ''}
                                         >
-                                            {countries.map((country) => (
-                                                <option key={country} value={country} className="text-gray-900">
-                                                    {country}
-                                                </option>
-                                            ))}
+                                            {countries.length > 0 ? (
+                                                countries.map((country) => (
+                                                    <option key={country} value={country} className="text-gray-900">
+                                                        {country}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <option value="">No countries available</option>
+                                            )}
                                         </Select>
                                     </Field>
 
