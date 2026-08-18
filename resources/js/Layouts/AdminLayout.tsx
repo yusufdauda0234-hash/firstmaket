@@ -2,7 +2,7 @@ import { cn } from '@/Utils/cn';
 import { useFlashToast } from '@/Components/ui/Toast';
 import { PageProps } from '@/Types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeftRight, BookOpen, Banknote, BarChart3, PieChart, TrendingUp, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FileSearch, FolderTree, GalleryHorizontal, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Megaphone, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
+import { ArrowLeftRight, BookOpen, Banknote, BarChart3, PieChart, TrendingUp, CalendarClock, ChevronLeft, ClipboardList, Coins, Database, FileSearch, FolderTree, GalleryHorizontal, Gift, Globe, Handshake, LayoutDashboard, LifeBuoy, ListChecks, LogOut, MapPin, Megaphone, Menu, PackageCheck, Percent, RotateCcw, Scale, ScrollText, Search, Send, ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Store, TicketPercent, Truck, UserCog, UserRound, Users, Wallet, X } from 'lucide-react';
 import { ComponentType, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 interface NavItem {

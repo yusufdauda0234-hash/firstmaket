@@ -371,7 +371,7 @@ export default function CartCheckout() {
                                         </Field>
                                     </div>
 
-                                    <Field label="Country" htmlFor="country" error={form.errors.country}>
+                                    <Field label="Country" htmlFor="country">
                                         <Select
                                             id="country"
                                             disabled
