@@ -4,6 +4,7 @@ namespace App\Modules\Settings\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class State extends Model
 {
@@ -17,6 +18,11 @@ class State extends Model
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
+    }
+
+    public function localGovernments(): HasMany
+    {
+        return $this->hasMany(LocalGovernment::class);
     }
 
     public function scopeActive($query)

@@ -21,7 +21,7 @@ import {
     Store,
     Tag,
 } from 'lucide-react';
-import { FormEventHandler, ReactNode, useState } from 'react';
+import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
 
 interface CheckoutItem {
     productUuid: string;
@@ -74,7 +74,6 @@ interface Props extends PageProps {
     contact: { name: string; phone: string | null };
     paymentMethods: PaymentMethod[];
     countries: Array<{ name: string; id: number }>;
-    statesByCountry: Record<number, string[]>;
     states: string[];
     planTerms: PlanTerm[];
     /** Set when this is a Buy-now checkout for a single item, not the cart. */
@@ -114,7 +113,6 @@ export default function CartCheckout() {
         contact,
         paymentMethods,
         countries,
-        statesByCountry,
         states,
         planTerms,
         planCreditKobo,
@@ -132,6 +130,10 @@ export default function CartCheckout() {
     const { money, naira, isConverted, currency } = useMoney();
     const [editingAddress, setEditingAddress] = useState(false);
     const [choosingTerm, setChoosingTerm] = useState(false);
+    const [dynamicStates, setDynamicStates] = useState<string[]>(states);
+    const [dynamicLgas, setDynamicLgas] = useState<string[]>([]);
+    const [loadingStates, setLoadingStates] = useState(false);
+    const [loadingLgas, setLoadingLgas] = useState(false);
 
     const form = useForm({
         // The saved address wins where there is one, so a returning customer
@@ -156,6 +158,38 @@ export default function CartCheckout() {
         buy_now_product: buyNow?.productUuid ?? '',
         buy_now_quantity: buyNow?.quantity ?? '',
     });
+
+    // Fetch states when country changes
+    useEffect(() => {
+        if (form.data.country_id) {
+            setLoadingStates(true);
+            fetch(`/api/v1/countries/${form.data.country_id}/states`)
+                .then(res => res.json())
+                .then(data => {
+                    setDynamicStates(data.states || states);
+                    form.setData('state', ''); // Reset state when country changes
+                    form.setData('lga', ''); // Reset LGA too
+                })
+                .catch(() => setDynamicStates(states))
+                .finally(() => setLoadingStates(false));
+        }
+    }, [form.data.country_id]);
+
+    // Fetch LGAs when state changes
+    useEffect(() => {
+        if (form.data.state) {
+            setLoadingLgas(true);
+            // Extract state ID if needed, or use state name directly
+            const stateParam = encodeURIComponent(form.data.state);
+            fetch(`/api/v1/states/${stateParam}/lgas`)
+                .then(res => res.json())
+                .then(data => setDynamicLgas(data.lgas || []))
+                .catch(() => setDynamicLgas([]))
+                .finally(() => setLoadingLgas(false));
+        } else {
+            setDynamicLgas([]);
+        }
+    }, [form.data.state]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -395,10 +429,11 @@ export default function CartCheckout() {
                                             id="state"
                                             value={form.data.state}
                                             onChange={(e) => form.setData('state', e.target.value)}
+                                            disabled={loadingStates}
                                             className={form.data.state === '' ? 'text-gray-400' : ''}
                                         >
-                                            <option value="">Select a state</option>
-                                            {(statesByCountry[form.data.country_id] || states).map((state) => (
+                                            <option value="">{loadingStates ? 'Loading states...' : 'Select a state'}</option>
+                                            {dynamicStates.map((state) => (
                                                 <option key={state} value={state} className="text-gray-900">
                                                     {state}
                                                 </option>
@@ -406,15 +441,34 @@ export default function CartCheckout() {
                                         </Select>
                                     </Field>
 
-                                    <Field label="City / LGA" htmlFor="lga" error={form.errors.lga}>
-                                        <Input
-                                            id="lga"
-                                            type="text"
-                                            placeholder="e.g. Eti-Osa"
-                                            value={form.data.lga}
-                                            onChange={(e) => form.setData('lga', e.target.value)}
-                                        />
-                                    </Field>
+                                    {dynamicLgas.length > 0 ? (
+                                        <Field label="City / LGA" htmlFor="lga" error={form.errors.lga}>
+                                            <Select
+                                                id="lga"
+                                                value={form.data.lga}
+                                                onChange={(e) => form.setData('lga', e.target.value)}
+                                                disabled={loadingLgas}
+                                                className={form.data.lga === '' ? 'text-gray-400' : ''}
+                                            >
+                                                <option value="">{loadingLgas ? 'Loading LGAs...' : 'Select a LGA'}</option>
+                                                {dynamicLgas.map((lga) => (
+                                                    <option key={lga} value={lga} className="text-gray-900">
+                                                        {lga}
+                                                    </option>
+                                                ))}
+                                            </Select>
+                                        </Field>
+                                    ) : (
+                                        <Field label="City / LGA" htmlFor="lga" error={form.errors.lga}>
+                                            <Input
+                                                id="lga"
+                                                type="text"
+                                                placeholder="e.g. Eti-Osa"
+                                                value={form.data.lga}
+                                                onChange={(e) => form.setData('lga', e.target.value)}
+                                            />
+                                        </Field>
+                                    )}
 
                                     <div className="sm:col-span-2">
                                         <Field
