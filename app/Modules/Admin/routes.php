@@ -4,6 +4,8 @@ use App\Modules\Admin\Controllers\AiSettingsController;
 use App\Modules\Admin\Controllers\AnnouncementController;
 use App\Modules\Admin\Controllers\AuditLogController;
 use App\Modules\Admin\Controllers\CountriesSettingsController;
+use App\Modules\Admin\Controllers\StatesSettingsController;
+use App\Modules\Admin\Controllers\LocalGovernmentsSettingsController;
 use App\Modules\Admin\Controllers\ExpenseController;
 use App\Modules\Admin\Controllers\FinanceController;
 use App\Modules\Admin\Controllers\AutomationSettingsController;
@@ -316,6 +318,20 @@ Route::middleware('permission:orders.manage')->group(function () {
     Route::put('settings/countries/{country}', [CountriesSettingsController::class, 'update'])->name('admin.settings.countries.update');
     Route::delete('settings/countries/{country}', [CountriesSettingsController::class, 'destroy'])->name('admin.settings.countries.destroy');
     Route::post('settings/countries/{country}/toggle', [CountriesSettingsController::class, 'toggleActive'])->name('admin.settings.countries.toggle');
+
+    // States management for each country
+    Route::get('settings/countries/{country}/states', [StatesSettingsController::class, 'index'])->name('admin.settings.states.index');
+    Route::post('settings/countries/{country}/states', [StatesSettingsController::class, 'store'])->name('admin.settings.states.store');
+    Route::put('settings/countries/{country}/states/{state}', [StatesSettingsController::class, 'update'])->name('admin.settings.states.update');
+    Route::delete('settings/countries/{country}/states/{state}', [StatesSettingsController::class, 'destroy'])->name('admin.settings.states.destroy');
+    Route::post('settings/countries/{country}/states/{state}/toggle', [StatesSettingsController::class, 'toggle'])->name('admin.settings.states.toggle');
+
+    // Local governments management for each state
+    Route::get('settings/states/{state}/lgas', [LocalGovernmentsSettingsController::class, 'index'])->name('admin.settings.lgas.index');
+    Route::post('settings/states/{state}/lgas', [LocalGovernmentsSettingsController::class, 'store'])->name('admin.settings.lgas.store');
+    Route::put('settings/states/{state}/lgas/{lga}', [LocalGovernmentsSettingsController::class, 'update'])->name('admin.settings.lgas.update');
+    Route::delete('settings/states/{state}/lgas/{lga}', [LocalGovernmentsSettingsController::class, 'destroy'])->name('admin.settings.lgas.destroy');
+    Route::post('settings/states/{state}/lgas/{lga}/toggle', [LocalGovernmentsSettingsController::class, 'toggle'])->name('admin.settings.lgas.toggle');
 });
 
 // Referral rewards settings
