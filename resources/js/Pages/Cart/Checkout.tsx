@@ -163,17 +163,21 @@ export default function CartCheckout() {
     useEffect(() => {
         if (form.data.country_id) {
             setLoadingStates(true);
-            fetch(`/api/v1/countries/${form.data.country_id}/states`)
+            const countryId = form.data.country_id;
+            fetch(`/api/v1/countries/${countryId}/states`)
                 .then(res => res.json())
                 .then(data => {
                     setDynamicStates(data.states || states);
                     form.setData('state', ''); // Reset state when country changes
                     form.setData('lga', ''); // Reset LGA too
                 })
-                .catch(() => setDynamicStates(states))
+                .catch(err => {
+                    console.error('Failed to fetch states:', err);
+                    setDynamicStates(states);
+                })
                 .finally(() => setLoadingStates(false));
         }
-    }, [form.data.country_id]);
+    }, [form.data.country_id, states]);
 
     // Fetch LGAs when state changes
     useEffect(() => {

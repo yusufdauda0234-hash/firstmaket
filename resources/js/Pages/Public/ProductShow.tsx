@@ -3,6 +3,7 @@ import BuyBoxPolicies from '@/Components/domain/catalog/BuyBoxPolicies';
 import { ProductCard, RatingStars } from '@/Components/domain/catalog/ProductCard';
 import QuickViewModal from '@/Components/domain/catalog/QuickViewModal';
 import VideoPlayer, { ProductVideo } from '@/Components/domain/catalog/VideoPlayer';
+import Modal from '@/Components/ui/Modal';
 import QuantityStepper from '@/Components/ui/QuantityStepper';
 import Reveal from '@/Components/ui/Reveal';
 import { useAddToCart } from '@/Hooks/useAddToCart';
@@ -61,6 +62,7 @@ export default function ProductShow({
     const [quantity, setQuantity] = useState(1);
     const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
     const [quickView, setQuickView] = useState<ProductSummary | null>(null);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const { addToCart, adding } = useAddToCart();
 
     // Reset the gallery when navigating between products.
@@ -104,6 +106,36 @@ export default function ProductShow({
                     onSwitch={setQuickView}
                     onClose={() => setQuickView(null)}
                 />
+            )}
+
+            {showLoginPrompt && (
+                <Modal
+                    open={showLoginPrompt}
+                    onClose={() => setShowLoginPrompt(false)}
+                    title="Sign in to buy now"
+                    description="You need to be signed in to check out."
+                    footer={
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => setShowLoginPrompt(false)}
+                                className="rounded-full px-5 py-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+                            <Link
+                                href={route('login')}
+                                className="rounded-full bg-brand-600 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-brand-700 active:scale-95"
+                            >
+                                Sign in
+                            </Link>
+                        </>
+                    }
+                >
+                    <p className="text-sm text-gray-600">
+                        Customers are able to proceed directly to checkout and pay, or choose to save money over time using our Pay Small Small instalment plan.
+                    </p>
+                </Modal>
             )}
 
             {/* Right-edge pull tab; the panel slides in over the page. */}
@@ -517,16 +549,27 @@ export default function ProductShow({
                                 Add to cart stays the calmer second action. */}
                             {inStock && (
                                 <>
-                                    <Link
-                                        href={route('cart.checkout', {
-                                            buy_now: product.uuid,
-                                            qty: quantity,
-                                        })}
-                                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 py-3.5 text-sm font-bold text-white transition hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-[0.98]"
-                                    >
-                                        <Zap className="h-4 w-4" />
-                                        {t('Buy now')}
-                                    </Link>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('cart.checkout', {
+                                                buy_now: product.uuid,
+                                                qty: quantity,
+                                            })}
+                                            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 py-3.5 text-sm font-bold text-white transition hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-[0.98]"
+                                        >
+                                            <Zap className="h-4 w-4" />
+                                            {t('Buy now')}
+                                        </Link>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowLoginPrompt(true)}
+                                            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 py-3.5 text-sm font-bold text-white transition hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow active:scale-[0.98]"
+                                        >
+                                            <Zap className="h-4 w-4" />
+                                            {t('Buy now')}
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         onClick={() =>
