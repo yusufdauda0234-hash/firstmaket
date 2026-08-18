@@ -1,11 +1,11 @@
 import { Card } from '@/Components/ui/Card';
-import { Input } from '@/Components/ui/Input';
+import Modal from '@/Components/ui/Modal';
 import { InputError } from '@/Components/ui/InputError';
 import PageHeader from '@/Components/ui/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { ChevronDown, ChevronUp, Globe, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CountryRow {
     id: number;
@@ -13,6 +13,11 @@ interface CountryRow {
     name: string;
     isActive: boolean;
     sortOrder: number;
+}
+
+interface AvailableCountry {
+    code: string;
+    name: string;
 }
 
 interface Props {
@@ -23,7 +28,25 @@ interface Props {
 export default function CountriesSettings() {
     const { countries } = usePage<Props>().props;
     const [adding, setAdding] = useState(false);
+    const [availableCountries, setAvailableCountries] = useState<AvailableCountry[]>([]);
+    const [loadingCountries, setLoadingCountries] = useState(false);
     const form = useForm({ code: '', name: '' });
+
+    // Fetch available countries from API
+    useEffect(() => {
+        if (adding) {
+            setLoadingCountries(true);
+            fetch('/api/v1/countries/list/all')
+                .then(res => res.json())
+                .then(data => setAvailableCountries(data.countries || []))
+                .catch(() => setAvailableCountries([]))
+                .finally(() => setLoadingCountries(false));
+        }
+    }, [adding]);
+
+    const handleCountrySelect = (country: AvailableCountry) => {
+        form.setData({ code: country.code, name: country.name });
+    };
 
     const handleAdd = (e: React.FormEvent) => {
         e.preventDefault();
@@ -86,54 +109,77 @@ export default function CountriesSettings() {
             />
 
             {adding && (
-                <Card>
-                    <h3 className="text-sm font-bold text-gray-900">Add a new country</h3>
-                    <form onSubmit={handleAdd} className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <div>
-                            <label htmlFor="code" className="mb-1.5 block text-xs font-bold text-gray-700">
-                                Country code
-                            </label>
-                            <Input
-                                id="code"
-                                type="text"
-                                maxLength={2}
-                                placeholder="e.g. NG"
-                                value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value.toUpperCase())}
-                            />
-                            <InputError message={form.errors.code} className="mt-1" />
-                        </div>
-                        <div>
-                            <label htmlFor="name" className="mb-1.5 block text-xs font-bold text-gray-700">
-                                Country name
-                            </label>
-                            <Input
-                                id="name"
-                                type="text"
-                                placeholder="e.g. Nigeria"
-                                value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
-                            />
-                            <InputError message={form.errors.name} className="mt-1" />
-                        </div>
-                        <div className="sm:col-span-2 flex gap-2 justify-end">
+                <Modal
+                    title="Add a new country"
+                    open={adding}
+                    onClose={() => {
+                        setAdding(false);
+                        form.reset();
+                    }}
+                    footer={
+                        <>
                             <button
                                 type="button"
-                                onClick={() => { setAdding(false); form.reset(); }}
-                                className="rounded-full px-4 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-100"
+                                onClick={() => {
+                                    setAdding(false);
+                                    form.reset();
+                                }}
+                                className="rounded-full px-5 py-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-100"
                             >
                                 Cancel
                             </button>
                             <button
-                                type="submit"
-                                disabled={form.processing}
-                                className="rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
+                                type="button"
+                                onClick={handleAdd}
+                                disabled={form.processing || !form.data.code || !form.data.name}
+                                className="rounded-full bg-brand-600 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-brand-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
                             >
                                 {form.processing ? 'Adding…' : 'Add country'}
                             </button>
+                        </>
+                    }
+                >
+                    <div className="space-y-4">
+                        <div>
+                            <label className="mb-2 block text-sm font-bold text-gray-900">
+                                {loadingCountries ? 'Loading countries...' : 'Select a country'}
+                            </label>
+                            <div className="max-h-96 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-3">
+                                {availableCountries.length === 0 ? (
+                                    <p className="text-sm text-gray-500">No countries available</p>
+                                ) : (
+                                    availableCountries.map((country) => (
+                                        <button
+                                            key={country.code}
+                                            type="button"
+                                            onClick={() => handleCountrySelect(country)}
+                                            className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                                                form.data.code === country.code
+                                                    ? 'bg-brand-100 text-brand-700'
+                                                    : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            <span className="font-semibold">{country.name}</span>
+                                            <span className="ml-2 text-gray-500">({country.code})</span>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    </form>
-                </Card>
+
+                        {form.data.code && (
+                            <div className="rounded-lg bg-brand-50 p-3">
+                                <p className="text-sm text-brand-900">
+                                    <strong>Selected:</strong> {form.data.name} ({form.data.code})
+                                </p>
+                            </div>
+                        )}
+
+                        {form.errors.code && (
+                            <InputError message={form.errors.code} />
+                        )}
+                    </div>
+                </Modal>
             )}
 
             {countries.length === 0 ? (

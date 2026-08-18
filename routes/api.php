@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Settings\Controllers\CountryListController;
 use App\Modules\Settings\Controllers\LocalGovernmentController;
 use App\Modules\Settings\Controllers\StateController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('v1')->group(function () {
+    Route::get('countries/list/all', [CountryListController::class, 'index'])->name('api.countries.list');
     Route::get('countries/{country}/states', [StateController::class, 'byCountry'])->name('api.countries.states');
     Route::get('states/{state}/lgas', [LocalGovernmentController::class, 'byState'])->name('api.states.lgas');
 });
