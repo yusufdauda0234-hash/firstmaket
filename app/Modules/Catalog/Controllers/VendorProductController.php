@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\DisplayCurrency;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Customer\Models\WishlistPriceAlert;
 use App\Modules\Customer\Notifications\WishlistPriceDropNotification;
@@ -188,6 +189,11 @@ class VendorProductController extends Controller
             'attributeFieldsByCategory' => $this->attributeFieldsByCategory(),
             'builtInFields' => $this->builtInFieldLabels(),
             'attributeValues' => (object) [],
+            'currencies' => DisplayCurrency::active()->map(fn ($c) => [
+                'code' => $c->code,
+                'symbol' => $c->symbol,
+                'name' => $c->name,
+            ])->all(),
         ]);
     }
 
@@ -237,6 +243,11 @@ class VendorProductController extends Controller
             'attributeFieldsByCategory' => $this->attributeFieldsByCategory(),
             'builtInFields' => $this->builtInFieldLabels(),
             'attributeValues' => (object) $this->attributes->valuesFor($product),
+            'currencies' => DisplayCurrency::active()->map(fn ($c) => [
+                'code' => $c->code,
+                'symbol' => $c->symbol,
+                'name' => $c->name,
+            ])->all(),
             'product' => [
                 'uuid' => $product->uuid,
                 'categoryId' => $product->category_id,

@@ -41,6 +41,8 @@ interface Props {
     builtInFields: Record<string, { label: string; helpText: string | null; isRequired: boolean }>;
     /** Answers already saved against this product, keyed by field. */
     attributeValues: AttributeValues;
+    /** Available currencies for pricing */
+    currencies: { code: string; symbol: string; name: string }[];
     [key: string]: unknown;
 }
 
@@ -51,6 +53,7 @@ export default function VendorProductForm() {
         feeSettings,
         attributeFieldsByCategory,
         attributeValues,
+        currencies = [],
         builtInFields = {},
     } = usePage<Props>().props;
 
@@ -94,6 +97,7 @@ export default function VendorProductForm() {
         description: product?.description ?? '',
         video_url: product?.videoUrl ?? '',
         price_naira: product?.priceNaira ?? ('' as number | ''),
+        price_currency: 'NGN',
         compare_at_naira: product?.compareAtNaira ?? ('' as number | ''),
         stock_quantity: product?.stockQuantity ?? 1,
         images: [] as File[],
@@ -264,15 +268,29 @@ export default function VendorProductForm() {
 
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
-                            <Label htmlFor="price_naira">{labelFor('price_naira', 'Price (₦)')}</Label>
-                            <MoneyInput
-                                id="price_naira"
-                                min={100}
-                                allowDecimals
-                                value={form.data.price_naira}
-                                onChange={(value) => form.setData('price_naira', value)}
-                                required
-                            />
+                            <Label htmlFor="price_naira">Base price</Label>
+                            <div className="mt-1 flex gap-2">
+                                <div className="flex-1">
+                                    <MoneyInput
+                                        id="price_naira"
+                                        min={100}
+                                        allowDecimals
+                                        value={form.data.price_naira}
+                                        onChange={(value) => form.setData('price_naira', value)}
+                                        required
+                                    />
+                                </div>
+                                <SelectMenu
+                                    ariaLabel="Currency"
+                                    value={form.data.price_currency}
+                                    options={currencies.map((currency) => ({
+                                        value: currency.code,
+                                        label: `${currency.code} ${currency.symbol}`,
+                                    }))}
+                                    onChange={(v) => form.setData('price_currency', v)}
+                                    className="w-32 shrink-0"
+                                />
+                            </div>
                             <InputError message={form.errors.price_naira} />
                         <Hint field="price_naira" />
                             {priceChangedOnApproved && (

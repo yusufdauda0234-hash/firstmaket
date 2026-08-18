@@ -232,7 +232,7 @@ export default function ProductShow({
                             <span className="text-gray-200">|</span>
                             <span className="inline-flex items-center gap-1.5 text-sm text-gray-500">
                                 <Store className="h-4 w-4 text-gray-400" />
-                                {t('Sold by')} <span className="font-semibold text-gray-800">{product.vendorName}</span>
+                                {t('Sold by verified vendor on FirstMaket')}
                             </span>
                         </div>
 
@@ -365,7 +365,6 @@ export default function ProductShow({
                                     // specifics a shopper is actually looking for.
                                     ...product.specifications,
                                     { label: 'Category', value: product.category.name },
-                                    { label: t('Sold by'), value: product.vendorName },
                                     {
                                         label: 'Availability',
                                         value: inStock ? `${product.stockQuantity} in stock` : t('Out of stock'),
@@ -410,16 +409,13 @@ export default function ProductShow({
                         {/* ── Store ── */}
                         <section id="store" className="scroll-mt-24 pt-8">
                             <h2 className="text-lg font-extrabold text-gray-900">{t('Store')}</h2>
-                            <div className="mt-3 flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4">
-                                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-base font-extrabold text-white">
-                                    {product.vendorName.slice(0, 2).toUpperCase()}
-                                </span>
-                                <div className="min-w-0">
-                                    <p className="truncate font-semibold text-gray-900">{product.vendorName}</p>
-                                    <p className="flex items-center gap-1 text-xs text-emerald-600">
-                                        <ShieldCheck className="h-3.5 w-3.5" /> Verified vendor on FirstMaket
-                                    </p>
-                                </div>
+                            <div className="mt-3 rounded-xl border border-gray-100 bg-white p-4">
+                                <p className="flex items-center gap-2 text-sm text-emerald-600">
+                                    <ShieldCheck className="h-4 w-4" /> Sold by FirstMaket verified vendor
+                                </p>
+                                <p className="mt-2 text-sm text-gray-600">
+                                    This product is sold by a vendor verified by FirstMaket. We ensure quality standards and reliable delivery nationwide.
+                                </p>
                             </div>
                         </section>
                     </div>
@@ -557,19 +553,6 @@ export default function ProductShow({
 
                             {/* Tap-through terms: shipping, returns, security */}
                             <BuyBoxPolicies freeShippingThresholdKobo={freeShippingThresholdKobo} />
-                        </div>
-
-                        {/* Vendor mini-card */}
-                        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-extrabold text-white">
-                                {product.vendorName.slice(0, 2).toUpperCase()}
-                            </span>
-                            <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-gray-900">{product.vendorName}</p>
-                                <p className="flex items-center gap-1 text-xs text-emerald-600">
-                                    <ShieldCheck className="h-3.5 w-3.5" /> Verified vendor
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>

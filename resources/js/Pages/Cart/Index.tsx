@@ -403,7 +403,7 @@ function CartLine({
 
                     <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
                         <Store className="h-3 w-3 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{item.vendorName}</span>
+                        <span className="truncate">Verified vendor</span>
                     </span>
 
                     {lowStock ? (
@@ -506,7 +506,7 @@ function YouMayAlsoLike({ products }: { products: Recommendation[] }) {
                             {product.name}
                         </a>
                         <span className="mt-0.5 min-h-[0.875rem] truncate text-[11px] text-gray-400">
-                            {product.vendorName}
+                            From verified vendors
                         </span>
                         <span className="mt-1 text-sm font-bold tabular-nums text-brand-700">
                             {money(product.priceKobo)}

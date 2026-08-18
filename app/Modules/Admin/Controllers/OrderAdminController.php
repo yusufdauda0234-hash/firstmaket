@@ -28,7 +28,7 @@ class OrderAdminController extends Controller
         $status = $request->query('status');
 
         $orders = Order::query()
-            ->with(['product:id,name', 'vendor:id,business_name', 'customer:id,name'])
+            ->with(['product:id,name', 'vendor:id,business_name', 'customer:id,name,phone', 'customer.profile:user_id,default_recipient_phone'])
             ->when($status !== null && $status !== '', fn ($q) => $q->where('status', $status))
             ->orderByRaw("field(status, 'pending', 'vendor_rejected', 'processing', 'ready_for_pickup', 'packed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')")
             ->orderByDesc('id')
@@ -39,6 +39,10 @@ class OrderAdminController extends Controller
                 'productName' => $order->product->name,
                 'vendorName' => $order->vendor->business_name,
                 'customerName' => $order->customer->name,
+                'customerPhone' => $order->customer->profile?->default_recipient_phone ?? $order->customer->phone,
+                'deliveryAddress' => $order->delivery_address,
+                'state' => $order->state,
+                'lga' => $order->lga,
                 'status' => $order->status->value,
                 'statusLabel' => $order->status->label(),
                 'lockedPriceKobo' => $order->locked_price_kobo,

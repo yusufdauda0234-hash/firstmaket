@@ -18,6 +18,10 @@ interface OrderRow {
     productName: string;
     vendorName: string;
     customerName: string;
+    customerPhone: string | null;
+    deliveryAddress: string;
+    state: string;
+    lga: string;
     status: string;
     statusLabel: string;
     lockedPriceKobo: number;
@@ -144,7 +148,8 @@ export default function AdminOrdersIndex() {
                                     </th>
                                     <th className="w-12 px-2 py-3 font-semibold">S/N</th>
                                     <th className="px-5 py-3 font-semibold">Order</th>
-                                    <th className="px-4 py-3 font-semibold">Vendor → Customer</th>
+                                    <th className="px-4 py-3 font-semibold">Customer Info</th>
+                                    <th className="px-4 py-3 font-semibold">Delivery Address</th>
                                     <th className="px-4 py-3 text-right font-semibold">Value</th>
                                     <th className="px-4 py-3 font-semibold">Placed</th>
                                     <th className="px-4 py-3 font-semibold">Status</th>
@@ -188,9 +193,15 @@ export default function AdminOrdersIndex() {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3.5 text-gray-600">
-                                            {order.vendorName}
+                                            <span className="block font-semibold text-gray-900">{order.customerName}</span>
+                                            {order.customerPhone && (
+                                                <span className="block text-xs text-gray-400">{order.customerPhone}</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3.5 text-sm text-gray-600">
+                                            <span className="block">{order.deliveryAddress}</span>
                                             <span className="block text-xs text-gray-400">
-                                                → {order.customerName}
+                                                {order.state}{order.lga ? `, ${order.lga}` : ''}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3.5 text-right font-bold tabular-nums text-gray-900">
@@ -255,7 +266,19 @@ export default function AdminOrdersIndex() {
                                         )}
                                     </span>
                                     <span className="mt-1 block truncate text-sm text-gray-500">
-                                        {order.vendorName} → {order.customerName}
+                                        {order.vendorName}
+                                    </span>
+                                    <span className="mt-1 block text-sm font-semibold text-gray-900">
+                                        {order.customerName}
+                                    </span>
+                                    {order.customerPhone && (
+                                        <span className="block truncate text-xs text-gray-400">
+                                            {order.customerPhone}
+                                        </span>
+                                    )}
+                                    <span className="mt-1 block text-xs text-gray-500">
+                                        {order.deliveryAddress}, {order.state}
+                                        {order.lga && `, ${order.lga}`}
                                     </span>
                                 </Link>
 

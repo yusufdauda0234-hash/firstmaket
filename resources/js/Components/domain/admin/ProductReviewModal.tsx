@@ -31,7 +31,7 @@ interface ProductDetail {
 export default function ProductReviewModal({ uuid, onClose }: { uuid: string | null; onClose: () => void }) {
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(false);
-    const [mode, setMode] = useState<'view' | 'reject'>('view');
+    const [mode, setMode] = useState<'view' | 'reject' | 'delist'>('view');
     const [reason, setReason] = useState('');
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
@@ -77,6 +77,21 @@ export default function ProductReviewModal({ uuid, onClose }: { uuid: string | n
         }
         setBusy(true);
         router.post(route('admin.products.reject', { product: product.uuid }), { reason }, {
+            preserveScroll: true,
+            onSuccess: () => onClose(),
+            onError: (errors) => setError(errors.reason ?? 'Action failed.'),
+            onFinish: () => setBusy(false),
+        });
+    };
+
+    const delist = () => {
+        if (!product) return;
+        if (reason.trim() === '') {
+            setError('A reason is required.');
+            return;
+        }
+        setBusy(true);
+        router.post(route('admin.products.delist', { product: product.uuid }), { reason }, {
             preserveScroll: true,
             onSuccess: () => onClose(),
             onError: (errors) => setError(errors.reason ?? 'Action failed.'),
@@ -183,6 +198,21 @@ export default function ProductReviewModal({ uuid, onClose }: { uuid: string | n
                         </div>
                     )}
 
+                    {mode === 'delist' && (
+                        <div>
+                            <Label htmlFor="product-reason">Reason for delisting</Label>
+                            <textarea
+                                id="product-reason"
+                                rows={3}
+                                autoFocus
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                            />
+                            <InputError message={error} />
+                        </div>
+                    )}
+
                     <div className="flex flex-wrap justify-end gap-2 border-t border-gray-100 pt-4">
                         {mode === 'view' ? (
                             <>
@@ -203,6 +233,15 @@ export default function ProductReviewModal({ uuid, onClose }: { uuid: string | n
                                         </Button>
                                     </>
                                 )}
+                                {product.status === 'approved' && (
+                                    <Button
+                                        variant="secondary"
+                                        className="border-orange-200 text-orange-600 hover:bg-orange-50"
+                                        onClick={() => setMode('delist')}
+                                    >
+                                        Delist
+                                    </Button>
+                                )}
                             </>
                         ) : (
                             <>
@@ -210,11 +249,11 @@ export default function ProductReviewModal({ uuid, onClose }: { uuid: string | n
                                     Back
                                 </Button>
                                 <Button
-                                    onClick={reject}
+                                    onClick={mode === 'reject' ? reject : delist}
                                     disabled={busy}
-                                    className="bg-red-600 hover:bg-red-700 focus-visible:outline-red-600"
+                                    className={mode === 'reject' ? 'bg-red-600 hover:bg-red-700 focus-visible:outline-red-600' : 'bg-orange-600 hover:bg-orange-700 focus-visible:outline-orange-600'}
                                 >
-                                    {busy ? 'Working…' : 'Confirm reject'}
+                                    {busy ? 'Working…' : mode === 'reject' ? 'Confirm reject' : 'Confirm delist'}
                                 </Button>
                             </>
                         )}

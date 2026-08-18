@@ -17,6 +17,7 @@ use App\Modules\Savings\Services\SavingsGoalService;
 use App\Modules\Savings\Services\SavingsService;
 use App\Shared\Enums\CheckoutMethod;
 use App\Shared\Enums\ProductStatus;
+use App\Modules\Settings\Models\Country;
 use App\Shared\Nigeria;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -214,6 +215,7 @@ class CartController extends Controller
             // Prefills the form so a returning customer confirms an address
             // rather than retyping it.
             'savedAddress' => $user->customerProfile?->defaultAddress(),
+            'countries' => Country::active()->map(fn (Country $c) => $c->name)->all(),
             'states' => Nigeria::STATES,
             'paymentMethods' => array_map(function (CheckoutMethod $method) use ($user, $summary) {
                 // Pay on delivery is judged against this basket, not in the

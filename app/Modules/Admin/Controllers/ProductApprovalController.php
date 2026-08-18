@@ -125,6 +125,15 @@ class ProductApprovalController extends Controller
         return redirect()->route('admin.products.index')->with('success', "\"{$product->name}\" rejected.");
     }
 
+    public function delist(Request $request, Product $product): RedirectResponse
+    {
+        $validated = $request->validate(['reason' => ['required', 'string', 'max:1000']]);
+
+        $this->statusService->delist($product, $request->user(), $validated['reason']);
+
+        return redirect()->route('admin.products.index')->with('success', "\"{$product->name}\" delisted.");
+    }
+
     /**
      * Approve or reject several listings in one pass.
      *

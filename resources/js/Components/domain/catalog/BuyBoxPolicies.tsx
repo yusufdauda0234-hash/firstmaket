@@ -69,7 +69,7 @@ export default function BuyBoxPolicies({ freeShippingThresholdKobo }: Props) {
             body: (
                 <>
                     <p>
-                        You have <strong>7 days from delivery</strong> to report a problem. Items must
+                        You have <strong>8 days from delivery</strong> to report a problem. Items must
                         come back unused and in their original packaging, with everything they shipped
                         with.
                     </p>

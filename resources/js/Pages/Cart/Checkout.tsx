@@ -73,6 +73,7 @@ interface Props extends PageProps {
     promo: AppliedPromo | null;
     contact: { name: string; phone: string | null };
     paymentMethods: PaymentMethod[];
+    countries: string[];
     states: string[];
     planTerms: PlanTerm[];
     /** Set when this is a Buy-now checkout for a single item, not the cart. */
@@ -681,7 +682,7 @@ export default function CartCheckout() {
                                                 </span>
                                                 <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
                                                     <Store className="h-3 w-3 shrink-0" aria-hidden="true" />
-                                                    <span className="truncate">{item.vendorName}</span>
+                                                    <span className="truncate">Verified vendor</span>
                                                 </span>
                                                 <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-600">
                                                     Qty {item.quantity}
