@@ -73,7 +73,8 @@ interface Props extends PageProps {
     promo: AppliedPromo | null;
     contact: { name: string; phone: string | null };
     paymentMethods: PaymentMethod[];
-    countries: string[];
+    countries: Array<{ name: string; id: number }>;
+    statesByCountry: Record<number, string[]>;
     states: string[];
     planTerms: PlanTerm[];
     /** Set when this is a Buy-now checkout for a single item, not the cart. */
@@ -84,6 +85,7 @@ interface Props extends PageProps {
     planTargetKobo: number;
     /** This customer's saved delivery address; null before the first one. */
     savedAddress: {
+        country_id?: number;
         recipient_name: string;
         recipient_phone: string;
         delivery_address: string;
@@ -112,6 +114,7 @@ export default function CartCheckout() {
         contact,
         paymentMethods,
         countries,
+        statesByCountry,
         states,
         planTerms,
         planCreditKobo,
@@ -136,6 +139,7 @@ export default function CartCheckout() {
         // only for the recipient: an order is often sent to someone else, and
         // an account name is not always a person's name (email-only signups
         // default it to the address).
+        country_id: (savedAddress?.country_id as number) || (countries[0]?.id ?? 1),
         recipient_name: savedAddress?.recipient_name || contact.name || '',
         recipient_phone: savedAddress?.recipient_phone || contact.phone || '',
         delivery_address: savedAddress?.delivery_address ?? '',
@@ -374,19 +378,15 @@ export default function CartCheckout() {
                                     <Field label="Country" htmlFor="country">
                                         <Select
                                             id="country"
-                                            value={countries[0] || ''}
-                                            onChange={() => {}}
+                                            value={form.data.country_id}
+                                            onChange={(e) => form.setData('country_id', parseInt(e.target.value))}
                                             className="text-gray-900"
                                         >
-                                            {countries.length > 0 ? (
-                                                countries.map((country) => (
-                                                    <option key={country} value={country} className="text-gray-900">
-                                                        {country}
-                                                    </option>
-                                                ))
-                                            ) : (
-                                                <option value="">No countries available</option>
-                                            )}
+                                            {countries.map((country) => (
+                                                <option key={country.id} value={country.id} className="text-gray-900">
+                                                    {country.name}
+                                                </option>
+                                            ))}
                                         </Select>
                                     </Field>
 
@@ -398,7 +398,7 @@ export default function CartCheckout() {
                                             className={form.data.state === '' ? 'text-gray-400' : ''}
                                         >
                                             <option value="">Select a state</option>
-                                            {states.map((state) => (
+                                            {(statesByCountry[form.data.country_id] || states).map((state) => (
                                                 <option key={state} value={state} className="text-gray-900">
                                                     {state}
                                                 </option>

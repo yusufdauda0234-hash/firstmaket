@@ -3,6 +3,7 @@
 namespace App\Modules\Settings\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -25,5 +26,10 @@ class Country extends Model
     public static function active()
     {
         return self::where('is_active', true)->orderBy('sort_order')->get();
+    }
+
+    public function states(): HasMany
+    {
+        return $this->hasMany(State::class);
     }
 }

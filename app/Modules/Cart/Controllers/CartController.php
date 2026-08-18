@@ -215,7 +215,11 @@ class CartController extends Controller
             // Prefills the form so a returning customer confirms an address
             // rather than retyping it.
             'savedAddress' => $user->customerProfile?->defaultAddress(),
-            'countries' => Country::active()->map(fn (Country $c) => $c->name)->all(),
+            'countries' => Country::active()->map(fn (Country $c) => ['name' => $c->name, 'id' => $c->id])->all(),
+            'statesByCountry' => Country::active()->mapWithKeys(function (Country $c) {
+                $states = $c->states()->active()->pluck('name')->all();
+                return [$c->id => $states];
+            })->all(),
             'states' => Nigeria::STATES,
             'paymentMethods' => array_map(function (CheckoutMethod $method) use ($user, $summary) {
                 // Pay on delivery is judged against this basket, not in the
