@@ -1,0 +1,470 @@
+﻿{
+ "1": {
+  "n": "Airdrie",
+  "l": "Airdrie"
+ },
+ "2": {
+  "n": "Alberta Beach",
+  "l": "Alberta Beach"
+ },
+ "3": {
+  "n": "Athabasca",
+  "l": "Athabasca"
+ },
+ "4": {
+  "n": "Banff",
+  "l": "Banff"
+ },
+ "5": {
+  "n": "Barrhead",
+  "l": "Barrhead"
+ },
+ "6": {
+  "n": "Bassano",
+  "l": "Bassano"
+ },
+ "7": {
+  "n": "Beaumont",
+  "l": "Beaumont"
+ },
+ "8": {
+  "n": "Beaverlodge",
+  "l": "Beaverlodge"
+ },
+ "9": {
+  "n": "Bentley",
+  "l": "Bentley"
+ },
+ "10": {
+  "n": "Black Diamond",
+  "l": "Black Diamond"
+ },
+ "11": {
+  "n": "Blackfalds",
+  "l": "Blackfalds"
+ },
+ "12": {
+  "n": "Bon Accord",
+  "l": "Bon Accord"
+ },
+ "13": {
+  "n": "Bonnyville",
+  "l": "Bonnyville"
+ },
+ "14": {
+  "n": "Bow Island",
+  "l": "Bow Island"
+ },
+ "15": {
+  "n": "Bowden",
+  "l": "Bowden"
+ },
+ "16": {
+  "n": "Brooks",
+  "l": "Brooks"
+ },
+ "17": {
+  "n": "Bruederheim",
+  "l": "Bruederheim"
+ },
+ "18": {
+  "n": "Calgary",
+  "l": "Calgary"
+ },
+ "19": {
+  "n": "Calmar",
+  "l": "Calmar"
+ },
+ "20": {
+  "n": "Camrose",
+  "l": "Camrose"
+ },
+ "21": {
+  "n": "Canmore",
+  "l": "Canmore"
+ },
+ "22": {
+  "n": "Cardston",
+  "l": "Cardston"
+ },
+ "23": {
+  "n": "Carstairs",
+  "l": "Carstairs"
+ },
+ "24": {
+  "n": "Chestermere",
+  "l": "Chestermere"
+ },
+ "25": {
+  "n": "Claresholm",
+  "l": "Claresholm"
+ },
+ "26": {
+  "n": "Coaldale",
+  "l": "Coaldale"
+ },
+ "27": {
+  "n": "Coalhurst",
+  "l": "Coalhurst"
+ },
+ "28": {
+  "n": "Cochrane",
+  "l": "Cochrane"
+ },
+ "29": {
+  "n": "Cold Lake",
+  "l": "Cold Lake"
+ },
+ "30": {
+  "n": "Crossfield",
+  "l": "Crossfield"
+ },
+ "31": {
+  "n": "Crowsnest Pass",
+  "l": "Crowsnest Pass"
+ },
+ "32": {
+  "n": "Devon",
+  "l": "Devon"
+ },
+ "33": {
+  "n": "Didsbury",
+  "l": "Didsbury"
+ },
+ "34": {
+  "n": "Drayton Valley",
+  "l": "Drayton Valley"
+ },
+ "35": {
+  "n": "Drumheller",
+  "l": "Drumheller"
+ },
+ "36": {
+  "n": "Duchess",
+  "l": "Duchess"
+ },
+ "37": {
+  "n": "Eckville",
+  "l": "Eckville"
+ },
+ "38": {
+  "n": "Edmonton",
+  "l": "Edmonton"
+ },
+ "39": {
+  "n": "Edson",
+  "l": "Edson"
+ },
+ "40": {
+  "n": "Elk Point",
+  "l": "Elk Point"
+ },
+ "41": {
+  "n": "Falher",
+  "l": "Falher"
+ },
+ "42": {
+  "n": "Fort Macleod",
+  "l": "Fort Macleod"
+ },
+ "43": {
+  "n": "Fort Saskatchewan",
+  "l": "Fort Saskatchewan"
+ },
+ "44": {
+  "n": "Fox Creek",
+  "l": "Fox Creek"
+ },
+ "45": {
+  "n": "Gibbons",
+  "l": "Gibbons"
+ },
+ "46": {
+  "n": "Grande Cache",
+  "l": "Grande Cache"
+ },
+ "47": {
+  "n": "Grande Prairie",
+  "l": "Grande Prairie"
+ },
+ "48": {
+  "n": "Grimshaw",
+  "l": "Grimshaw"
+ },
+ "49": {
+  "n": "Hanna",
+  "l": "Hanna"
+ },
+ "50": {
+  "n": "High Level",
+  "l": "High Level"
+ },
+ "51": {
+  "n": "High Prairie",
+  "l": "High Prairie"
+ },
+ "52": {
+  "n": "High River",
+  "l": "High River"
+ },
+ "53": {
+  "n": "Hinton",
+  "l": "Hinton"
+ },
+ "54": {
+  "n": "Innisfail",
+  "l": "Innisfail"
+ },
+ "55": {
+  "n": "Irricana",
+  "l": "Irricana"
+ },
+ "56": {
+  "n": "Jasper",
+  "l": "Jasper"
+ },
+ "57": {
+  "n": "Lacombe",
+  "l": "Lacombe"
+ },
+ "58": {
+  "n": "Lamont",
+  "l": "Lamont"
+ },
+ "59": {
+  "n": "Leduc",
+  "l": "Leduc"
+ },
+ "60": {
+  "n": "Legal",
+  "l": "Legal"
+ },
+ "61": {
+  "n": "Lethbridge",
+  "l": "Lethbridge"
+ },
+ "62": {
+  "n": "Lloydminster",
+  "l": "Lloydminster"
+ },
+ "63": {
+  "n": "Magrath",
+  "l": "Magrath"
+ },
+ "64": {
+  "n": "Manning",
+  "l": "Manning"
+ },
+ "65": {
+  "n": "Mayerthorpe",
+  "l": "Mayerthorpe"
+ },
+ "66": {
+  "n": "Medicine Hat",
+  "l": "Medicine Hat"
+ },
+ "67": {
+  "n": "Millet",
+  "l": "Millet"
+ },
+ "68": {
+  "n": "Morinville",
+  "l": "Morinville"
+ },
+ "69": {
+  "n": "Nanton",
+  "l": "Nanton"
+ },
+ "70": {
+  "n": "Nobleford",
+  "l": "Nobleford"
+ },
+ "71": {
+  "n": "Okotoks",
+  "l": "Okotoks"
+ },
+ "72": {
+  "n": "Olds",
+  "l": "Olds"
+ },
+ "73": {
+  "n": "Onoway",
+  "l": "Onoway"
+ },
+ "74": {
+  "n": "Oyen",
+  "l": "Oyen"
+ },
+ "75": {
+  "n": "Peace River",
+  "l": "Peace River"
+ },
+ "76": {
+  "n": "Penhold",
+  "l": "Penhold"
+ },
+ "77": {
+  "n": "Picture Butte",
+  "l": "Picture Butte"
+ },
+ "78": {
+  "n": "Pincher Creek",
+  "l": "Pincher Creek"
+ },
+ "79": {
+  "n": "Ponoka",
+  "l": "Ponoka"
+ },
+ "80": {
+  "n": "Provost",
+  "l": "Provost"
+ },
+ "81": {
+  "n": "Raymond",
+  "l": "Raymond"
+ },
+ "82": {
+  "n": "Red Deer",
+  "l": "Red Deer"
+ },
+ "83": {
+  "n": "Redcliff",
+  "l": "Redcliff"
+ },
+ "84": {
+  "n": "Redwater",
+  "l": "Redwater"
+ },
+ "85": {
+  "n": "Rimbey",
+  "l": "Rimbey"
+ },
+ "86": {
+  "n": "Rocky Mountain House",
+  "l": "Rocky Mountain House"
+ },
+ "87": {
+  "n": "Sexsmith",
+  "l": "Sexsmith"
+ },
+ "88": {
+  "n": "Slave Lake",
+  "l": "Slave Lake"
+ },
+ "89": {
+  "n": "Springbrook",
+  "l": "Springbrook"
+ },
+ "90": {
+  "n": "Spruce Grove",
+  "l": "Spruce Grove"
+ },
+ "91": {
+  "n": "St. Albert",
+  "l": "St. Albert"
+ },
+ "92": {
+  "n": "St. Paul",
+  "l": "St. Paul"
+ },
+ "93": {
+  "n": "Stettler",
+  "l": "Stettler"
+ },
+ "94": {
+  "n": "Stony Plain",
+  "l": "Stony Plain"
+ },
+ "95": {
+  "n": "Strathmore",
+  "l": "Strathmore"
+ },
+ "96": {
+  "n": "Sundre",
+  "l": "Sundre"
+ },
+ "97": {
+  "n": "Swan Hills",
+  "l": "Swan Hills"
+ },
+ "98": {
+  "n": "Sylvan Lake",
+  "l": "Sylvan Lake"
+ },
+ "99": {
+  "n": "Taber",
+  "l": "Taber"
+ },
+ "100": {
+  "n": "Three Hills",
+  "l": "Three Hills"
+ },
+ "101": {
+  "n": "Tofield",
+  "l": "Tofield"
+ },
+ "102": {
+  "n": "Trochu",
+  "l": "Trochu"
+ },
+ "103": {
+  "n": "Turner Valley",
+  "l": "Turner Valley"
+ },
+ "104": {
+  "n": "Two Hills",
+  "l": "Two Hills"
+ },
+ "105": {
+  "n": "Valleyview",
+  "l": "Valleyview"
+ },
+ "106": {
+  "n": "Vauxhall",
+  "l": "Vauxhall"
+ },
+ "107": {
+  "n": "Vegreville",
+  "l": "Vegreville"
+ },
+ "108": {
+  "n": "Vermilion",
+  "l": "Vermilion"
+ },
+ "109": {
+  "n": "Viking",
+  "l": "Viking"
+ },
+ "110": {
+  "n": "Vulcan",
+  "l": "Vulcan"
+ },
+ "111": {
+  "n": "Wabasca",
+  "l": "Wabasca"
+ },
+ "112": {
+  "n": "Wainwright",
+  "l": "Wainwright"
+ },
+ "113": {
+  "n": "Wembley",
+  "l": "Wembley"
+ },
+ "114": {
+  "n": "Westlock",
+  "l": "Westlock"
+ },
+ "115": {
+  "n": "Wetaskiwin",
+  "l": "Wetaskiwin"
+ },
+ "116": {
+  "n": "Whitecourt",
+  "l": "Whitecourt"
+ },
+ "117": {
+  "n": "Wood Buffalo",
+  "l": "Wood Buffalo"
+ }
+}

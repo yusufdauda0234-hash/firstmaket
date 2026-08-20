@@ -1,0 +1,13 @@
+{
+  "AG": {"n": "Aragatsotn", "l": "Արագածոտն", "s": "AG"},
+  "AR": {"n": "Ararat", "l": "Արարատ", "s": "AR"},
+  "AV": {"n": "Armavir", "l": "Արմավիր", "s": "AV"},
+  "GR": {"n": "Gegharkunik", "l": "Գեղարքունիք", "s": "GR"},
+  "KT": {"n": "Kotayk", "l": "Կոտայք", "s": "KT"},
+  "LO": {"n": "Lori", "l": "Լոռի", "s": "LO"},
+  "SH": {"n": "Shirak", "l": "Շիրակ", "s": "SH"},
+  "SU": {"n": "Syunik", "l": "Սյունիք", "s": "SU"},
+  "TV": {"n": "Tavush", "l": "Տավուշ", "s": "TV"},
+  "VD": {"n": "Vayots Dzor", "l": "Վայոց Ձոր", "s": "VD"},
+  "ER": {"n": "Yerevan", "l": "Երևան", "s": "ER"}
+}

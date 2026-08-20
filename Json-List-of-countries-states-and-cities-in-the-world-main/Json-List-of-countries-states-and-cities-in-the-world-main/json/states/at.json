@@ -1,0 +1,11 @@
+{
+  "Bgl": {"n": "Burgenland", "l": "Burgenland", "s": "Bgl"},
+  "Ktn": {"n": "Carinthia", "l": "Kärnten", "s": "Ktn"},
+  "NÖ": {"n": "Lower Austria", "l": "Niederösterreich", "s": "NÖ"},
+  "OÖ": {"n": "Upper Austria", "l": "Oberösterreich", "s": "OÖ"},
+  "Sbg": {"n": "Salzburg", "l": "Salzburg", "s": "Sbg"},
+  "Stm": {"n": "Styria", "l": "Steiermark", "s": "Stm"},
+  "Tir": {"n": "Tyrol", "l": "Tirol", "s": "Tir"},
+  "Vbg": {"n": "Vorarlberg", "l": "Vorarlberg", "s": "Vbg"},
+  "Wien": {"n": "Vienna", "l": "Wien", "s": "Wien"}
+}

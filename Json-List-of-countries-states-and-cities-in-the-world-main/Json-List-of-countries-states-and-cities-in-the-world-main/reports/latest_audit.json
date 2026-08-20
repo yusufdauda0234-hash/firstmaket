@@ -1,0 +1,173 @@
+{
+  "generated_at": "2025-10-30T19:44:39.184616+00:00",
+  "stats": {
+    "countries_total": 241,
+    "countries_with_states": 241,
+    "countries_missing_states": 0,
+    "states_total": 3241,
+    "states_missing_city_file": 36,
+    "city_files_total": 3205,
+    "city_records_total": 44001
+  },
+  "countries_missing_states": {},
+  "states_missing_cities": {
+    "Algeria": [
+      "CON"
+    ],
+    "Dominican Republic": [
+      "MTS"
+    ],
+    "Georgia": [
+      "AJ",
+      "AP",
+      "CI",
+      "GU",
+      "IM",
+      "KA",
+      "KK",
+      "MM",
+      "RL",
+      "SZ",
+      "SJ",
+      "SK",
+      "TB"
+    ],
+    "Guinea": [
+      "con",
+      "kis"
+    ],
+    "Ireland": [
+      "CON"
+    ],
+    "Monaco": [
+      "CON"
+    ],
+    "Niue": [
+      "NIU"
+    ],
+    "Paraguay": [
+      "CON"
+    ],
+    "Philippines": [
+      "phph",
+      "antq"
+    ],
+    "Romania": [
+      "CON"
+    ],
+    "Saint Martin": [
+      "CON"
+    ],
+    "Solomon Islands": [
+      "CEN",
+      "CHO",
+      "GUA",
+      "HON",
+      "ISA",
+      "MAK",
+      "MAL",
+      "REN",
+      "TEM",
+      "WES"
+    ],
+    "Taiwan": [
+      "JNM"
+    ]
+  },
+  "orphan_city_files": {
+    "GG": [
+      "ALD (1)"
+    ],
+    "IE": [
+      "_CON"
+    ],
+    "TW": [
+      "GXS (1)",
+      "XIN"
+    ],
+    "SC": [
+      "MAH (1)"
+    ],
+    "CZ": [
+      "JC (1)"
+    ],
+    "IN": [
+      "KARNATAKA"
+    ],
+    "MC": [
+      "_CON"
+    ],
+    "IT": [
+      "ABR (1)"
+    ],
+    "EH": [
+      "AOU (1)"
+    ],
+    "MF": [
+      "_CON"
+    ],
+    "NU": [
+      "NIUĒ"
+    ],
+    "GN": [
+      "_CON"
+    ],
+    "PH": [
+      "ANTIQUE"
+    ],
+    "JE": [
+      "BRE (1)",
+      "GRO (1)"
+    ],
+    "PY": [
+      "_CON"
+    ],
+    "LK": [
+      "CEN (1)"
+    ],
+    "DZ": [
+      "_CON"
+    ],
+    "SB": [
+      "CENTRAL",
+      "CHOISEUL",
+      "GUADALCANAL",
+      "HONIARA",
+      "ISABEL",
+      "MAKIRA-ULAWA",
+      "MALAITA",
+      "RENNELL & BELLONA",
+      "TEMOTU",
+      "WESTERN"
+    ],
+    "BA": [
+      "FBH",
+      "RSP"
+    ],
+    "PL": [
+      "DOL (1)"
+    ],
+    "DO": [
+      "AZU (1)",
+      "LA VEGA"
+    ],
+    "KM": [
+      "MWA (1)"
+    ],
+    "BW": [
+      "CEN (1)"
+    ],
+    "RE": [
+      "_CON"
+    ]
+  },
+  "invalid_city_files": [
+    "json/cites/fm/kos.json",
+    "json/cites/fm/poh.json",
+    "json/cites/fm/yap.json",
+    "json/cites/pt/nor.json",
+    "json/cites/ye/mab.json",
+    "json/cites/ye/san.json",
+    "json/cites/ye/tai.json"
+  ]
+}

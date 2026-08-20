@@ -1,0 +1,27 @@
+{
+    "ALW": {
+        "n": "Central",
+        "l": "الوسطى",
+        "s": "ALW"
+    },
+    "JBY": {
+        "n": "Southern",
+        "l": "الجنوبية",
+        "s": "JBY"
+    },
+    "MNM": {
+        "n": "Capital",
+        "l": "العاصمة",
+        "s": "MNM"
+    },
+    "MRQ": {
+        "n": "Al-Muharraq",
+        "l": "المحرق",
+        "s": "MRQ"
+    },
+    "SHM": {
+        "n": "Northern",
+        "l": "الشمالية",
+        "s": "SHM"
+    }
+}

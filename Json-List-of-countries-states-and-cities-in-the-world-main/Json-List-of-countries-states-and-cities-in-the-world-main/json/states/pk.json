@@ -1,0 +1,9 @@
+{
+  "AJK": {"n": "Azad Jammu and Kashmir", "l": "آزاد جموں و کشمیر", "s": "AJK"},
+  "BAL": {"n": "Balochistan", "l": "بلوچستان", "s": "BAL"},
+  "GB": {"n": "Gilgit-Baltistan", "l": "گلگت بلتستان", "s": "GB"},
+  "ICT": {"n": "Islamabad Capital Territory", "l": "اسلام آباد کیپیٹل ٹیریٹری", "s": "ICT"},
+  "KHY": {"n": "Khyber Pakhtunkhwa", "l": "خیبر پختونخوا", "s": "KHY"},
+  "PUN": {"n": "Punjab", "l": "پنجاب", "s": "PUN"},
+  "SIN": {"n": "Sindh", "l": "سندھ", "s": "SIN"}
+}

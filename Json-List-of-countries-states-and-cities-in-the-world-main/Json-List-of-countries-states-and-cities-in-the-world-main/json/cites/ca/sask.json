@@ -1,0 +1,446 @@
+﻿{
+ "1": {
+  "n": "Air Ronge",
+  "l": "Air Ronge"
+ },
+ "2": {
+  "n": "Assiniboia",
+  "l": "Assiniboia"
+ },
+ "3": {
+  "n": "Balgonie",
+  "l": "Balgonie"
+ },
+ "4": {
+  "n": "Battle River No. 438",
+  "l": "Battle River No. 438"
+ },
+ "5": {
+  "n": "Battleford",
+  "l": "Battleford"
+ },
+ "6": {
+  "n": "Beaver River",
+  "l": "Beaver River"
+ },
+ "7": {
+  "n": "Biggar",
+  "l": "Biggar"
+ },
+ "8": {
+  "n": "Birch Hills",
+  "l": "Birch Hills"
+ },
+ "9": {
+  "n": "Blucher",
+  "l": "Blucher"
+ },
+ "10": {
+  "n": "Britannia No. 502",
+  "l": "Britannia No. 502"
+ },
+ "11": {
+  "n": "Buckland No. 491",
+  "l": "Buckland No. 491"
+ },
+ "12": {
+  "n": "Buffalo Narrows",
+  "l": "Buffalo Narrows"
+ },
+ "13": {
+  "n": "Canora",
+  "l": "Canora"
+ },
+ "14": {
+  "n": "Canwood No. 494",
+  "l": "Canwood No. 494"
+ },
+ "15": {
+  "n": "Carlyle",
+  "l": "Carlyle"
+ },
+ "16": {
+  "n": "Carnduff",
+  "l": "Carnduff"
+ },
+ "17": {
+  "n": "Corman Park No. 344",
+  "l": "Corman Park No. 344"
+ },
+ "18": {
+  "n": "Creighton",
+  "l": "Creighton"
+ },
+ "19": {
+  "n": "Dalmeny",
+  "l": "Dalmeny"
+ },
+ "20": {
+  "n": "Davidson",
+  "l": "Davidson"
+ },
+ "21": {
+  "n": "Delisle",
+  "l": "Delisle"
+ },
+ "22": {
+  "n": "Duck Lake No. 463",
+  "l": "Duck Lake No. 463"
+ },
+ "23": {
+  "n": "Dundurn No. 314",
+  "l": "Dundurn No. 314"
+ },
+ "24": {
+  "n": "Edenwold No. 158",
+  "l": "Edenwold No. 158"
+ },
+ "25": {
+  "n": "Esterhazy",
+  "l": "Esterhazy"
+ },
+ "26": {
+  "n": "Estevan",
+  "l": "Estevan"
+ },
+ "27": {
+  "n": "Estevan No. 5",
+  "l": "Estevan No. 5"
+ },
+ "28": {
+  "n": "Eston",
+  "l": "Eston"
+ },
+ "29": {
+  "n": "Flin Flon",
+  "l": "Flin Flon"
+ },
+ "30": {
+  "n": "Foam Lake",
+  "l": "Foam Lake"
+ },
+ "31": {
+  "n": "Fort Qu'Appelle",
+  "l": "Fort Qu’Appelle"
+ },
+ "32": {
+  "n": "Frenchman Butte",
+  "l": "Frenchman Butte"
+ },
+ "33": {
+  "n": "Gravelbourg",
+  "l": "Gravelbourg"
+ },
+ "34": {
+  "n": "Grenfell",
+  "l": "Grenfell"
+ },
+ "35": {
+  "n": "Hudson Bay",
+  "l": "Hudson Bay"
+ },
+ "36": {
+  "n": "Hudson Bay No. 394",
+  "l": "Hudson Bay No. 394"
+ },
+ "37": {
+  "n": "Humboldt",
+  "l": "Humboldt"
+ },
+ "38": {
+  "n": "Ile-a-la-Crosse",
+  "l": "Ile-à-la-Crosse"
+ },
+ "39": {
+  "n": "Indian Head",
+  "l": "Indian Head"
+ },
+ "40": {
+  "n": "Kamsack",
+  "l": "Kamsack"
+ },
+ "41": {
+  "n": "Kerrobert",
+  "l": "Kerrobert"
+ },
+ "42": {
+  "n": "Kindersley",
+  "l": "Kindersley"
+ },
+ "43": {
+  "n": "Kindersley No. 290",
+  "l": "Kindersley No. 290"
+ },
+ "44": {
+  "n": "Kipling",
+  "l": "Kipling"
+ },
+ "45": {
+  "n": "La Loche",
+  "l": "La Loche"
+ },
+ "46": {
+  "n": "La Ronge",
+  "l": "La Ronge"
+ },
+ "47": {
+  "n": "Laird No. 404",
+  "l": "Laird No. 404"
+ },
+ "48": {
+  "n": "Lajord No. 128",
+  "l": "Lajord No. 128"
+ },
+ "49": {
+  "n": "Langenburg",
+  "l": "Langenburg"
+ },
+ "50": {
+  "n": "Langham",
+  "l": "Langham"
+ },
+ "51": {
+  "n": "Lanigan",
+  "l": "Lanigan"
+ },
+ "52": {
+  "n": "Lloydminster",
+  "l": "Lloydminster"
+ },
+ "53": {
+  "n": "Longlaketon No. 219",
+  "l": "Longlaketon No. 219"
+ },
+ "54": {
+  "n": "Lumsden",
+  "l": "Lumsden"
+ },
+ "55": {
+  "n": "Lumsden No. 189",
+  "l": "Lumsden No. 189"
+ },
+ "56": {
+  "n": "Macklin",
+  "l": "Macklin"
+ },
+ "57": {
+  "n": "Maidstone",
+  "l": "Maidstone"
+ },
+ "58": {
+  "n": "Maple Creek",
+  "l": "Maple Creek"
+ },
+ "59": {
+  "n": "Maple Creek No. 111",
+  "l": "Maple Creek No. 111"
+ },
+ "60": {
+  "n": "Martensville",
+  "l": "Martensville"
+ },
+ "61": {
+  "n": "Meadow Lake",
+  "l": "Meadow Lake"
+ },
+ "62": {
+  "n": "Meadow Lake No. 588",
+  "l": "Meadow Lake No. 588"
+ },
+ "63": {
+  "n": "Melfort",
+  "l": "Melfort"
+ },
+ "64": {
+  "n": "Melville",
+  "l": "Melville"
+ },
+ "65": {
+  "n": "Mervin No. 499",
+  "l": "Mervin No. 499"
+ },
+ "66": {
+  "n": "Moose Jaw",
+  "l": "Moose Jaw"
+ },
+ "67": {
+  "n": "Moose Jaw No. 161",
+  "l": "Moose Jaw No. 161"
+ },
+ "68": {
+  "n": "Moosomin",
+  "l": "Moosomin"
+ },
+ "69": {
+  "n": "Nipawin",
+  "l": "Nipawin"
+ },
+ "70": {
+  "n": "Nipawin No. 487",
+  "l": "Nipawin No. 487"
+ },
+ "71": {
+  "n": "North Battleford",
+  "l": "North Battleford"
+ },
+ "72": {
+  "n": "Orkney No. 244",
+  "l": "Orkney No. 244"
+ },
+ "73": {
+  "n": "Osler",
+  "l": "Osler"
+ },
+ "74": {
+  "n": "Outlook",
+  "l": "Outlook"
+ },
+ "75": {
+  "n": "Oxbow",
+  "l": "Oxbow"
+ },
+ "76": {
+  "n": "Pelican Narrows",
+  "l": "Pelican Narrows"
+ },
+ "77": {
+  "n": "Pilot Butte",
+  "l": "Pilot Butte"
+ },
+ "78": {
+  "n": "Pinehouse",
+  "l": "Pinehouse"
+ },
+ "79": {
+  "n": "Preeceville",
+  "l": "Preeceville"
+ },
+ "80": {
+  "n": "Prince Albert",
+  "l": "Prince Albert"
+ },
+ "81": {
+  "n": "Prince Albert No. 461",
+  "l": "Prince Albert No. 461"
+ },
+ "82": {
+  "n": "Rama",
+  "l": "Rama"
+ },
+ "83": {
+  "n": "Regina",
+  "l": "Regina"
+ },
+ "84": {
+  "n": "Regina Beach",
+  "l": "Regina Beach"
+ },
+ "85": {
+  "n": "Rosetown",
+  "l": "Rosetown"
+ },
+ "86": {
+  "n": "Rosthern",
+  "l": "Rosthern"
+ },
+ "87": {
+  "n": "Rosthern No. 403",
+  "l": "Rosthern No. 403"
+ },
+ "88": {
+  "n": "Saskatoon",
+  "l": "Saskatoon"
+ },
+ "89": {
+  "n": "Shaunavon",
+  "l": "Shaunavon"
+ },
+ "90": {
+  "n": "Shellbrook",
+  "l": "Shellbrook"
+ },
+ "91": {
+  "n": "Shellbrook No. 493",
+  "l": "Shellbrook No. 493"
+ },
+ "92": {
+  "n": "South Qu'Appelle No. 157",
+  "l": "South Qu'Appelle No. 157"
+ },
+ "93": {
+  "n": "Spiritwood No. 496",
+  "l": "Spiritwood No. 496"
+ },
+ "94": {
+  "n": "St. Louis No. 431",
+  "l": "St. Louis No. 431"
+ },
+ "95": {
+  "n": "Swift Current",
+  "l": "Swift Current"
+ },
+ "96": {
+  "n": "Swift Current No. 137",
+  "l": "Swift Current No. 137"
+ },
+ "97": {
+  "n": "Tisdale",
+  "l": "Tisdale"
+ },
+ "98": {
+  "n": "Torch River No. 488",
+  "l": "Torch River No. 488"
+ },
+ "99": {
+  "n": "Unity",
+  "l": "Unity"
+ },
+ "100": {
+  "n": "Vanscoy No. 345",
+  "l": "Vanscoy No. 345"
+ },
+ "101": {
+  "n": "Wadena",
+  "l": "Wadena"
+ },
+ "102": {
+  "n": "Waldheim",
+  "l": "Waldheim"
+ },
+ "103": {
+  "n": "Warman",
+  "l": "Warman"
+ },
+ "104": {
+  "n": "Watrous",
+  "l": "Watrous"
+ },
+ "105": {
+  "n": "Weyburn",
+  "l": "Weyburn"
+ },
+ "106": {
+  "n": "Weyburn No. 67",
+  "l": "Weyburn No. 67"
+ },
+ "107": {
+  "n": "White City",
+  "l": "White City"
+ },
+ "108": {
+  "n": "Wilkie",
+  "l": "Wilkie"
+ },
+ "109": {
+  "n": "Wilton No. 472",
+  "l": "Wilton No. 472"
+ },
+ "110": {
+  "n": "Wynyard",
+  "l": "Wynyard"
+ },
+ "111": {
+  "n": "Yorkton",
+  "l": "Yorkton"
+ }
+}

@@ -1,0 +1,582 @@
+﻿{
+ "1": {
+  "n": "Abbotsford",
+  "l": "Abbotsford"
+ },
+ "2": {
+  "n": "Anmore",
+  "l": "Anmore"
+ },
+ "3": {
+  "n": "Armstrong",
+  "l": "Armstrong"
+ },
+ "4": {
+  "n": "Ashcroft",
+  "l": "Ashcroft"
+ },
+ "5": {
+  "n": "Barriere",
+  "l": "Barrière"
+ },
+ "6": {
+  "n": "Bowen Island",
+  "l": "Bowen Island"
+ },
+ "7": {
+  "n": "Burnaby",
+  "l": "Burnaby"
+ },
+ "8": {
+  "n": "Burns Lake",
+  "l": "Burns Lake"
+ },
+ "9": {
+  "n": "Campbell River",
+  "l": "Campbell River"
+ },
+ "10": {
+  "n": "Castlegar",
+  "l": "Castlegar"
+ },
+ "11": {
+  "n": "Cedar",
+  "l": "Cedar"
+ },
+ "12": {
+  "n": "Central Saanich",
+  "l": "Central Saanich"
+ },
+ "13": {
+  "n": "Chase",
+  "l": "Chase"
+ },
+ "14": {
+  "n": "Chetwynd",
+  "l": "Chetwynd"
+ },
+ "15": {
+  "n": "Chilliwack",
+  "l": "Chilliwack"
+ },
+ "16": {
+  "n": "Clearwater",
+  "l": "Clearwater"
+ },
+ "17": {
+  "n": "Coldstream",
+  "l": "Coldstream"
+ },
+ "18": {
+  "n": "Colwood",
+  "l": "Colwood"
+ },
+ "19": {
+  "n": "Comox",
+  "l": "Comox"
+ },
+ "20": {
+  "n": "Coombs",
+  "l": "Coombs"
+ },
+ "21": {
+  "n": "Coquitlam",
+  "l": "Coquitlam"
+ },
+ "22": {
+  "n": "Courtenay",
+  "l": "Courtenay"
+ },
+ "23": {
+  "n": "Cowichan Bay",
+  "l": "Cowichan Bay"
+ },
+ "24": {
+  "n": "Cranbrook",
+  "l": "Cranbrook"
+ },
+ "25": {
+  "n": "Creston",
+  "l": "Creston"
+ },
+ "26": {
+  "n": "Cumberland",
+  "l": "Cumberland"
+ },
+ "27": {
+  "n": "Dawson Creek",
+  "l": "Dawson Creek"
+ },
+ "28": {
+  "n": "Delta",
+  "l": "Delta"
+ },
+ "29": {
+  "n": "Duncan",
+  "l": "Duncan"
+ },
+ "30": {
+  "n": "Dunsmuir",
+  "l": "Dunsmuir"
+ },
+ "31": {
+  "n": "East Kelowna",
+  "l": "East Kelowna"
+ },
+ "32": {
+  "n": "Elkford",
+  "l": "Elkford"
+ },
+ "33": {
+  "n": "Ellison",
+  "l": "Ellison"
+ },
+ "34": {
+  "n": "Enderby",
+  "l": "Enderby"
+ },
+ "35": {
+  "n": "Errington",
+  "l": "Errington"
+ },
+ "36": {
+  "n": "Esquimalt",
+  "l": "Esquimalt"
+ },
+ "37": {
+  "n": "Fernie",
+  "l": "Fernie"
+ },
+ "38": {
+  "n": "Fort St. James",
+  "l": "Fort St. James"
+ },
+ "39": {
+  "n": "Fort St. John",
+  "l": "Fort St. John"
+ },
+ "40": {
+  "n": "Fruitvale",
+  "l": "Fruitvale"
+ },
+ "41": {
+  "n": "Gibsons",
+  "l": "Gibsons"
+ },
+ "42": {
+  "n": "Gold River",
+  "l": "Gold River"
+ },
+ "43": {
+  "n": "Golden",
+  "l": "Golden"
+ },
+ "44": {
+  "n": "Grand Forks",
+  "l": "Grand Forks"
+ },
+ "45": {
+  "n": "Grindrod",
+  "l": "Grindrod"
+ },
+ "46": {
+  "n": "Harrison Hot Springs",
+  "l": "Harrison Hot Springs"
+ },
+ "47": {
+  "n": "Highlands",
+  "l": "Highlands"
+ },
+ "48": {
+  "n": "Hilliers",
+  "l": "Hilliers"
+ },
+ "49": {
+  "n": "Hope",
+  "l": "Hope"
+ },
+ "50": {
+  "n": "Houston",
+  "l": "Houston"
+ },
+ "51": {
+  "n": "Hudson Hope",
+  "l": "Hudson Hope"
+ },
+ "52": {
+  "n": "Invermere",
+  "l": "Invermere"
+ },
+ "53": {
+  "n": "Kaleden",
+  "l": "Kaleden"
+ },
+ "54": {
+  "n": "Kamloops",
+  "l": "Kamloops"
+ },
+ "55": {
+  "n": "Kelowna",
+  "l": "Kelowna"
+ },
+ "56": {
+  "n": "Kent",
+  "l": "Kent"
+ },
+ "57": {
+  "n": "Keremeos",
+  "l": "Keremeos"
+ },
+ "58": {
+  "n": "Kimberley",
+  "l": "Kimberley"
+ },
+ "59": {
+  "n": "Kitimat",
+  "l": "Kitimat"
+ },
+ "60": {
+  "n": "Ladysmith",
+  "l": "Ladysmith"
+ },
+ "61": {
+  "n": "Lake Country",
+  "l": "Lake Country"
+ },
+ "62": {
+  "n": "Lake Cowichan",
+  "l": "Lake Cowichan"
+ },
+ "63": {
+  "n": "Lakeview",
+  "l": "Lakeview"
+ },
+ "64": {
+  "n": "Langford Station",
+  "l": "Langford Station"
+ },
+ "65": {
+  "n": "Langley",
+  "l": "Langley"
+ },
+ "66": {
+  "n": "Lillooet",
+  "l": "Lillooet"
+ },
+ "67": {
+  "n": "Lions Bay",
+  "l": "Lions Bay"
+ },
+ "68": {
+  "n": "Logan Lake",
+  "l": "Logan Lake"
+ },
+ "69": {
+  "n": "Lumby",
+  "l": "Lumby"
+ },
+ "70": {
+  "n": "Mackenzie",
+  "l": "Mackenzie"
+ },
+ "71": {
+  "n": "Maple Ridge",
+  "l": "Maple Ridge"
+ },
+ "72": {
+  "n": "Merritt",
+  "l": "Merritt"
+ },
+ "73": {
+  "n": "Metchosin",
+  "l": "Metchosin"
+ },
+ "74": {
+  "n": "Mission",
+  "l": "Mission"
+ },
+ "75": {
+  "n": "Nakusp",
+  "l": "Nakusp"
+ },
+ "76": {
+  "n": "Nanaimo",
+  "l": "Nanaimo"
+ },
+ "77": {
+  "n": "Naramata",
+  "l": "Naramata"
+ },
+ "78": {
+  "n": "Nelson",
+  "l": "Nelson"
+ },
+ "79": {
+  "n": "New Westminster",
+  "l": "New Westminster"
+ },
+ "80": {
+  "n": "Nisga'a",
+  "l": "Nisga'a"
+ },
+ "81": {
+  "n": "North Cowichan",
+  "l": "North Cowichan"
+ },
+ "82": {
+  "n": "North Saanich",
+  "l": "North Saanich"
+ },
+ "83": {
+  "n": "North Vancouver",
+  "l": "North Vancouver"
+ },
+ "84": {
+  "n": "Northern Rockies",
+  "l": "Northern Rockies"
+ },
+ "85": {
+  "n": "Oak Bay",
+  "l": "Oak Bay"
+ },
+ "86": {
+  "n": "Oliver",
+  "l": "Oliver"
+ },
+ "87": {
+  "n": "One Hundred Mile House",
+  "l": "One Hundred Mile House"
+ },
+ "88": {
+  "n": "Ootischenia",
+  "l": "Ootischenia"
+ },
+ "89": {
+  "n": "Osoyoos",
+  "l": "Osoyoos"
+ },
+ "90": {
+  "n": "Parksville",
+  "l": "Parksville"
+ },
+ "91": {
+  "n": "Peachland",
+  "l": "Peachland"
+ },
+ "92": {
+  "n": "Pemberton",
+  "l": "Pemberton"
+ },
+ "93": {
+  "n": "Penticton",
+  "l": "Penticton"
+ },
+ "94": {
+  "n": "Pitt Meadows",
+  "l": "Pitt Meadows"
+ },
+ "95": {
+  "n": "Popkum",
+  "l": "Popkum"
+ },
+ "96": {
+  "n": "Port Alberni",
+  "l": "Port Alberni"
+ },
+ "97": {
+  "n": "Port Coquitlam",
+  "l": "Port Coquitlam"
+ },
+ "98": {
+  "n": "Port Hardy",
+  "l": "Port Hardy"
+ },
+ "99": {
+  "n": "Port McNeill",
+  "l": "Port McNeill"
+ },
+ "100": {
+  "n": "Port Moody",
+  "l": "Port Moody"
+ },
+ "101": {
+  "n": "Powell River",
+  "l": "Powell River"
+ },
+ "102": {
+  "n": "Prince George",
+  "l": "Prince George"
+ },
+ "103": {
+  "n": "Prince Rupert",
+  "l": "Prince Rupert"
+ },
+ "104": {
+  "n": "Princeton",
+  "l": "Princeton"
+ },
+ "105": {
+  "n": "Qualicum Beach",
+  "l": "Qualicum Beach"
+ },
+ "106": {
+  "n": "Quesnel",
+  "l": "Quesnel"
+ },
+ "107": {
+  "n": "Richmond",
+  "l": "Richmond"
+ },
+ "108": {
+  "n": "Rossland",
+  "l": "Rossland"
+ },
+ "109": {
+  "n": "Royston",
+  "l": "Royston"
+ },
+ "110": {
+  "n": "Saanich",
+  "l": "Saanich"
+ },
+ "111": {
+  "n": "Salmo",
+  "l": "Salmo"
+ },
+ "112": {
+  "n": "Salmon Arm",
+  "l": "Salmon Arm"
+ },
+ "113": {
+  "n": "Saltair",
+  "l": "Saltair"
+ },
+ "114": {
+  "n": "Sechelt",
+  "l": "Sechelt"
+ },
+ "115": {
+  "n": "Sicamous",
+  "l": "Sicamous"
+ },
+ "116": {
+  "n": "Sidney",
+  "l": "Sidney"
+ },
+ "117": {
+  "n": "Smithers",
+  "l": "Smithers"
+ },
+ "118": {
+  "n": "Sooke",
+  "l": "Sooke"
+ },
+ "119": {
+  "n": "Sorrento",
+  "l": "Sorrento"
+ },
+ "120": {
+  "n": "Spallumcheen",
+  "l": "Spallumcheen"
+ },
+ "121": {
+  "n": "Sparwood",
+  "l": "Sparwood"
+ },
+ "122": {
+  "n": "Squamish",
+  "l": "Squamish"
+ },
+ "123": {
+  "n": "Summerland",
+  "l": "Summerland"
+ },
+ "124": {
+  "n": "Surrey",
+  "l": "Surrey"
+ },
+ "125": {
+  "n": "Taylor",
+  "l": "Taylor"
+ },
+ "126": {
+  "n": "Telkwa",
+  "l": "Telkwa"
+ },
+ "127": {
+  "n": "Terrace",
+  "l": "Terrace"
+ },
+ "128": {
+  "n": "Tofino",
+  "l": "Tofino"
+ },
+ "129": {
+  "n": "Trail",
+  "l": "Trail"
+ },
+ "130": {
+  "n": "Tumbler Ridge",
+  "l": "Tumbler Ridge"
+ },
+ "131": {
+  "n": "Ucluelet",
+  "l": "Ucluelet"
+ },
+ "132": {
+  "n": "Valemount",
+  "l": "Valemount"
+ },
+ "133": {
+  "n": "Vancouver",
+  "l": "Vancouver"
+ },
+ "134": {
+  "n": "Vanderhoof",
+  "l": "Vanderhoof"
+ },
+ "135": {
+  "n": "Vernon",
+  "l": "Vernon"
+ },
+ "136": {
+  "n": "Victoria",
+  "l": "Victoria"
+ },
+ "137": {
+  "n": "View Royal",
+  "l": "View Royal"
+ },
+ "138": {
+  "n": "Warfield",
+  "l": "Warfield"
+ },
+ "139": {
+  "n": "West Vancouver",
+  "l": "West Vancouver"
+ },
+ "140": {
+  "n": "Westbank",
+  "l": "Westbank"
+ },
+ "141": {
+  "n": "Whistler",
+  "l": "Whistler"
+ },
+ "142": {
+  "n": "White Rock",
+  "l": "White Rock"
+ },
+ "143": {
+  "n": "Williams Lake",
+  "l": "Williams Lake"
+ },
+ "144": {
+  "n": "Windermere",
+  "l": "Windermere"
+ },
+ "145": {
+  "n": "Youbou",
+  "l": "Youbou"
+ }
+}

@@ -1,0 +1,494 @@
+﻿{
+ "1": {
+  "n": "Allardville",
+  "l": "Allardville"
+ },
+ "2": {
+  "n": "Alnwick",
+  "l": "Alnwick"
+ },
+ "3": {
+  "n": "Atholville",
+  "l": "Atholville"
+ },
+ "4": {
+  "n": "Balmoral",
+  "l": "Balmoral"
+ },
+ "5": {
+  "n": "Bas Caraquet",
+  "l": "Bas Caraquet"
+ },
+ "6": {
+  "n": "Bathurst",
+  "l": "Bathurst"
+ },
+ "7": {
+  "n": "Beaubassin East / Beaubassin-est",
+  "l": "Beaubassin East / Beaubassin-est"
+ },
+ "8": {
+  "n": "Belledune",
+  "l": "Belledune"
+ },
+ "9": {
+  "n": "Beresford",
+  "l": "Beresford"
+ },
+ "10": {
+  "n": "Bertrand",
+  "l": "Bertrand"
+ },
+ "11": {
+  "n": "Botsford",
+  "l": "Botsford"
+ },
+ "12": {
+  "n": "Bright",
+  "l": "Bright"
+ },
+ "13": {
+  "n": "Brighton",
+  "l": "Brighton"
+ },
+ "14": {
+  "n": "Buctouche",
+  "l": "Buctouche"
+ },
+ "15": {
+  "n": "Burton",
+  "l": "Burton"
+ },
+ "16": {
+  "n": "Campbellton",
+  "l": "Campbellton"
+ },
+ "17": {
+  "n": "Cap Pele",
+  "l": "Cap Pele"
+ },
+ "18": {
+  "n": "Caraquet",
+  "l": "Caraquet"
+ },
+ "19": {
+  "n": "Cardwell",
+  "l": "Cardwell"
+ },
+ "20": {
+  "n": "Charlo",
+  "l": "Charlo"
+ },
+ "21": {
+  "n": "Chipman",
+  "l": "Chipman"
+ },
+ "22": {
+  "n": "Cocagne",
+  "l": "Cocagne"
+ },
+ "23": {
+  "n": "Coverdale",
+  "l": "Coverdale"
+ },
+ "24": {
+  "n": "Dalhousie",
+  "l": "Dalhousie"
+ },
+ "25": {
+  "n": "Denmark",
+  "l": "Denmark"
+ },
+ "26": {
+  "n": "Dieppe",
+  "l": "Dieppe"
+ },
+ "27": {
+  "n": "Dorchester",
+  "l": "Dorchester"
+ },
+ "28": {
+  "n": "Douglas",
+  "l": "Douglas"
+ },
+ "29": {
+  "n": "Dundas",
+  "l": "Dundas"
+ },
+ "30": {
+  "n": "Durham",
+  "l": "Durham"
+ },
+ "31": {
+  "n": "Edmundston",
+  "l": "Edmundston"
+ },
+ "32": {
+  "n": "Eel River Crossing",
+  "l": "Eel River Crossing"
+ },
+ "33": {
+  "n": "Florenceville",
+  "l": "Florenceville"
+ },
+ "34": {
+  "n": "Fredericton",
+  "l": "Fredericton"
+ },
+ "35": {
+  "n": "Glenelg",
+  "l": "Glenelg"
+ },
+ "36": {
+  "n": "Gordon",
+  "l": "Gordon"
+ },
+ "37": {
+  "n": "Grand Bay-Westfield",
+  "l": "Grand Bay-Westfield"
+ },
+ "38": {
+  "n": "Grand Falls",
+  "l": "Grand Falls"
+ },
+ "39": {
+  "n": "Grand Manan",
+  "l": "Grand Manan"
+ },
+ "40": {
+  "n": "Greenwich",
+  "l": "Greenwich"
+ },
+ "41": {
+  "n": "Hampton",
+  "l": "Hampton"
+ },
+ "42": {
+  "n": "Hanwell",
+  "l": "Hanwell"
+ },
+ "43": {
+  "n": "Hardwicke",
+  "l": "Hardwicke"
+ },
+ "44": {
+  "n": "Havelock",
+  "l": "Havelock"
+ },
+ "45": {
+  "n": "Hillsborough",
+  "l": "Hillsborough"
+ },
+ "46": {
+  "n": "Kedgwick",
+  "l": "Kedgwick"
+ },
+ "47": {
+  "n": "Kent",
+  "l": "Kent"
+ },
+ "48": {
+  "n": "Kingsclear",
+  "l": "Kingsclear"
+ },
+ "49": {
+  "n": "Kingston",
+  "l": "Kingston"
+ },
+ "50": {
+  "n": "Lameque",
+  "l": "Lamèque"
+ },
+ "51": {
+  "n": "Lincoln",
+  "l": "Lincoln"
+ },
+ "52": {
+  "n": "Manners Sutton",
+  "l": "Manners Sutton"
+ },
+ "53": {
+  "n": "Maugerville",
+  "l": "Maugerville"
+ },
+ "54": {
+  "n": "McAdam",
+  "l": "McAdam"
+ },
+ "55": {
+  "n": "Memramcook",
+  "l": "Memramcook"
+ },
+ "56": {
+  "n": "Minto",
+  "l": "Minto"
+ },
+ "57": {
+  "n": "Miramichi",
+  "l": "Miramichi"
+ },
+ "58": {
+  "n": "Moncton",
+  "l": "Moncton"
+ },
+ "59": {
+  "n": "Musquash",
+  "l": "Musquash"
+ },
+ "60": {
+  "n": "Nauwigewauk",
+  "l": "Nauwigewauk"
+ },
+ "61": {
+  "n": "Neguac",
+  "l": "Neguac"
+ },
+ "62": {
+  "n": "New Bandon",
+  "l": "New Bandon"
+ },
+ "63": {
+  "n": "New Maryland",
+  "l": "New Maryland"
+ },
+ "64": {
+  "n": "Newcastle",
+  "l": "Newcastle"
+ },
+ "65": {
+  "n": "Noonan",
+  "l": "Noonan"
+ },
+ "66": {
+  "n": "Northampton",
+  "l": "Northampton"
+ },
+ "67": {
+  "n": "Northesk",
+  "l": "Northesk"
+ },
+ "68": {
+  "n": "Norton",
+  "l": "Norton"
+ },
+ "69": {
+  "n": "Oromocto",
+  "l": "Oromocto"
+ },
+ "70": {
+  "n": "Paquetville",
+  "l": "Paquetville"
+ },
+ "71": {
+  "n": "Peel",
+  "l": "Peel"
+ },
+ "72": {
+  "n": "Pennfield Ridge",
+  "l": "Pennfield Ridge"
+ },
+ "73": {
+  "n": "Perth",
+  "l": "Perth"
+ },
+ "74": {
+  "n": "Petit Rocher",
+  "l": "Petit Rocher"
+ },
+ "75": {
+  "n": "Petitcodiac",
+  "l": "Petitcodiac"
+ },
+ "76": {
+  "n": "Plaster Rock",
+  "l": "Plaster Rock"
+ },
+ "77": {
+  "n": "Queensbury",
+  "l": "Queensbury"
+ },
+ "78": {
+  "n": "Quispamsis",
+  "l": "Quispamsis"
+ },
+ "79": {
+  "n": "Richibucto",
+  "l": "Richibucto"
+ },
+ "80": {
+  "n": "Richmond",
+  "l": "Richmond"
+ },
+ "81": {
+  "n": "Riverview",
+  "l": "Riverview"
+ },
+ "82": {
+  "n": "Rogersville",
+  "l": "Rogersville"
+ },
+ "83": {
+  "n": "Rothesay",
+  "l": "Rothesay"
+ },
+ "84": {
+  "n": "Sackville",
+  "l": "Sackville"
+ },
+ "85": {
+  "n": "Saint Andrews",
+  "l": "Saint Andrews"
+ },
+ "86": {
+  "n": "Saint David",
+  "l": "Saint David"
+ },
+ "87": {
+  "n": "Saint George",
+  "l": "Saint George"
+ },
+ "88": {
+  "n": "Saint James",
+  "l": "Saint James"
+ },
+ "89": {
+  "n": "Saint John",
+  "l": "Saint John"
+ },
+ "90": {
+  "n": "Saint Martins",
+  "l": "Saint Martins"
+ },
+ "91": {
+  "n": "Saint Mary",
+  "l": "Saint Mary"
+ },
+ "92": {
+  "n": "Saint Marys",
+  "l": "Saint Marys"
+ },
+ "93": {
+  "n": "Saint Stephen",
+  "l": "Saint Stephen"
+ },
+ "94": {
+  "n": "Saint-Andre",
+  "l": "Saint-André"
+ },
+ "95": {
+  "n": "Saint-Antoine",
+  "l": "Saint-Antoine"
+ },
+ "96": {
+  "n": "Saint-Charles",
+  "l": "Saint-Charles"
+ },
+ "97": {
+  "n": "Saint-Jacques",
+  "l": "Saint-Jacques"
+ },
+ "98": {
+  "n": "Saint-Joseph",
+  "l": "Saint-Joseph"
+ },
+ "99": {
+  "n": "Saint-Leonard",
+  "l": "Saint-Léonard"
+ },
+ "100": {
+  "n": "Saint-Louis",
+  "l": "Saint-Louis"
+ },
+ "101": {
+  "n": "Saint-Quentin",
+  "l": "Saint-Quentin"
+ },
+ "102": {
+  "n": "Salisbury",
+  "l": "Salisbury"
+ },
+ "103": {
+  "n": "Shediac",
+  "l": "Shediac"
+ },
+ "104": {
+  "n": "Shippagan",
+  "l": "Shippagan"
+ },
+ "105": {
+  "n": "Shippegan",
+  "l": "Shippegan"
+ },
+ "106": {
+  "n": "Simonds",
+  "l": "Simonds"
+ },
+ "107": {
+  "n": "Southampton",
+  "l": "Southampton"
+ },
+ "108": {
+  "n": "Southesk",
+  "l": "Southesk"
+ },
+ "109": {
+  "n": "Springfield",
+  "l": "Springfield"
+ },
+ "110": {
+  "n": "St. George",
+  "l": "St. George"
+ },
+ "111": {
+  "n": "Studholm",
+  "l": "Studholm"
+ },
+ "112": {
+  "n": "Sussex",
+  "l": "Sussex"
+ },
+ "113": {
+  "n": "Sussex Corner",
+  "l": "Sussex Corner"
+ },
+ "114": {
+  "n": "Tracadie",
+  "l": "Tracadie"
+ },
+ "115": {
+  "n": "Upham",
+  "l": "Upham"
+ },
+ "116": {
+  "n": "Upper Miramichi",
+  "l": "Upper Miramichi"
+ },
+ "117": {
+  "n": "Wakefield",
+  "l": "Wakefield"
+ },
+ "118": {
+  "n": "Weldford",
+  "l": "Weldford"
+ },
+ "119": {
+  "n": "Wellington",
+  "l": "Wellington"
+ },
+ "120": {
+  "n": "Westfield Beach",
+  "l": "Westfield Beach"
+ },
+ "121": {
+  "n": "Wicklow",
+  "l": "Wicklow"
+ },
+ "122": {
+  "n": "Wilmot",
+  "l": "Wilmot"
+ },
+ "123": {
+  "n": "Woodstock",
+  "l": "Woodstock"
+ }
+}

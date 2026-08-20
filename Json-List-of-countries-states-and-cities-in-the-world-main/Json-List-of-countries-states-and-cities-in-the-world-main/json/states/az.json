@@ -1,0 +1,62 @@
+{
+  "ABS": {
+    "n": "Absheron",
+    "l": "Abşeron",
+    "s": "ABS"
+  },
+  "ARA": {
+    "n": "Aran",
+    "l": "Aran",
+    "s": "ARA"
+  },
+  "BAK": {
+    "n": "Bakı ",
+    "l": "Bakı",
+    "s": "BAK"
+  },
+  "DSV": {
+    "n": "Dakhlik Shirvan",
+    "l": "Dağlıq Şirvan",
+    "s": "DSV"
+  },
+  "GQX": {
+    "n": "Ganja-Gazakh",
+    "l": "Gəncə-Qazax",
+    "s": "GQX"
+  },
+  "KBL": {
+    "n": "Kalbajar-Lachin",
+    "l": "Kəlbəcər-Laçın",
+    "s": "KBL"
+  },
+  "LKR": {
+    "n": "Lankaran",
+    "l": "Lənkəran",
+    "s": "LKR"
+  },
+  "NKR": {
+    "n": "Daglıq Qarabag",
+    "l": "Dağlıq Qarabağ",
+    "s": "NKR"
+  },
+  "NAV": {
+    "n": "Nakhchivan",
+    "l": "Naxçıvan",
+    "s": "NAV"
+  },
+  "QXM": {
+    "n": "Guba-Khachmaz",
+    "l": "Quba-Xaçmaz",
+    "s": "QXM"
+  },
+  "SKZ": {
+    "n": "Shaki-Zagatala",
+    "l": "Şəki-Zaqatala",
+    "s": "SKZ"
+  },
+  "YQB": {
+    "n": "Yukhari Karabakh",
+    "l": "Yuxarı Qarabağ",
+    "s": "YQB"
+  }
+}

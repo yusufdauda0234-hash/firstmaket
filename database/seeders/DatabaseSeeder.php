@@ -48,11 +48,11 @@ class DatabaseSeeder extends Seeder
             // overwrites an edited page.
             ContentPageSeeder::class,
 
-            // Default countries — Nigeria is seeded so checkout has at least
-            // one option. Admins can add more through the settings interface.
+            // Default countries — Nigeria is seeded with all states and LGAs
+            // from comprehensive JSON dataset. Admins can add more countries
+            // through the settings interface.
             CountriesSeeder::class,
-            NigeriaStatesSeeder::class,
-            NigeriaLocalGovernmentsSeeder::class,
+            ImportCountriesStatesFromJsonSeeder::class,
         ]);
     }
 }

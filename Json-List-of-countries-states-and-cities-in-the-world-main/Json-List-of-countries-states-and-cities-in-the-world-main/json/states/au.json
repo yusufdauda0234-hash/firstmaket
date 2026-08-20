@@ -1,0 +1,62 @@
+{
+  "ACT": {
+    "n": "Australian Capital Territory",
+    "l": "Australian Capital Territory",
+    "s": "ACT"
+  },
+  "CHR": {
+    "n": "Christmas Island",
+    "l": "Pulau Natal",
+    "s": "CHR"
+  },
+  "COC": {
+    "n": "Cocos Islands",
+    "l": "Kepulauan Cocos (Keeling)",
+    "s": "COC"
+  },
+  "JB": {
+    "n": "Jervis Bay",
+    "l": "Jervis Bay",
+    "s": "JB"
+  },
+  "NSW": {
+    "n": "New South Wales",
+    "l": "New South Wales",
+    "s": "NSW"
+  },
+  "NI": {
+    "n": "Norfolk Island",
+    "l": "Norfolk Ailen",
+    "s": "NI"
+  },
+  "NT": {
+    "n": "Northern Territory",
+    "l": "Northern Territory",
+    "s": "NT"
+  },
+  "QLD": {
+    "n": "Queensland",
+    "l": "Queensland",
+    "s": "QLD"
+  },
+  "SA": {
+    "n": "South Australia",
+    "l": "South Australia",
+    "s": "SA"
+  },
+  "TAS": {
+    "n": "Tasmania",
+    "l": "Tasmania",
+    "s": "TAS"
+  },
+  "VIC": {
+    "n": "Victoria",
+    "l": "Victoria",
+    "s": "VIC"
+  },
+  "WA": {
+    "n": "Western Australia",
+    "l": "Western Australia",
+    "s": "WA"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "BAR": {"n": "Barbuda", "l": "Barbuda", "s": "BAR"},
+  "RED": {"n": "Redonda", "l": "Redonda", "s": "RED"},
+  "SGE": {"n": "St. George", "l": "St. George", "s": "SGE"},
+  "SJO": {"n": "St. John", "l": "St. John", "s": "SJO"},
+  "SMA": {"n": "St. Mary", "l": "St. Mary", "s": "SMA"},
+  "SPA": {"n": "St. Paul", "l": "St. Paul", "s": "SPA"},
+  "SPE": {"n": "St. Peter", "l": "St. Peter", "s": "SPE"},
+  "SPH": {"n": "St. Philip", "l": "St. Philip", "s": "SPH"}
+}

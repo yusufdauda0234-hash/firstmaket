@@ -1,0 +1,258 @@
+﻿{
+ "1": {
+  "n": "Baie Verte",
+  "l": "Baie Verte"
+ },
+ "2": {
+  "n": "Bay Bulls",
+  "l": "Bay Bulls"
+ },
+ "3": {
+  "n": "Bay Roberts",
+  "l": "Bay Roberts"
+ },
+ "4": {
+  "n": "Bishops Falls",
+  "l": "Bishops Falls"
+ },
+ "5": {
+  "n": "Bonavista",
+  "l": "Bonavista"
+ },
+ "6": {
+  "n": "Botwood",
+  "l": "Botwood"
+ },
+ "7": {
+  "n": "Burgeo",
+  "l": "Burgeo"
+ },
+ "8": {
+  "n": "Burin",
+  "l": "Burin"
+ },
+ "9": {
+  "n": "Carbonear",
+  "l": "Carbonear"
+ },
+ "10": {
+  "n": "Centreville-Wareham-Trinity",
+  "l": "Centreville-Wareham-Trinity"
+ },
+ "11": {
+  "n": "Channel-Port aux Basques",
+  "l": "Channel-Port aux Basques"
+ },
+ "12": {
+  "n": "Clarenville",
+  "l": "Clarenville"
+ },
+ "13": {
+  "n": "Clarkes Beach",
+  "l": "Clarkes Beach"
+ },
+ "14": {
+  "n": "Conception Bay South",
+  "l": "Conception Bay South"
+ },
+ "15": {
+  "n": "Corner Brook",
+  "l": "Corner Brook"
+ },
+ "16": {
+  "n": "Deer Lake",
+  "l": "Deer Lake"
+ },
+ "17": {
+  "n": "Dildo",
+  "l": "Dildo"
+ },
+ "18": {
+  "n": "Flat Rock",
+  "l": "Flat Rock"
+ },
+ "19": {
+  "n": "Fogo Island",
+  "l": "Fogo Island"
+ },
+ "20": {
+  "n": "Fortune",
+  "l": "Fortune"
+ },
+ "21": {
+  "n": "Gambo",
+  "l": "Gambo"
+ },
+ "22": {
+  "n": "Gander",
+  "l": "Gander"
+ },
+ "23": {
+  "n": "Glovertown",
+  "l": "Glovertown"
+ },
+ "24": {
+  "n": "Goulds",
+  "l": "Goulds"
+ },
+ "25": {
+  "n": "Grand Bank",
+  "l": "Grand Bank"
+ },
+ "26": {
+  "n": "Grand Falls",
+  "l": "Grand Falls"
+ },
+ "27": {
+  "n": "Happy Valley",
+  "l": "Happy Valley"
+ },
+ "28": {
+  "n": "Harbour Breton",
+  "l": "Harbour Breton"
+ },
+ "29": {
+  "n": "Harbour Grace",
+  "l": "Harbour Grace"
+ },
+ "30": {
+  "n": "Harbour Main-Chapel's Cove-Lakeview",
+  "l": "Harbour Main-Chapel's Cove-Lakeview"
+ },
+ "31": {
+  "n": "Holyrood",
+  "l": "Holyrood"
+ },
+ "32": {
+  "n": "Humbermouth",
+  "l": "Humbermouth"
+ },
+ "33": {
+  "n": "Irishtown-Summerside",
+  "l": "Irishtown-Summerside"
+ },
+ "34": {
+  "n": "Kippens",
+  "l": "Kippens"
+ },
+ "35": {
+  "n": "Labrador City",
+  "l": "Labrador City"
+ },
+ "36": {
+  "n": "Lewisporte",
+  "l": "Lewisporte"
+ },
+ "37": {
+  "n": "Logy Bay-Middle Cove-Outer Cove",
+  "l": "Logy Bay-Middle Cove-Outer Cove"
+ },
+ "38": {
+  "n": "Marystown",
+  "l": "Marystown"
+ },
+ "39": {
+  "n": "Massey Drive",
+  "l": "Massey Drive"
+ },
+ "40": {
+  "n": "Mount Pearl Park",
+  "l": "Mount Pearl Park"
+ },
+ "41": {
+  "n": "Nain",
+  "l": "Nain"
+ },
+ "42": {
+  "n": "New-Wes-Valley",
+  "l": "New-Wes-Valley"
+ },
+ "43": {
+  "n": "Paradise",
+  "l": "Paradise"
+ },
+ "44": {
+  "n": "Pasadena",
+  "l": "Pasadena"
+ },
+ "45": {
+  "n": "Placentia",
+  "l": "Placentia"
+ },
+ "46": {
+  "n": "Portugal Cove-St. Philip's",
+  "l": "Portugal Cove-St. Philip's"
+ },
+ "47": {
+  "n": "Pouch Cove",
+  "l": "Pouch Cove"
+ },
+ "48": {
+  "n": "Spaniards Bay",
+  "l": "Spaniards Bay"
+ },
+ "49": {
+  "n": "Springdale",
+  "l": "Springdale"
+ },
+ "50": {
+  "n": "St. Alban's",
+  "l": "St. Alban's"
+ },
+ "51": {
+  "n": "St. Anthony",
+  "l": "St. Anthony"
+ },
+ "52": {
+  "n": "St. George's",
+  "l": "St. George's"
+ },
+ "53": {
+  "n": "St. John's",
+  "l": "St. John's"
+ },
+ "54": {
+  "n": "St. Lawrence",
+  "l": "St. Lawrence"
+ },
+ "55": {
+  "n": "Stephenville",
+  "l": "Stephenville"
+ },
+ "56": {
+  "n": "Stephenville Crossing",
+  "l": "Stephenville Crossing"
+ },
+ "57": {
+  "n": "Torbay",
+  "l": "Torbay"
+ },
+ "58": {
+  "n": "Trinity Bay North",
+  "l": "Trinity Bay North"
+ },
+ "59": {
+  "n": "Twillingate",
+  "l": "Twillingate"
+ },
+ "60": {
+  "n": "Upper Island Cove",
+  "l": "Upper Island Cove"
+ },
+ "61": {
+  "n": "Victoria",
+  "l": "Victoria"
+ },
+ "62": {
+  "n": "Wabana",
+  "l": "Wabana"
+ },
+ "63": {
+  "n": "Wabush",
+  "l": "Wabush"
+ },
+ "64": {
+  "n": "Witless Bay",
+  "l": "Witless Bay"
+ }
+}

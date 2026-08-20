@@ -1,0 +1,506 @@
+﻿{
+ "1": {
+  "n": "Alonsa",
+  "l": "Alonsa"
+ },
+ "2": {
+  "n": "Altona",
+  "l": "Altona"
+ },
+ "3": {
+  "n": "Arborg",
+  "l": "Arborg"
+ },
+ "4": {
+  "n": "Argyle",
+  "l": "Argyle"
+ },
+ "5": {
+  "n": "Armstrong",
+  "l": "Armstrong"
+ },
+ "6": {
+  "n": "Beausejour",
+  "l": "Beauséjour"
+ },
+ "7": {
+  "n": "Bifrost-Riverton",
+  "l": "Bifrost-Riverton"
+ },
+ "8": {
+  "n": "Blumenort",
+  "l": "Blumenort"
+ },
+ "9": {
+  "n": "Boissevain",
+  "l": "Boissevain"
+ },
+ "10": {
+  "n": "Brandon",
+  "l": "Brandon"
+ },
+ "11": {
+  "n": "Brenda-Waskada",
+  "l": "Brenda-Waskada"
+ },
+ "12": {
+  "n": "Brokenhead",
+  "l": "Brokenhead"
+ },
+ "13": {
+  "n": "Carberry",
+  "l": "Carberry"
+ },
+ "14": {
+  "n": "Carman",
+  "l": "Carman"
+ },
+ "15": {
+  "n": "Cartier",
+  "l": "Cartier"
+ },
+ "16": {
+  "n": "Cartwright-Roblin",
+  "l": "Cartwright-Roblin"
+ },
+ "17": {
+  "n": "Clanwilliam-Erickson",
+  "l": "Clanwilliam-Erickson"
+ },
+ "18": {
+  "n": "Coldwell",
+  "l": "Coldwell"
+ },
+ "19": {
+  "n": "Cornwallis",
+  "l": "Cornwallis"
+ },
+ "20": {
+  "n": "Dauphin",
+  "l": "Dauphin"
+ },
+ "21": {
+  "n": "De Salaberry",
+  "l": "De Salaberry"
+ },
+ "22": {
+  "n": "Deloraine-Winchester",
+  "l": "Deloraine-Winchester"
+ },
+ "23": {
+  "n": "Dufferin",
+  "l": "Dufferin"
+ },
+ "24": {
+  "n": "East St. Paul",
+  "l": "East St. Paul"
+ },
+ "25": {
+  "n": "Ellice-Archie",
+  "l": "Ellice-Archie"
+ },
+ "26": {
+  "n": "Elton",
+  "l": "Elton"
+ },
+ "27": {
+  "n": "Emerson-Franklin",
+  "l": "Emerson-Franklin"
+ },
+ "28": {
+  "n": "Ethelbert",
+  "l": "Ethelbert"
+ },
+ "29": {
+  "n": "Fisher",
+  "l": "Fisher"
+ },
+ "30": {
+  "n": "Flin Flon (Part)",
+  "l": "Flin Flon (Part)"
+ },
+ "31": {
+  "n": "Gilbert Plains",
+  "l": "Gilbert Plains"
+ },
+ "32": {
+  "n": "Gillam",
+  "l": "Gillam"
+ },
+ "33": {
+  "n": "Gimli",
+  "l": "Gimli"
+ },
+ "34": {
+  "n": "Glenboro-South Cypress",
+  "l": "Glenboro-South Cypress"
+ },
+ "35": {
+  "n": "Glenella-Lansdowne",
+  "l": "Glenella-Lansdowne"
+ },
+ "36": {
+  "n": "Grahamdale",
+  "l": "Grahamdale"
+ },
+ "37": {
+  "n": "Grand View",
+  "l": "Grand View"
+ },
+ "38": {
+  "n": "Grassland",
+  "l": "Grassland"
+ },
+ "39": {
+  "n": "Grey",
+  "l": "Grey"
+ },
+ "40": {
+  "n": "Grunthal",
+  "l": "Grunthal"
+ },
+ "41": {
+  "n": "Hamiota",
+  "l": "Hamiota"
+ },
+ "42": {
+  "n": "Hanover",
+  "l": "Hanover"
+ },
+ "43": {
+  "n": "Harrison Park",
+  "l": "Harrison Park"
+ },
+ "44": {
+  "n": "Headingley",
+  "l": "Headingley"
+ },
+ "45": {
+  "n": "Hillsburg-Roblin-Shell River",
+  "l": "Hillsburg-Roblin-Shell River"
+ },
+ "46": {
+  "n": "Kelsey",
+  "l": "Kelsey"
+ },
+ "47": {
+  "n": "Killarney - Turtle Mountain",
+  "l": "Killarney - Turtle Mountain"
+ },
+ "48": {
+  "n": "La Broquerie",
+  "l": "La Broquerie"
+ },
+ "49": {
+  "n": "Lac du Bonnet",
+  "l": "Lac du Bonnet"
+ },
+ "50": {
+  "n": "Lakeshore",
+  "l": "Lakeshore"
+ },
+ "51": {
+  "n": "Landmark",
+  "l": "Landmark"
+ },
+ "52": {
+  "n": "Lorette",
+  "l": "Lorette"
+ },
+ "53": {
+  "n": "Lorne",
+  "l": "Lorne"
+ },
+ "54": {
+  "n": "Louise",
+  "l": "Louise"
+ },
+ "55": {
+  "n": "Macdonald",
+  "l": "Macdonald"
+ },
+ "56": {
+  "n": "McCreary",
+  "l": "McCreary"
+ },
+ "57": {
+  "n": "Melita",
+  "l": "Melita"
+ },
+ "58": {
+  "n": "Minitonas-Bowsman",
+  "l": "Minitonas-Bowsman"
+ },
+ "59": {
+  "n": "Minnedosa",
+  "l": "Minnedosa"
+ },
+ "60": {
+  "n": "Minto-Odanah",
+  "l": "Minto-Odanah"
+ },
+ "61": {
+  "n": "Mitchell",
+  "l": "Mitchell"
+ },
+ "62": {
+  "n": "Montcalm",
+  "l": "Montcalm"
+ },
+ "63": {
+  "n": "Morden",
+  "l": "Morden"
+ },
+ "64": {
+  "n": "Morris",
+  "l": "Morris"
+ },
+ "65": {
+  "n": "Mossey River",
+  "l": "Mossey River"
+ },
+ "66": {
+  "n": "Neepawa",
+  "l": "Neepawa"
+ },
+ "67": {
+  "n": "Niverville",
+  "l": "Niverville"
+ },
+ "68": {
+  "n": "Norfolk-Treherne",
+  "l": "Norfolk-Treherne"
+ },
+ "69": {
+  "n": "North Cypress-Langford",
+  "l": "North Cypress-Langford"
+ },
+ "70": {
+  "n": "North Norfolk",
+  "l": "North Norfolk"
+ },
+ "71": {
+  "n": "Oakland-Wawanesa",
+  "l": "Oakland-Wawanesa"
+ },
+ "72": {
+  "n": "Oakview",
+  "l": "Oakview"
+ },
+ "73": {
+  "n": "Pembina",
+  "l": "Pembina"
+ },
+ "74": {
+  "n": "Pinawa",
+  "l": "Pinawa"
+ },
+ "75": {
+  "n": "Piney",
+  "l": "Piney"
+ },
+ "76": {
+  "n": "Pipestone",
+  "l": "Pipestone"
+ },
+ "77": {
+  "n": "Portage La Prairie",
+  "l": "Portage La Prairie"
+ },
+ "78": {
+  "n": "Powerview-Pine Falls",
+  "l": "Powerview-Pine Falls"
+ },
+ "79": {
+  "n": "Prairie Lakes",
+  "l": "Prairie Lakes"
+ },
+ "80": {
+  "n": "Prairie View",
+  "l": "Prairie View"
+ },
+ "81": {
+  "n": "Reinland",
+  "l": "Reinland"
+ },
+ "82": {
+  "n": "Reynolds",
+  "l": "Reynolds"
+ },
+ "83": {
+  "n": "Riding Mountain West",
+  "l": "Riding Mountain West"
+ },
+ "84": {
+  "n": "Ritchot",
+  "l": "Ritchot"
+ },
+ "85": {
+  "n": "Riverdale",
+  "l": "Riverdale"
+ },
+ "86": {
+  "n": "Rockwood",
+  "l": "Rockwood"
+ },
+ "87": {
+  "n": "Roland",
+  "l": "Roland"
+ },
+ "88": {
+  "n": "Rosedale",
+  "l": "Rosedale"
+ },
+ "89": {
+  "n": "Rossburn",
+  "l": "Rossburn"
+ },
+ "90": {
+  "n": "Rosser",
+  "l": "Rosser"
+ },
+ "91": {
+  "n": "Russell-Binscarth",
+  "l": "Russell-Binscarth"
+ },
+ "92": {
+  "n": "Selkirk",
+  "l": "Selkirk"
+ },
+ "93": {
+  "n": "Sifton",
+  "l": "Sifton"
+ },
+ "94": {
+  "n": "Souris-Glenwood",
+  "l": "Souris-Glenwood"
+ },
+ "95": {
+  "n": "Springfield",
+  "l": "Springfield"
+ },
+ "96": {
+  "n": "St-Pierre-Jolys",
+  "l": "St-Pierre-Jolys"
+ },
+ "97": {
+  "n": "St. Andrews",
+  "l": "St. Andrews"
+ },
+ "98": {
+  "n": "St. Clements",
+  "l": "St. Clements"
+ },
+ "99": {
+  "n": "St. Francois Xavier",
+  "l": "St. François Xavier"
+ },
+ "100": {
+  "n": "St. Laurent",
+  "l": "St. Laurent"
+ },
+ "101": {
+  "n": "Stanley",
+  "l": "Stanley"
+ },
+ "102": {
+  "n": "Ste. Anne",
+  "l": "Ste. Anne"
+ },
+ "103": {
+  "n": "Ste. Rose",
+  "l": "Ste. Rose"
+ },
+ "104": {
+  "n": "Steinbach",
+  "l": "Steinbach"
+ },
+ "105": {
+  "n": "Stonewall",
+  "l": "Stonewall"
+ },
+ "106": {
+  "n": "Stuartburn",
+  "l": "Stuartburn"
+ },
+ "107": {
+  "n": "Swan River",
+  "l": "Swan River"
+ },
+ "108": {
+  "n": "Swan Valley West",
+  "l": "Swan Valley West"
+ },
+ "109": {
+  "n": "Tache",
+  "l": "Taché"
+ },
+ "110": {
+  "n": "Teulon",
+  "l": "Teulon"
+ },
+ "111": {
+  "n": "The Pas",
+  "l": "The Pas"
+ },
+ "112": {
+  "n": "Thompson",
+  "l": "Thompson"
+ },
+ "113": {
+  "n": "Two Borders",
+  "l": "Two Borders"
+ },
+ "114": {
+  "n": "Victoria",
+  "l": "Victoria"
+ },
+ "115": {
+  "n": "Virden",
+  "l": "Virden"
+ },
+ "116": {
+  "n": "Wallace-Woodworth",
+  "l": "Wallace-Woodworth"
+ },
+ "117": {
+  "n": "Wasagamack",
+  "l": "Wasagamack"
+ },
+ "118": {
+  "n": "West Interlake",
+  "l": "West Interlake"
+ },
+ "119": {
+  "n": "West St. Paul",
+  "l": "West St. Paul"
+ },
+ "120": {
+  "n": "WestLake-Gladstone",
+  "l": "WestLake-Gladstone"
+ },
+ "121": {
+  "n": "Whitehead",
+  "l": "Whitehead"
+ },
+ "122": {
+  "n": "Winkler",
+  "l": "Winkler"
+ },
+ "123": {
+  "n": "Winnipeg",
+  "l": "Winnipeg"
+ },
+ "124": {
+  "n": "Winnipeg Beach",
+  "l": "Winnipeg Beach"
+ },
+ "125": {
+  "n": "Woodlands",
+  "l": "Woodlands"
+ },
+ "126": {
+  "n": "Yellowhead",
+  "l": "Yellowhead"
+ }
+}

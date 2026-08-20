@@ -1,0 +1,1382 @@
+﻿{
+ "1": {
+  "n": "Addington Highlands",
+  "l": "Addington Highlands"
+ },
+ "2": {
+  "n": "Adelaide-Metcalfe",
+  "l": "Adelaide-Metcalfe"
+ },
+ "3": {
+  "n": "Adjala-Tosorontio",
+  "l": "Adjala-Tosorontio"
+ },
+ "4": {
+  "n": "Admaston/Bromley",
+  "l": "Admaston/Bromley"
+ },
+ "5": {
+  "n": "Ajax",
+  "l": "Ajax"
+ },
+ "6": {
+  "n": "Alfred and Plantagenet",
+  "l": "Alfred and Plantagenet"
+ },
+ "7": {
+  "n": "Algonquin Highlands",
+  "l": "Algonquin Highlands"
+ },
+ "8": {
+  "n": "Alnwick/Haldimand",
+  "l": "Alnwick/Haldimand"
+ },
+ "9": {
+  "n": "Alvinston",
+  "l": "Alvinston"
+ },
+ "10": {
+  "n": "Amaranth",
+  "l": "Amaranth"
+ },
+ "11": {
+  "n": "Amherstburg",
+  "l": "Amherstburg"
+ },
+ "12": {
+  "n": "Armour",
+  "l": "Armour"
+ },
+ "13": {
+  "n": "Armstrong",
+  "l": "Armstrong"
+ },
+ "14": {
+  "n": "Arnprior",
+  "l": "Arnprior"
+ },
+ "15": {
+  "n": "Arran-Elderslie",
+  "l": "Arran-Elderslie"
+ },
+ "16": {
+  "n": "Ashfield-Colborne-Wawanosh",
+  "l": "Ashfield-Colborne-Wawanosh"
+ },
+ "17": {
+  "n": "Asphodel-Norwood",
+  "l": "Asphodel-Norwood"
+ },
+ "18": {
+  "n": "Assiginack",
+  "l": "Assiginack"
+ },
+ "19": {
+  "n": "Athens",
+  "l": "Athens"
+ },
+ "20": {
+  "n": "Atikokan",
+  "l": "Atikokan"
+ },
+ "21": {
+  "n": "Augusta",
+  "l": "Augusta"
+ },
+ "22": {
+  "n": "Aurora",
+  "l": "Aurora"
+ },
+ "23": {
+  "n": "Aylmer",
+  "l": "Aylmer"
+ },
+ "24": {
+  "n": "Bancroft",
+  "l": "Bancroft"
+ },
+ "25": {
+  "n": "Barrie",
+  "l": "Barrie"
+ },
+ "26": {
+  "n": "Bayfield",
+  "l": "Bayfield"
+ },
+ "27": {
+  "n": "Bayham",
+  "l": "Bayham"
+ },
+ "28": {
+  "n": "Beachburg",
+  "l": "Beachburg"
+ },
+ "29": {
+  "n": "Beckwith",
+  "l": "Beckwith"
+ },
+ "30": {
+  "n": "Belleville",
+  "l": "Belleville"
+ },
+ "31": {
+  "n": "Black River-Matheson",
+  "l": "Black River-Matheson"
+ },
+ "32": {
+  "n": "Blandford-Blenheim",
+  "l": "Blandford-Blenheim"
+ },
+ "33": {
+  "n": "Blind River",
+  "l": "Blind River"
+ },
+ "34": {
+  "n": "Bluewater",
+  "l": "Bluewater"
+ },
+ "35": {
+  "n": "Bonfield",
+  "l": "Bonfield"
+ },
+ "36": {
+  "n": "Bonnechere Valley",
+  "l": "Bonnechere Valley"
+ },
+ "37": {
+  "n": "Bracebridge",
+  "l": "Bracebridge"
+ },
+ "38": {
+  "n": "Bradford West Gwillimbury",
+  "l": "Bradford West Gwillimbury"
+ },
+ "39": {
+  "n": "Brampton",
+  "l": "Brampton"
+ },
+ "40": {
+  "n": "Brant",
+  "l": "Brant"
+ },
+ "41": {
+  "n": "Brantford",
+  "l": "Brantford"
+ },
+ "42": {
+  "n": "Breslau",
+  "l": "Breslau"
+ },
+ "43": {
+  "n": "Brighton",
+  "l": "Brighton"
+ },
+ "44": {
+  "n": "Brock",
+  "l": "Brock"
+ },
+ "45": {
+  "n": "Brockton",
+  "l": "Brockton"
+ },
+ "46": {
+  "n": "Brockville",
+  "l": "Brockville"
+ },
+ "47": {
+  "n": "Brudenell, Lyndoch and Raglan",
+  "l": "Brudenell, Lyndoch and Raglan"
+ },
+ "48": {
+  "n": "Burford",
+  "l": "Burford"
+ },
+ "49": {
+  "n": "Burlington",
+  "l": "Burlington"
+ },
+ "50": {
+  "n": "Caledon",
+  "l": "Caledon"
+ },
+ "51": {
+  "n": "Callander",
+  "l": "Callander"
+ },
+ "52": {
+  "n": "Cambridge",
+  "l": "Cambridge"
+ },
+ "53": {
+  "n": "Carleton Place",
+  "l": "Carleton Place"
+ },
+ "54": {
+  "n": "Carling",
+  "l": "Carling"
+ },
+ "55": {
+  "n": "Casselman",
+  "l": "Casselman"
+ },
+ "56": {
+  "n": "Cavan Monaghan",
+  "l": "Cavan Monaghan"
+ },
+ "57": {
+  "n": "Central Elgin",
+  "l": "Central Elgin"
+ },
+ "58": {
+  "n": "Central Frontenac",
+  "l": "Central Frontenac"
+ },
+ "59": {
+  "n": "Central Huron",
+  "l": "Central Huron"
+ },
+ "60": {
+  "n": "Central Manitoulin",
+  "l": "Central Manitoulin"
+ },
+ "61": {
+  "n": "Centre Hastings",
+  "l": "Centre Hastings"
+ },
+ "62": {
+  "n": "Centre Wellington",
+  "l": "Centre Wellington"
+ },
+ "63": {
+  "n": "Champlain",
+  "l": "Champlain"
+ },
+ "64": {
+  "n": "Chapleau",
+  "l": "Chapleau"
+ },
+ "65": {
+  "n": "Chatham",
+  "l": "Chatham"
+ },
+ "66": {
+  "n": "Chatsworth",
+  "l": "Chatsworth"
+ },
+ "67": {
+  "n": "Chisholm",
+  "l": "Chisholm"
+ },
+ "68": {
+  "n": "Claremont",
+  "l": "Claremont"
+ },
+ "69": {
+  "n": "Clarence-Rockland",
+  "l": "Clarence-Rockland"
+ },
+ "70": {
+  "n": "Clarington",
+  "l": "Clarington"
+ },
+ "71": {
+  "n": "Clearview",
+  "l": "Clearview"
+ },
+ "72": {
+  "n": "Cobalt",
+  "l": "Cobalt"
+ },
+ "73": {
+  "n": "Cobourg",
+  "l": "Cobourg"
+ },
+ "74": {
+  "n": "Cochrane",
+  "l": "Cochrane"
+ },
+ "75": {
+  "n": "Collingwood",
+  "l": "Collingwood"
+ },
+ "76": {
+  "n": "Conestogo",
+  "l": "Conestogo"
+ },
+ "77": {
+  "n": "Cornwall",
+  "l": "Cornwall"
+ },
+ "78": {
+  "n": "Cramahe",
+  "l": "Cramahe"
+ },
+ "79": {
+  "n": "Dawn-Euphemia",
+  "l": "Dawn-Euphemia"
+ },
+ "80": {
+  "n": "Deep River",
+  "l": "Deep River"
+ },
+ "81": {
+  "n": "Deseronto",
+  "l": "Deseronto"
+ },
+ "82": {
+  "n": "Douro-Dummer",
+  "l": "Douro-Dummer"
+ },
+ "83": {
+  "n": "Drummond/North Elmsley",
+  "l": "Drummond/North Elmsley"
+ },
+ "84": {
+  "n": "Dryden",
+  "l": "Dryden"
+ },
+ "85": {
+  "n": "Dutton/Dunwich",
+  "l": "Dutton/Dunwich"
+ },
+ "86": {
+  "n": "Dysart et al",
+  "l": "Dysart et al"
+ },
+ "87": {
+  "n": "East Ferris",
+  "l": "East Ferris"
+ },
+ "88": {
+  "n": "East Garafraxa",
+  "l": "East Garafraxa"
+ },
+ "89": {
+  "n": "East Gwillimbury",
+  "l": "East Gwillimbury"
+ },
+ "90": {
+  "n": "East Hawkesbury",
+  "l": "East Hawkesbury"
+ },
+ "91": {
+  "n": "East Zorra-Tavistock",
+  "l": "East Zorra-Tavistock"
+ },
+ "92": {
+  "n": "Edwardsburgh/Cardinal",
+  "l": "Edwardsburgh/Cardinal"
+ },
+ "93": {
+  "n": "Elizabethtown-Kitley",
+  "l": "Elizabethtown-Kitley"
+ },
+ "94": {
+  "n": "Elliot Lake",
+  "l": "Elliot Lake"
+ },
+ "95": {
+  "n": "Emo",
+  "l": "Emo"
+ },
+ "96": {
+  "n": "Englehart",
+  "l": "Englehart"
+ },
+ "97": {
+  "n": "Enniskillen",
+  "l": "Enniskillen"
+ },
+ "98": {
+  "n": "Erin",
+  "l": "Erin"
+ },
+ "99": {
+  "n": "Espanola",
+  "l": "Espanola"
+ },
+ "100": {
+  "n": "Essa",
+  "l": "Essa"
+ },
+ "101": {
+  "n": "Essex",
+  "l": "Essex"
+ },
+ "102": {
+  "n": "Faraday",
+  "l": "Faraday"
+ },
+ "103": {
+  "n": "Fort Erie",
+  "l": "Fort Erie"
+ },
+ "104": {
+  "n": "Fort Frances",
+  "l": "Fort Frances"
+ },
+ "105": {
+  "n": "French River / Riviere des Francais",
+  "l": "French River / Rivière des Français"
+ },
+ "106": {
+  "n": "Front of Yonge",
+  "l": "Front of Yonge"
+ },
+ "107": {
+  "n": "Frontenac Islands",
+  "l": "Frontenac Islands"
+ },
+ "108": {
+  "n": "Gananoque",
+  "l": "Gananoque"
+ },
+ "109": {
+  "n": "Georgian Bay",
+  "l": "Georgian Bay"
+ },
+ "110": {
+  "n": "Georgian Bluffs",
+  "l": "Georgian Bluffs"
+ },
+ "111": {
+  "n": "Georgina",
+  "l": "Georgina"
+ },
+ "112": {
+  "n": "Goderich",
+  "l": "Goderich"
+ },
+ "113": {
+  "n": "Grand Valley",
+  "l": "Grand Valley"
+ },
+ "114": {
+  "n": "Gravenhurst",
+  "l": "Gravenhurst"
+ },
+ "115": {
+  "n": "Greater Madawaska",
+  "l": "Greater Madawaska"
+ },
+ "116": {
+  "n": "Greater Napanee",
+  "l": "Greater Napanee"
+ },
+ "117": {
+  "n": "Greenstone",
+  "l": "Greenstone"
+ },
+ "118": {
+  "n": "Grey Highlands",
+  "l": "Grey Highlands"
+ },
+ "119": {
+  "n": "Grimsby",
+  "l": "Grimsby"
+ },
+ "120": {
+  "n": "Guelph",
+  "l": "Guelph"
+ },
+ "121": {
+  "n": "Guelph/Eramosa",
+  "l": "Guelph/Eramosa"
+ },
+ "122": {
+  "n": "Halton Hills",
+  "l": "Halton Hills"
+ },
+ "123": {
+  "n": "Hamilton",
+  "l": "Hamilton"
+ },
+ "124": {
+  "n": "Hamilton Township",
+  "l": "Hamilton Township"
+ },
+ "125": {
+  "n": "Hanover",
+  "l": "Hanover"
+ },
+ "126": {
+  "n": "Hastings Highlands",
+  "l": "Hastings Highlands"
+ },
+ "127": {
+  "n": "Havelock-Belmont-Methuen",
+  "l": "Havelock-Belmont-Methuen"
+ },
+ "128": {
+  "n": "Hawkesbury",
+  "l": "Hawkesbury"
+ },
+ "129": {
+  "n": "Hearst",
+  "l": "Hearst"
+ },
+ "130": {
+  "n": "Hensall",
+  "l": "Hensall"
+ },
+ "131": {
+  "n": "Highlands East",
+  "l": "Highlands East"
+ },
+ "132": {
+  "n": "Hillsburgh",
+  "l": "Hillsburgh"
+ },
+ "133": {
+  "n": "Hindon Hill",
+  "l": "Hindon Hill"
+ },
+ "134": {
+  "n": "Horton",
+  "l": "Horton"
+ },
+ "135": {
+  "n": "Howick",
+  "l": "Howick"
+ },
+ "136": {
+  "n": "Huntsville",
+  "l": "Huntsville"
+ },
+ "137": {
+  "n": "Huron East",
+  "l": "Huron East"
+ },
+ "138": {
+  "n": "Huron Shores",
+  "l": "Huron Shores"
+ },
+ "139": {
+  "n": "Huron-Kinloss",
+  "l": "Huron-Kinloss"
+ },
+ "140": {
+  "n": "Ignace",
+  "l": "Ignace"
+ },
+ "141": {
+  "n": "Ingersoll",
+  "l": "Ingersoll"
+ },
+ "142": {
+  "n": "Innisfil",
+  "l": "Innisfil"
+ },
+ "143": {
+  "n": "Iroquois Falls",
+  "l": "Iroquois Falls"
+ },
+ "144": {
+  "n": "Kapuskasing",
+  "l": "Kapuskasing"
+ },
+ "145": {
+  "n": "Kawartha Lakes",
+  "l": "Kawartha Lakes"
+ },
+ "146": {
+  "n": "Kenora",
+  "l": "Kenora"
+ },
+ "147": {
+  "n": "Killaloe, Hagarty and Richards",
+  "l": "Killaloe, Hagarty and Richards"
+ },
+ "148": {
+  "n": "Kincardine",
+  "l": "Kincardine"
+ },
+ "149": {
+  "n": "King",
+  "l": "King"
+ },
+ "150": {
+  "n": "Kingsville",
+  "l": "Kingsville"
+ },
+ "151": {
+  "n": "Kirkland Lake",
+  "l": "Kirkland Lake"
+ },
+ "152": {
+  "n": "Kitchener",
+  "l": "Kitchener"
+ },
+ "153": {
+  "n": "Komoka",
+  "l": "Komoka"
+ },
+ "154": {
+  "n": "LaSalle",
+  "l": "LaSalle"
+ },
+ "155": {
+  "n": "Laird",
+  "l": "Laird"
+ },
+ "156": {
+  "n": "Lake of Bays",
+  "l": "Lake of Bays"
+ },
+ "157": {
+  "n": "Lakeshore",
+  "l": "Lakeshore"
+ },
+ "158": {
+  "n": "Lambton Shores",
+  "l": "Lambton Shores"
+ },
+ "159": {
+  "n": "Lanark Highlands",
+  "l": "Lanark Highlands"
+ },
+ "160": {
+  "n": "Lappe",
+  "l": "Lappe"
+ },
+ "161": {
+  "n": "Laurentian Hills",
+  "l": "Laurentian Hills"
+ },
+ "162": {
+  "n": "Laurentian Valley",
+  "l": "Laurentian Valley"
+ },
+ "163": {
+  "n": "Leamington",
+  "l": "Leamington"
+ },
+ "164": {
+  "n": "Leeds and the Thousand Islands",
+  "l": "Leeds and the Thousand Islands"
+ },
+ "165": {
+  "n": "Lincoln",
+  "l": "Lincoln"
+ },
+ "166": {
+  "n": "London",
+  "l": "London"
+ },
+ "167": {
+  "n": "Loyalist",
+  "l": "Loyalist"
+ },
+ "168": {
+  "n": "Lucan Biddulph",
+  "l": "Lucan Biddulph"
+ },
+ "169": {
+  "n": "Macdonald, Meredith and Aberdeen Additional",
+  "l": "Macdonald, Meredith and Aberdeen Additional"
+ },
+ "170": {
+  "n": "Madawaska Valley",
+  "l": "Madawaska Valley"
+ },
+ "171": {
+  "n": "Madoc",
+  "l": "Madoc"
+ },
+ "172": {
+  "n": "Magnetawan",
+  "l": "Magnetawan"
+ },
+ "173": {
+  "n": "Malahide",
+  "l": "Malahide"
+ },
+ "174": {
+  "n": "Manitouwadge",
+  "l": "Manitouwadge"
+ },
+ "175": {
+  "n": "Mapleton",
+  "l": "Mapleton"
+ },
+ "176": {
+  "n": "Marathon",
+  "l": "Marathon"
+ },
+ "177": {
+  "n": "Markham",
+  "l": "Markham"
+ },
+ "178": {
+  "n": "Markstay",
+  "l": "Markstay"
+ },
+ "179": {
+  "n": "Marmora and Lake",
+  "l": "Marmora and Lake"
+ },
+ "180": {
+  "n": "Mattawa",
+  "l": "Mattawa"
+ },
+ "181": {
+  "n": "McDougall",
+  "l": "McDougall"
+ },
+ "182": {
+  "n": "McKellar",
+  "l": "McKellar"
+ },
+ "183": {
+  "n": "McNab/Braeside",
+  "l": "McNab/Braeside"
+ },
+ "184": {
+  "n": "Meaford",
+  "l": "Meaford"
+ },
+ "185": {
+  "n": "Melancthon",
+  "l": "Melancthon"
+ },
+ "186": {
+  "n": "Merrickville",
+  "l": "Merrickville"
+ },
+ "187": {
+  "n": "Middlesex Centre",
+  "l": "Middlesex Centre"
+ },
+ "188": {
+  "n": "Midland",
+  "l": "Midland"
+ },
+ "189": {
+  "n": "Milton",
+  "l": "Milton"
+ },
+ "190": {
+  "n": "Minto",
+  "l": "Minto"
+ },
+ "191": {
+  "n": "Mississauga",
+  "l": "Mississauga"
+ },
+ "192": {
+  "n": "Mississippi Mills",
+  "l": "Mississippi Mills"
+ },
+ "193": {
+  "n": "Mono",
+  "l": "Mono"
+ },
+ "194": {
+  "n": "Montague",
+  "l": "Montague"
+ },
+ "195": {
+  "n": "Moonbeam",
+  "l": "Moonbeam"
+ },
+ "196": {
+  "n": "Moosonee",
+  "l": "Moosonee"
+ },
+ "197": {
+  "n": "Morris-Turnberry",
+  "l": "Morris-Turnberry"
+ },
+ "198": {
+  "n": "Mulmur",
+  "l": "Mulmur"
+ },
+ "199": {
+  "n": "Muskoka Falls",
+  "l": "Muskoka Falls"
+ },
+ "200": {
+  "n": "Neebing",
+  "l": "Neebing"
+ },
+ "201": {
+  "n": "New Tecumseth",
+  "l": "New Tecumseth"
+ },
+ "202": {
+  "n": "Newmarket",
+  "l": "Newmarket"
+ },
+ "203": {
+  "n": "Niagara Falls",
+  "l": "Niagara Falls"
+ },
+ "204": {
+  "n": "Niagara-on-the-Lake",
+  "l": "Niagara-on-the-Lake"
+ },
+ "205": {
+  "n": "Nipigon",
+  "l": "Nipigon"
+ },
+ "206": {
+  "n": "Nipissing",
+  "l": "Nipissing"
+ },
+ "207": {
+  "n": "North Algona Wilberforce",
+  "l": "North Algona Wilberforce"
+ },
+ "208": {
+  "n": "North Bay",
+  "l": "North Bay"
+ },
+ "209": {
+  "n": "North Dumfries",
+  "l": "North Dumfries"
+ },
+ "210": {
+  "n": "North Dundas",
+  "l": "North Dundas"
+ },
+ "211": {
+  "n": "North Frontenac",
+  "l": "North Frontenac"
+ },
+ "212": {
+  "n": "North Glengarry",
+  "l": "North Glengarry"
+ },
+ "213": {
+  "n": "North Grenville",
+  "l": "North Grenville"
+ },
+ "214": {
+  "n": "North Huron",
+  "l": "North Huron"
+ },
+ "215": {
+  "n": "North Kawartha",
+  "l": "North Kawartha"
+ },
+ "216": {
+  "n": "North Middlesex",
+  "l": "North Middlesex"
+ },
+ "217": {
+  "n": "North Perth",
+  "l": "North Perth"
+ },
+ "218": {
+  "n": "North Stormont",
+  "l": "North Stormont"
+ },
+ "219": {
+  "n": "Northeastern Manitoulin and the Islands",
+  "l": "Northeastern Manitoulin and the Islands"
+ },
+ "220": {
+  "n": "Northern Bruce Peninsula",
+  "l": "Northern Bruce Peninsula"
+ },
+ "221": {
+  "n": "Norwich",
+  "l": "Norwich"
+ },
+ "222": {
+  "n": "Oakville",
+  "l": "Oakville"
+ },
+ "223": {
+  "n": "Oliver Paipoonge",
+  "l": "Oliver Paipoonge"
+ },
+ "224": {
+  "n": "Orangeville",
+  "l": "Orangeville"
+ },
+ "225": {
+  "n": "Orillia",
+  "l": "Orillia"
+ },
+ "226": {
+  "n": "Oro-Medonte",
+  "l": "Oro-Medonte"
+ },
+ "227": {
+  "n": "Oshawa",
+  "l": "Oshawa"
+ },
+ "228": {
+  "n": "Otonabee-South Monaghan",
+  "l": "Otonabee-South Monaghan"
+ },
+ "229": {
+  "n": "Ottawa",
+  "l": "Ottawa"
+ },
+ "230": {
+  "n": "Owen Sound",
+  "l": "Owen Sound"
+ },
+ "231": {
+  "n": "Papineau-Cameron",
+  "l": "Papineau-Cameron"
+ },
+ "232": {
+  "n": "Parry Sound",
+  "l": "Parry Sound"
+ },
+ "233": {
+  "n": "Pelham",
+  "l": "Pelham"
+ },
+ "234": {
+  "n": "Pembroke",
+  "l": "Pembroke"
+ },
+ "235": {
+  "n": "Penetanguishene",
+  "l": "Penetanguishene"
+ },
+ "236": {
+  "n": "Perry",
+  "l": "Perry"
+ },
+ "237": {
+  "n": "Perth",
+  "l": "Perth"
+ },
+ "238": {
+  "n": "Perth East",
+  "l": "Perth East"
+ },
+ "239": {
+  "n": "Perth South",
+  "l": "Perth South"
+ },
+ "240": {
+  "n": "Petawawa",
+  "l": "Petawawa"
+ },
+ "241": {
+  "n": "Peterborough",
+  "l": "Peterborough"
+ },
+ "242": {
+  "n": "Petrolia",
+  "l": "Petrolia"
+ },
+ "243": {
+  "n": "Pickering",
+  "l": "Pickering"
+ },
+ "244": {
+  "n": "Plantagenet",
+  "l": "Plantagenet"
+ },
+ "245": {
+  "n": "Plympton-Wyoming",
+  "l": "Plympton-Wyoming"
+ },
+ "246": {
+  "n": "Point Edward",
+  "l": "Point Edward"
+ },
+ "247": {
+  "n": "Port Colborne",
+  "l": "Port Colborne"
+ },
+ "248": {
+  "n": "Port Hope",
+  "l": "Port Hope"
+ },
+ "249": {
+  "n": "Powassan",
+  "l": "Powassan"
+ },
+ "250": {
+  "n": "Prescott",
+  "l": "Prescott"
+ },
+ "251": {
+  "n": "Prince",
+  "l": "Prince"
+ },
+ "252": {
+  "n": "Puslinch",
+  "l": "Puslinch"
+ },
+ "253": {
+  "n": "Quinte West",
+  "l": "Quinte West"
+ },
+ "254": {
+  "n": "Ramara",
+  "l": "Ramara"
+ },
+ "255": {
+  "n": "Red Lake",
+  "l": "Red Lake"
+ },
+ "256": {
+  "n": "Renfrew",
+  "l": "Renfrew"
+ },
+ "257": {
+  "n": "Richmond Hill",
+  "l": "Richmond Hill"
+ },
+ "258": {
+  "n": "Rideau Lakes",
+  "l": "Rideau Lakes"
+ },
+ "259": {
+  "n": "Russell",
+  "l": "Russell"
+ },
+ "260": {
+  "n": "Sables-Spanish Rivers",
+  "l": "Sables-Spanish Rivers"
+ },
+ "261": {
+  "n": "Sagamok",
+  "l": "Sagamok"
+ },
+ "262": {
+  "n": "Sarnia",
+  "l": "Sarnia"
+ },
+ "263": {
+  "n": "Saugeen Shores",
+  "l": "Saugeen Shores"
+ },
+ "264": {
+  "n": "Sault Ste. Marie",
+  "l": "Sault Ste. Marie"
+ },
+ "265": {
+  "n": "Schreiber",
+  "l": "Schreiber"
+ },
+ "266": {
+  "n": "Scugog",
+  "l": "Scugog"
+ },
+ "267": {
+  "n": "Seguin",
+  "l": "Seguin"
+ },
+ "268": {
+  "n": "Selwyn",
+  "l": "Selwyn"
+ },
+ "269": {
+  "n": "Severn",
+  "l": "Severn"
+ },
+ "270": {
+  "n": "Shelburne",
+  "l": "Shelburne"
+ },
+ "271": {
+  "n": "Shuniah",
+  "l": "Shuniah"
+ },
+ "272": {
+  "n": "Sioux Lookout",
+  "l": "Sioux Lookout"
+ },
+ "273": {
+  "n": "Sioux Narrows-Nestor Falls",
+  "l": "Sioux Narrows-Nestor Falls"
+ },
+ "274": {
+  "n": "Smiths Falls",
+  "l": "Smiths Falls"
+ },
+ "275": {
+  "n": "Smooth Rock Falls",
+  "l": "Smooth Rock Falls"
+ },
+ "276": {
+  "n": "South Algonquin",
+  "l": "South Algonquin"
+ },
+ "277": {
+  "n": "South Bruce",
+  "l": "South Bruce"
+ },
+ "278": {
+  "n": "South Bruce Peninsula",
+  "l": "South Bruce Peninsula"
+ },
+ "279": {
+  "n": "South Dundas",
+  "l": "South Dundas"
+ },
+ "280": {
+  "n": "South Frontenac",
+  "l": "South Frontenac"
+ },
+ "281": {
+  "n": "South Glengarry",
+  "l": "South Glengarry"
+ },
+ "282": {
+  "n": "South Huron",
+  "l": "South Huron"
+ },
+ "283": {
+  "n": "South River",
+  "l": "South River"
+ },
+ "284": {
+  "n": "South Stormont",
+  "l": "South Stormont"
+ },
+ "285": {
+  "n": "South-West Oxford",
+  "l": "South-West Oxford"
+ },
+ "286": {
+  "n": "Southgate",
+  "l": "Southgate"
+ },
+ "287": {
+  "n": "Southwest Middlesex",
+  "l": "Southwest Middlesex"
+ },
+ "288": {
+  "n": "Southwold",
+  "l": "Southwold"
+ },
+ "289": {
+  "n": "Springwater",
+  "l": "Springwater"
+ },
+ "290": {
+  "n": "St. Catharines",
+  "l": "St. Catharines"
+ },
+ "291": {
+  "n": "St. Clair",
+  "l": "St. Clair"
+ },
+ "292": {
+  "n": "St. Joseph",
+  "l": "St. Joseph"
+ },
+ "293": {
+  "n": "St. Marys",
+  "l": "St. Marys"
+ },
+ "294": {
+  "n": "St. Thomas",
+  "l": "St. Thomas"
+ },
+ "295": {
+  "n": "St.-Charles",
+  "l": "St.-Charles"
+ },
+ "296": {
+  "n": "Stirling-Rawdon",
+  "l": "Stirling-Rawdon"
+ },
+ "297": {
+  "n": "Stone Mills",
+  "l": "Stone Mills"
+ },
+ "298": {
+  "n": "Stouffville",
+  "l": "Stouffville"
+ },
+ "299": {
+  "n": "Stratford",
+  "l": "Stratford"
+ },
+ "300": {
+  "n": "Strathroy-Caradoc",
+  "l": "Strathroy-Caradoc"
+ },
+ "301": {
+  "n": "Strong",
+  "l": "Strong"
+ },
+ "302": {
+  "n": "Sudbury",
+  "l": "Sudbury"
+ },
+ "303": {
+  "n": "Tara",
+  "l": "Tara"
+ },
+ "304": {
+  "n": "Tay",
+  "l": "Tay"
+ },
+ "305": {
+  "n": "Tay Valley",
+  "l": "Tay Valley"
+ },
+ "306": {
+  "n": "Tecumseh",
+  "l": "Tecumseh"
+ },
+ "307": {
+  "n": "Temiskaming Shores",
+  "l": "Temiskaming Shores"
+ },
+ "308": {
+  "n": "Terrace Bay",
+  "l": "Terrace Bay"
+ },
+ "309": {
+  "n": "Thames Centre",
+  "l": "Thames Centre"
+ },
+ "310": {
+  "n": "The Blue Mountains",
+  "l": "The Blue Mountains"
+ },
+ "311": {
+  "n": "The Nation / La Nation",
+  "l": "The Nation / La Nation"
+ },
+ "312": {
+  "n": "Thessalon",
+  "l": "Thessalon"
+ },
+ "313": {
+  "n": "Thorold",
+  "l": "Thorold"
+ },
+ "314": {
+  "n": "Thunder Bay",
+  "l": "Thunder Bay"
+ },
+ "315": {
+  "n": "Tillsonburg",
+  "l": "Tillsonburg"
+ },
+ "316": {
+  "n": "Timmins",
+  "l": "Timmins"
+ },
+ "317": {
+  "n": "Tiny",
+  "l": "Tiny"
+ },
+ "318": {
+  "n": "Toronto",
+  "l": "Toronto"
+ },
+ "319": {
+  "n": "Trent Hills",
+  "l": "Trent Hills"
+ },
+ "320": {
+  "n": "Trent Lakes",
+  "l": "Trent Lakes"
+ },
+ "321": {
+  "n": "Tweed",
+  "l": "Tweed"
+ },
+ "322": {
+  "n": "Tyendinaga",
+  "l": "Tyendinaga"
+ },
+ "323": {
+  "n": "Uxbridge",
+  "l": "Uxbridge"
+ },
+ "324": {
+  "n": "Vaughan",
+  "l": "Vaughan"
+ },
+ "325": {
+  "n": "Wainfleet",
+  "l": "Wainfleet"
+ },
+ "326": {
+  "n": "Warwick",
+  "l": "Warwick"
+ },
+ "327": {
+  "n": "Wasaga Beach",
+  "l": "Wasaga Beach"
+ },
+ "328": {
+  "n": "Waterloo",
+  "l": "Waterloo"
+ },
+ "329": {
+  "n": "Wawa",
+  "l": "Wawa"
+ },
+ "330": {
+  "n": "Welland",
+  "l": "Welland"
+ },
+ "331": {
+  "n": "Wellesley",
+  "l": "Wellesley"
+ },
+ "332": {
+  "n": "Wellington",
+  "l": "Wellington"
+ },
+ "333": {
+  "n": "Wellington North",
+  "l": "Wellington North"
+ },
+ "334": {
+  "n": "West Elgin",
+  "l": "West Elgin"
+ },
+ "335": {
+  "n": "West Grey",
+  "l": "West Grey"
+ },
+ "336": {
+  "n": "West Lincoln",
+  "l": "West Lincoln"
+ },
+ "337": {
+  "n": "West Nipissing / Nipissing Ouest",
+  "l": "West Nipissing / Nipissing Ouest"
+ },
+ "338": {
+  "n": "West Perth",
+  "l": "West Perth"
+ },
+ "339": {
+  "n": "Whitby",
+  "l": "Whitby"
+ },
+ "340": {
+  "n": "Whitewater Region",
+  "l": "Whitewater Region"
+ },
+ "341": {
+  "n": "Wilmot",
+  "l": "Wilmot"
+ },
+ "342": {
+  "n": "Windsor",
+  "l": "Windsor"
+ },
+ "343": {
+  "n": "Woodstock",
+  "l": "Woodstock"
+ },
+ "344": {
+  "n": "Woolwich",
+  "l": "Woolwich"
+ },
+ "345": {
+  "n": "Zorra",
+  "l": "Zorra"
+ }
+}

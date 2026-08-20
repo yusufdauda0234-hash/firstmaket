@@ -1,0 +1,182 @@
+{
+    "ANI": {
+        "n": "Andaman and Nicobar Islands",
+        "l": "अंडमान और निकोबार द्वीपसमूह",
+        "s": "ANI"
+    },
+    "AND": {
+        "n": "Andhra Pradesh",
+        "l": "आंध्र प्रदेश",
+        "s": "AND"
+    },
+    "ARU": {
+        "n": "Arunachal Pradesh",
+        "l": "अरुणाचल प्रदेश",
+        "s": "ARU"
+    },
+    "ASS": {
+        "n": "Assam",
+        "l": "असम",
+        "s": "ASS"
+    },
+    "BIH": {
+        "n": "Bihar",
+        "l": "बिहार",
+        "s": "BIH"
+    },
+    "CHA": {
+        "n": "Chandigarh",
+        "l": "चंडीगढ़",
+        "s": "CHA"
+    },
+    "CHH": {
+        "n": "Chhattisgarh",
+        "l": "छत्तीसगढ़",
+        "s": "CHH"
+    },
+    "DDD": {
+        "n": "Dadra and Nagar Haveli and Daman and Diu",
+        "l": "दादरा और नगर हवेली और दमन और दीव",
+        "s": "DDD"
+    },
+    "DEL": {
+        "n": "Delhi",
+        "l": "दिल्ली",
+        "s": "DEL"
+    },
+    "GOA": {
+        "n": "Goa",
+        "l": "गोवा",
+        "s": "GOA"
+    },
+    "GUJ": {
+        "n": "Gujarat",
+        "l": "गुजरात",
+        "s": "GUJ"
+    },
+    "HAR": {
+        "n": "Haryana",
+        "l": "हरियाणा",
+        "s": "HAR"
+    },
+    "HIM": {
+        "n": "Himachal Pradesh",
+        "l": "हिमाचल प्रदेश",
+        "s": "HIM"
+    },
+    "JAM": {
+        "n": "Jammu and Kashmir",
+        "l": "जम्मू और कश्मीर",
+        "s": "JAM"
+    },
+    "JHA": {
+        "n": "Jharkhand",
+        "l": "झारखंड",
+        "s": "JHA"
+    },
+    "KAR": {
+        "n": "Karnataka",
+        "l": "कर्नाटक",
+        "s": "KAR"
+    },
+    "KER": {
+        "n": "Kerala",
+        "l": "केरल",
+        "s": "KER"
+    },
+    "LAD": {
+        "n": "Ladakh",
+        "l": "लद्दाख",
+        "s": "LAD"
+    },
+    "LAK": {
+        "n": "Lakshadweep",
+        "l": "लक्षद्वीप",
+        "s": "LAK"
+    },
+    "MAD": {
+        "n": "Madhya Pradesh",
+        "l": "मध्य प्रदेश",
+        "s": "MAD"
+    },
+    "MAH": {
+        "n": "Maharashtra",
+        "l": "महाराष्ट्र",
+        "s": "MAH"
+    },
+    "MAN": {
+        "n": "Manipur",
+        "l": "मणिपुर",
+        "s": "MAN"
+    },
+    "MEG": {
+        "n": "Meghalaya",
+        "l": "मेघालय",
+        "s": "MEG"
+    },
+    "MIZ": {
+        "n": "Mizoram",
+        "l": "मिजोरम",
+        "s": "MIZ"
+    },
+    "NAG": {
+        "n": "Nagaland",
+        "l": "नगालैंड",
+        "s": "NAG"
+    },
+    "OSA": {
+        "n": "Odisha",
+        "l": "ओडिशा",
+        "s": "OSA"
+    },
+    "PCH": {
+        "n": "Puducherry",
+        "l": "पुडुचेरी",
+        "s": "PCH"
+    },
+    "PUN": {
+        "n": "Punjab",
+        "l": "पंजाब",
+        "s": "PUN"
+    },
+    "RAJ": {
+        "n": "Rajasthan",
+        "l": "राजस्थान",
+        "s": "RAJ"
+    },
+    "SIK": {
+        "n": "Sikkim",
+        "l": "सिक्किम",
+        "s": "SIK"
+    },
+    "TAM": {
+        "n": "Tamil Nadu",
+        "l": "तमिलनाडु",
+        "s": "TAM"
+    },
+    "TEL": {
+        "n": "Telangana",
+        "l": "तेलंगाना",
+        "s": "TEL"
+    },
+    "TRI": {
+        "n": "Tripura",
+        "l": "त्रिपुरा",
+        "s": "TRI"
+    },
+    "UAR": {
+        "n": "Uttarakhand",
+        "l": "उत्तराखंड",
+        "s": "UAR"
+    },
+    "UTT": {
+        "n": "Uttar Pradesh",
+        "l": "उत्तर प्रदेश",
+        "s": "UTT"
+    },
+    "WES": {
+        "n": "West Bengal",
+        "l": "पश्चिम बंगाल",
+        "s": "WES"
+    }
+}

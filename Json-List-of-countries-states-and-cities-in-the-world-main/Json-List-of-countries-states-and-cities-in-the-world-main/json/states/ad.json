@@ -1,0 +1,9 @@
+{
+  "ALV": {"n": "Andorra la Vella", "l": "Andorra la Vella", "s": "ALV"},
+  "CAN": {"n": "Canillo", "l": "Canillo", "s": "CAN"},
+  "ENC": {"n": "Encamp", "l": "Encamp", "s": "ENC"},
+  "ESC": {"n": "Escaldes-Engordany", "l": "Escaldes-Engordany", "s": "ESC"},
+  "MAS": {"n": "La Massana", "l": "La Massana", "s": "MAS"},
+  "ORD": {"n": "Ordino", "l": "Ordino", "s": "ORD"},
+  "JUL": {"n": "Sant Julià de Lòria", "l": "Sant Julià de Lòria", "s": "JUL"}
+}
