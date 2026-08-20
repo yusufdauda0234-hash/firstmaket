@@ -82,4 +82,9 @@ return [
         'hotline' => env('SUPPORT_HOTLINE_NUMBER', '+2340000000000'),
     ],
 
+    // REST Countries API v5 for country data enrichment
+    'restcountries' => [
+        'key' => env('RESTCOUNTRIES_API_KEY'),
+    ],
+
 ];
