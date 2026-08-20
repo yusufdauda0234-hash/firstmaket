@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
             // one option. Admins can add more through the settings interface.
             CountriesSeeder::class,
             NigeriaStatesSeeder::class,
+            NigeriaLocalGovernmentsSeeder::class,
         ]);
     }
 }
