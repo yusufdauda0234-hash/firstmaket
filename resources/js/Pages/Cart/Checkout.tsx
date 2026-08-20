@@ -66,23 +66,18 @@ interface PlanTerm {
     firstPaymentLabel: string;
 }
 
-interface Props extends PageProps {
+interface CheckoutProps extends PageProps {
     items: CheckoutItem[];
     summary: Summary;
-    /** Re-quoted server-side each visit; null when nothing is applied. */
     promo: AppliedPromo | null;
     contact: { name: string; phone: string | null };
     paymentMethods: PaymentMethod[];
-    countries: Array<{ name: string; id: number }>;
+    countries: Array<{ name: string; id: number; capital?: string; region?: string; flag_emoji?: string }>;
     states: string[];
     planTerms: PlanTerm[];
-    /** Set when this is a Buy-now checkout for a single item, not the cart. */
     buyNow: { productUuid: string; quantity: number } | null;
-    /** Carried over from a plan the customer cancelled. */
     planCreditKobo: number;
-    /** What a plan locks: the goods, without delivery. */
     planTargetKobo: number;
-    /** This customer's saved delivery address; null before the first one. */
     savedAddress: {
         country_id?: number;
         recipient_name: string;
@@ -422,7 +417,8 @@ export default function CartCheckout() {
                                         >
                                             {countries.map((country) => (
                                                 <option key={country.id} value={country.id} className="text-gray-900">
-                                                    {country.name}
+                                                    {country.flag_emoji} {country.name}
+                                                    {country.capital ? ` (${country.capital})` : ''}
                                                 </option>
                                             ))}
                                         </Select>
